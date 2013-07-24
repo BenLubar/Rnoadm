@@ -47,6 +47,43 @@ func init() {
 		Name:  "Air",
 		Links: []*element{&smoke, &dust, &mist},
 	}
+	earth = element{
+		Name: "Earth",
+		Links: []*element{&dust,&mud,&lava),
+	}
+	fire = element{
+		Name: "Fire",
+		Links: []*element{&smoke,&lava,&steam),
+	}
+	// TODO: figure out what the fuck ice is
+	dust = element{
+		Name: "Dust",
+		Links: []*element(&earth, &air),
+	}
+	lava = element{
+		Name: "Lava",
+		Links: []*element(&earth, &fire),
+	}
+	water = element{
+		Name: "Water",
+		Links: []*element(&mist,&steam,&dust),
+	}
+	steam = element{
+		Name: "Steam",
+		Links: []*element(&water,&fire),
+	}
+	mist = element{
+		Name: "Mist",
+		Links: []*element(&air,&water),
+	}
+	smoke = element{
+		Name: "Smoke",
+		Links: []*element(&air,&fire),
+	}
+	mud = element{
+		Name: "Mud",
+		Links: []*element(&water,&earth),
+	}
 	elements[Air] = &air
 	// TODO: other elements
 }
