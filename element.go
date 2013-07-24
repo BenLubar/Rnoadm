@@ -49,40 +49,79 @@ func init() {
 	}
 	earth = element{
 		Name: "Earth",
-		Links: []*element{&dust,&mud,&lava),
+		Links: []*element{&dust,&mud,&lava},
 	}
 	fire = element{
 		Name: "Fire",
-		Links: []*element{&smoke,&lava,&steam),
+		Links: []*element{&smoke,&lava,&steam},
 	}
-	// TODO: figure out what the fuck ice is
+	ice = element{
+		Name: "Ice",
+		Links: []*element{&water,&mist},
+	}
 	dust = element{
 		Name: "Dust",
-		Links: []*element(&earth, &air),
+		Links: []*element{&earth, &air},
 	}
 	lava = element{
 		Name: "Lava",
-		Links: []*element(&earth, &fire),
+		Links: []*element{&earth, &fire},
 	}
 	water = element{
 		Name: "Water",
-		Links: []*element(&mist,&steam,&dust),
+		Links: []*element{&mist,&steam,&mud, &ice},
 	}
 	steam = element{
 		Name: "Steam",
-		Links: []*element(&water,&fire),
+		Links: []*element{&water,&fire},
 	}
 	mist = element{
 		Name: "Mist",
-		Links: []*element(&air,&water),
+		Links: []*element{&air,&water},
 	}
 	smoke = element{
 		Name: "Smoke",
-		Links: []*element(&air,&fire),
+		Links: []*element{&air,&fire},
 	}
 	mud = element{
 		Name: "Mud",
-		Links: []*element(&water,&earth),
+		Links: []*element{&water,&earth},
+	}
+	time = element{
+		Name: "Time",
+		Links: []*element{&earth,&gravity,&void},
+	}
+	gravity = element{
+		Name: "Gravity",
+		Links: []*element{&earth,&water,&time},
+	}
+	electric = element{
+		Name: "Electric",
+		Links: []*element{&air,&light,&void},
+	}
+	light = element{
+		Name: "Light",
+		Links: []*element{&air,&water,&electric},
+	}
+	dark = element{
+		Name: "Dark",
+		Links: []*element{&fire,&smoke,&void},
+	}
+	void = element{
+		Name: "Void",
+		Links: []*element{&dark,&time,&illusion},
+	}
+	spiritual = element{
+		Name: "Spiritual",
+		Links: []*element{&air,&mist,&time},
+	}
+	chaotic = element{
+		Name: "Chaotic",
+		Links: []*element{&light,&dark,&void},
+	}
+	illusion = element{
+		Name: "Illusion",
+		Links: []*element{&void,&time,&gravity},
 	}
 	elements[Air] = &air
 	// TODO: other elements
