@@ -6,7 +6,7 @@ type element struct {
 }
 
 var (
-	air, earth, fire, ice                      element
+	air, earth, fire, ice, nature              element
 	dust, lava, water, steam, mist, smoke, mud element
 	time, gravity, electric, light, dark       element
 	void, spiritual, chaotic, illusion         element
@@ -19,6 +19,7 @@ const (
 	Earth
 	Fire
 	Ice
+	Nature
 	Dust
 	Lava
 	Water
@@ -46,82 +47,105 @@ func init() {
 		Name:  "Air",
 		Links: []*element{&smoke, &dust, &mist},
 	}
+	elements[Air] = &air
 	earth = element{
 		Name:  "Earth",
 		Links: []*element{&dust, &mud, &lava},
 	}
+	elements[Earth] = &earth
 	fire = element{
 		Name:  "Fire",
 		Links: []*element{&smoke, &lava, &steam},
 	}
+	elements[Fire] = &fire
 	ice = element{
 		Name:  "Ice",
 		Links: []*element{&water, &mist},
 	}
+	nature = element{
+		Name:  "Nature",
+		Links: []*element{&earth, &air, &water},
+	}
+	elements[Nature] = &nature
+	elements[Ice] = &ice
 	dust = element{
 		Name:  "Dust",
 		Links: []*element{&earth, &air},
 	}
+	elements[Dust] = &dust
 	lava = element{
 		Name:  "Lava",
 		Links: []*element{&earth, &fire},
 	}
+	elements[Lava] = &lava
 	water = element{
 		Name:  "Water",
 		Links: []*element{&mist, &steam, &mud, &ice},
 	}
+	elements[Water] = &water
 	steam = element{
 		Name:  "Steam",
 		Links: []*element{&water, &fire},
 	}
+	elements[Steam] = &steam
 	mist = element{
 		Name:  "Mist",
 		Links: []*element{&air, &water},
 	}
+	elements[Mist] = &mist
 	smoke = element{
 		Name:  "Smoke",
 		Links: []*element{&air, &fire},
 	}
+	elements[Smoke] = &smoke
 	mud = element{
 		Name:  "Mud",
 		Links: []*element{&water, &earth},
 	}
+	elements[Mud] = &mud
 	time = element{
 		Name:  "Time",
 		Links: []*element{&earth, &gravity, &void},
 	}
+	elements[Time] = &time
 	gravity = element{
 		Name:  "Gravity",
 		Links: []*element{&earth, &water, &time},
 	}
+	elements[Gravity] = &gravity
 	electric = element{
 		Name:  "Electric",
 		Links: []*element{&air, &light, &void},
 	}
+	elements[Electric] = &electric
 	light = element{
 		Name:  "Light",
 		Links: []*element{&air, &water, &electric},
 	}
+	elements[Light] = &light
 	dark = element{
 		Name:  "Dark",
 		Links: []*element{&fire, &smoke, &void},
 	}
+	elements[Dark] = &dark
 	void = element{
 		Name:  "Void",
 		Links: []*element{&dark, &time, &illusion},
 	}
+	elements[Void] = &void
 	spiritual = element{
 		Name:  "Spiritual",
 		Links: []*element{&air, &mist, &time},
 	}
+	elements[Spiritual] = &spiritual
 	chaotic = element{
 		Name:  "Chaotic",
 		Links: []*element{&light, &dark, &void},
 	}
+	elements[Chaotic] = &chaotic
 	illusion = element{
 		Name:  "Illusion",
 		Links: []*element{&void, &time, &gravity},
 	}
-	elements[Air] = &air
-	// TODO: other elements
+	elements[Illusion] = &illusion
 }
