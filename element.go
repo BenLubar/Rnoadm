@@ -6,11 +6,10 @@ type element struct {
 }
 
 var (
-	_ element
-	air, earth, fire, ice
-	dust, lava, water, steam, mist, smoke, mud
-	time, gravity, electric, light, dark
-	void, spiritual, chaotic, illusion
+	air, earth, fire, ice                      element
+	dust, lava, water, steam, mist, smoke, mud element
+	time, gravity, electric, light, dark       element
+	void, spiritual, chaotic, illusion         element
 )
 
 type Element uint8
@@ -40,7 +39,7 @@ const (
 	elementCount
 )
 
-var elements [elementCount]*Element
+var elements [elementCount]*element
 
 func init() {
 	air = element{
