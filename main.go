@@ -40,8 +40,10 @@ func paint() {
 				continue
 			}
 			y8 := uint8(yCoord)
-			if CurrentZone.Tile(x8, y8) != nil {
-				termbox.SetCell(x, y, '.', termbox.ColorWhite, termbox.ColorBlack)
+			if tile := CurrentZone.Tile(x8, y8); tile != nil {
+				r, fg := tile.Paint()
+				bg := termbox.ColorBlack
+				termbox.SetCell(x, y, r, fg, bg)
 			}
 		}
 	}
@@ -72,7 +74,11 @@ func main() {
 	events := make(chan termbox.Event)
 	go pollEvents(events)
 	repaint()
-	CurrentZone = &Zone{X: 0, Y: 0}
+	CurrentZone = &Zone{X: 0, Y: 0, Element: Earth}
+	CurrentZone.Tile(120, 120).Add(&Rock{})
+	CurrentZone.Tile(121, 120).Add(&Rock{})
+	CurrentZone.Tile(120, 121).Add(&Rock{})
+	CurrentZone.Tile(121, 122).Add(&Rock{})
 
 	for {
 		select {

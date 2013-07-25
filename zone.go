@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base32"
 	"encoding/binary"
+	"encoding/gob"
 	"math"
 
 	"github.com/nsf/termbox-go"
@@ -46,7 +47,11 @@ type Zone struct {
 }
 
 func (z *Zone) Blocked(x, y uint8) bool {
-	return z.Tile(x, y) == nil
+	tile := z.Tile(x, y)
+	if tile == nil {
+		return true
+	}
+	return tile.Blocked()
 }
 
 func (z *Zone) Tile(x, y uint8) *Tile {
@@ -60,8 +65,33 @@ type Tile struct {
 	Objects []Object
 }
 
+func (t *Tile) Add(o Object) {
+	t.Objects = append(t.Objects, o)
+}
+
+func (t *Tile) Blocked() bool {
+	for _, o := range t.Objects {
+		if o.Blocking() {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *Tile) Paint() (rune, termbox.Attribute) {
+	if len(t.Objects) == 0 {
+		return '.', termbox.ColorWhite
+	}
+	return t.Objects[len(t.Objects)-1].Paint()
+}
+
 type Object interface {
 	Name() string
 	Examine() string
 	Paint() (rune, termbox.Attribute)
+	Blocking() bool
+}
+
+func init() {
+	gob.Register(Object(&Rock{}))
 }
