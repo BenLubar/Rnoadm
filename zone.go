@@ -9,7 +9,7 @@ import (
 )
 
 const root3 = 1.7320508075688772935274463415058723669428052538103806
-const zoneTiles = 46616
+const zoneTiles = 46872
 
 var zoneOffset [256]uint8
 var rowOffset [256]int
@@ -19,7 +19,7 @@ func init() {
 	for i := range zoneOffset {
 		zoneOffset[i] = uint8(math.Abs(float64(i)-127.5) / root3)
 		rowOffset[i] = sum
-		sum += 255 - int(zoneOffset[i])*2
+		sum += 256 - int(zoneOffset[i])*2
 	}
 	if zoneTiles != sum {
 		panic(sum)
@@ -48,7 +48,7 @@ func (z *Zone) Tile(x, y uint8) *Tile {
 	if zoneOffset[y] > x || x > 255-zoneOffset[y] {
 		return nil
 	}
-	return &z.Tiles[rowOffset[y]+int(x)]
+	return &z.Tiles[rowOffset[y]+int(x-zoneOffset[y])]
 }
 
 type Tile struct {
