@@ -19,3 +19,24 @@ func TestZoneTilesUnique(t *testing.T) {
 		}
 	}
 }
+
+func TestZoneTilesPacked(t *testing.T) {
+	seen := make(map[*Tile]bool, zoneTiles)
+	zone := &Zone{X: 0, Y: 0}
+	for x := 0; x < 256; x++ {
+		for y := 0; y < 256; y++ {
+			tile := zone.Tile(uint8(x), uint8(y))
+			if tile != nil {
+				seen[tile] = true
+			}
+		}
+	}
+	if expected, actual := len(zone.Tiles), len(seen); expected != actual {
+		t.Errorf("We've seen %d tiles but there are %d allocated.", actual, expected)
+	}
+	for i := range zone.Tiles {
+		if !seen[&zone.Tiles[i]] {
+			t.Errorf("Unused tile index: %d", i)
+		}
+	}
+}
