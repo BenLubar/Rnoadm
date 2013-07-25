@@ -40,8 +40,13 @@ func zoneFilename(x, y int64) string {
 }
 
 type Zone struct {
-	X, Y  int64
-	Tiles [zoneTiles]Tile
+	X, Y    int64
+	Element Element
+	Tiles   [zoneTiles]Tile
+}
+
+func (z *Zone) Blocked(x, y uint8) bool {
+	return z.Tile(x, y) == nil
 }
 
 func (z *Zone) Tile(x, y uint8) *Tile {

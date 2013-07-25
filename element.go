@@ -62,12 +62,12 @@ func init() {
 		Name:  "Ice",
 		Links: []*element{&water, &mist},
 	}
+	elements[Ice] = &ice
 	nature = element{
 		Name:  "Nature",
 		Links: []*element{&earth, &air, &water},
 	}
 	elements[Nature] = &nature
-	elements[Ice] = &ice
 	dust = element{
 		Name:  "Dust",
 		Links: []*element{&earth, &air},

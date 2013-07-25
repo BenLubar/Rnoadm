@@ -87,22 +87,22 @@ func main() {
 			case termbox.EventKey:
 				switch event.Key {
 				case termbox.KeyArrowLeft:
-					if CameraX != 0 && CurrentZone.Tile(CameraX-1, CameraY) != nil {
+					if CameraX != 0 && !CurrentZone.Blocked(CameraX-1, CameraY) {
 						CameraX--
 						repaint()
 					}
 				case termbox.KeyArrowRight:
-					if CameraX != 255 && CurrentZone.Tile(CameraX+1, CameraY) != nil {
+					if CameraX != 255 && !CurrentZone.Blocked(CameraX+1, CameraY) {
 						CameraX++
 						repaint()
 					}
 				case termbox.KeyArrowUp:
-					if CameraY != 0 && CurrentZone.Tile(CameraX, CameraY-1) != nil {
+					if CameraY != 0 && !CurrentZone.Blocked(CameraX, CameraY-1) {
 						CameraY--
 						repaint()
 					}
 				case termbox.KeyArrowDown:
-					if CameraY != 255 && CurrentZone.Tile(CameraX, CameraY+1) != nil {
+					if CameraY != 255 && !CurrentZone.Blocked(CameraX, CameraY+1) {
 						CameraY++
 						repaint()
 					}
