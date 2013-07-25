@@ -8,7 +8,7 @@ type element struct {
 var (
 	air, earth, fire, ice, nature              element
 	dust, lava, water, steam, mist, smoke, mud element
-	time, gravity, electric, light, dark       element
+	time_, gravity, electric, light, dark      element
 	void, spiritual, chaotic, illusion         element
 )
 
@@ -103,14 +103,14 @@ func init() {
 		Links: []*element{&water, &earth},
 	}
 	elements[Mud] = &mud
-	time = element{
+	time_ = element{
 		Name:  "Time",
 		Links: []*element{&earth, &gravity, &void},
 	}
-	elements[Time] = &time
+	elements[Time] = &time_
 	gravity = element{
 		Name:  "Gravity",
-		Links: []*element{&earth, &water, &time},
+		Links: []*element{&earth, &water, &time_},
 	}
 	elements[Gravity] = &gravity
 	electric = element{
@@ -130,12 +130,12 @@ func init() {
 	elements[Dark] = &dark
 	void = element{
 		Name:  "Void",
-		Links: []*element{&dark, &time, &illusion},
+		Links: []*element{&dark, &time_, &illusion},
 	}
 	elements[Void] = &void
 	spiritual = element{
 		Name:  "Spiritual",
-		Links: []*element{&air, &mist, &time},
+		Links: []*element{&air, &mist, &time_},
 	}
 	elements[Spiritual] = &spiritual
 	chaotic = element{
@@ -145,7 +145,7 @@ func init() {
 	elements[Chaotic] = &chaotic
 	illusion = element{
 		Name:  "Illusion",
-		Links: []*element{&void, &time, &gravity},
+		Links: []*element{&void, &time_, &gravity},
 	}
 	elements[Illusion] = &illusion
 }
