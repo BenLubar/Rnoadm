@@ -23,6 +23,29 @@ func paint() {
 
 	w, h := termbox.Size()
 
+	camX := int(CameraX)
+	camY := int(CameraY)
+
+	termbox.SetCursor(w/2, h/2)
+
+	for x := 0; x < w; x++ {
+		xCoord := x - w/2 + camX
+		if xCoord < 0 || xCoord > 255 {
+			continue
+		}
+		x8 := uint8(xCoord)
+		for y := 0; y < h; y++ {
+			yCoord := y - h/2 + camY
+			if yCoord < 0 || yCoord > 255 {
+				continue
+			}
+			y8 := uint8(yCoord)
+			if CurrentZone.Tile(x8, y8) != nil {
+				termbox.SetCell(x, y, '.', termbox.ColorWhite, termbox.ColorBlack)
+			}
+		}
+	}
+
 	if titlePerm == nil {
 		titlePerm = rand.Perm(4)
 	}
@@ -35,11 +58,13 @@ func paint() {
 	termbox.Flush()
 }
 
+var CurrentZone *Zone
+var CameraX, CameraY uint8 = 127, 127
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	err := termbox.Init()
-	if err != nil {
+	if err := termbox.Init(); err != nil {
 		panic(err)
 	}
 	defer termbox.Close()
@@ -47,6 +72,7 @@ func main() {
 	events := make(chan termbox.Event)
 	go pollEvents(events)
 	repaint()
+	CurrentZone = &Zone{X: 0, Y: 0}
 
 	for {
 		select {
@@ -59,8 +85,32 @@ func main() {
 				repaint()
 
 			case termbox.EventKey:
-				// TODO: handle events
-				return
+				switch event.Key {
+				case termbox.KeyArrowLeft:
+					if CameraX != 0 && CurrentZone.Tile(CameraX-1, CameraY) != nil {
+						CameraX--
+						repaint()
+					}
+				case termbox.KeyArrowRight:
+					if CameraX != 255 && CurrentZone.Tile(CameraX+1, CameraY) != nil {
+						CameraX++
+						repaint()
+					}
+				case termbox.KeyArrowUp:
+					if CameraY != 0 && CurrentZone.Tile(CameraX, CameraY-1) != nil {
+						CameraY--
+						repaint()
+					}
+				case termbox.KeyArrowDown:
+					if CameraY != 255 && CurrentZone.Tile(CameraX, CameraY+1) != nil {
+						CameraY++
+						repaint()
+					}
+
+				default:
+					// TODO: handle more keys
+					return
+				}
 			}
 
 		case <-shouldPaint:
