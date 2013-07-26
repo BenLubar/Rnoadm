@@ -5,7 +5,7 @@ import (
 )
 
 func TestGenerateGraph(t *testing.T) {
-	buf := []byte("https://chart.googleapis.com/chart?cht=gv&chs=800x800&chl=digraph{")
+	buf := []byte("https://chart.googleapis.com/chart?cht=gv&chs=400x600&chl=digraph{")
 
 	for _, e := range elements {
 		for _, l := range e.Links {
