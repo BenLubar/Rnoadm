@@ -5,9 +5,15 @@ import (
 )
 
 func TestGenerateGraph(t *testing.T) {
-	buf := []byte("https://chart.googleapis.com/chart?cht=gv&chs=400x600&chl=digraph{")
+	buf := []byte("https://chart.googleapis.com/chart?cht=gv&chl=digraph{")
 
 	for _, e := range elements {
+		/*if e != &chaotic {
+			buf = append(append(append(buf, ' '), "Chaotic->"...), e.Name...)
+			if e != &nature {
+				buf = append(append(append(buf, ' '), e.Name...), "->Nature"...)
+			}
+		}*/
 		for _, l := range e.Links {
 			buf = append(append(append(append(buf, ' '), e.Name...), "->"...), l.Name...)
 		}

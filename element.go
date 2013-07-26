@@ -140,7 +140,7 @@ func init() {
 	elements[Spiritual] = &spiritual
 	chaotic = element{
 		Name:  "Chaotic",
-		Links: []*element{&light, &dark, &void},
+		// Special: Chaotic zones contain all element types.
 	}
 	elements[Chaotic] = &chaotic
 	illusion = element{
