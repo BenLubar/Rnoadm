@@ -49,6 +49,9 @@ func TestElements(t *testing.T) {
 				if l == elements[i] {
 					t.Errorf("elements[%d]%s has a link to itself", i, name)
 				}
+				if l == &nature {
+					t.Errorf("elements[%d]%s has an explicit link to nature", i, name)
+				}
 				if _, ok := reverse[l]; !ok {
 					t.Errorf("elements[%d]%s has an invalid link", i, name)
 				}
