@@ -41,6 +41,27 @@ const (
 )
 
 var elements [elementCount]*element
+var weakness = map[Element]Element{
+	Air:       Mud,
+	Water:     Electric,
+	Ice:       Fire,
+	Earth:     Gravity,
+	Fire:      Water,
+	Dust:      Time,
+	Lava:      Mist,
+	Steam:     Lava,
+	Mist:      Smoke,
+	Smoke:     Light,
+	Mud:       Steam,
+	Time:      Ice,
+	Gravity:   Air,
+	Electric:  Earth,
+	Light:     Void,
+	Dark:      Dust,
+	Void:      Spiritual,
+	Spiritual: Illusion,
+	Illusion:  Dark,
+}
 
 func init() {
 	air = element{

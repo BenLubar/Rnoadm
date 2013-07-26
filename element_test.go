@@ -68,3 +68,31 @@ func TestElements(t *testing.T) {
 		}
 	}
 }
+
+func TestWeaknesses(t *testing.T) {
+	seen := make(map[Element]bool, elementCount)
+	seen[Nature] = true
+	seen[Chaotic] = true
+
+	x := Air
+	for {
+		y, ok := weakness[x]
+		if !ok {
+			t.Fatalf("Element %v has no weakness", x)
+		}
+		if seen[y] {
+			t.Fatalf("Element %v is used by multiple weaknesses", y)
+		}
+		seen[y] = true
+		if y == Air {
+			break
+		}
+		x = y
+	}
+
+	for i := Element(0); i < elementCount; i++ {
+		if !seen[i] {
+			t.Errorf("Element %v does not have a weakness in the loop", i)
+		}
+	}
+}
