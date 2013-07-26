@@ -42,6 +42,7 @@ func zoneFilename(x, y int64) string {
 }
 
 type Zone struct {
+	Seed    RandomSource
 	X, Y    int64
 	Element Element
 	Tiles   [zoneTiles]Tile
@@ -58,17 +59,23 @@ func (z *Zone) Tile(x, y uint8) *Tile {
 	return &z.Tiles[rowOffset[y]+int(x-zoneOffset[y])]
 }
 
+func (z *Zone) Rand() *rand.Rand {
+	return rand.New(&z.Seed)
+}
+
 func (z *Zone) Generate() {
+	z.Seed.Seed(Seed ^ z.X ^ int64(uint64(z.Y)<<32|uint64(z.Y)>>32))
+	r := z.Rand()
 	z.Element = Nature
-	for i := rand.Intn(100); i > 0; i-- {
-		x := rand.Float64()*192 + 32
-		y := rand.Float64()*192 + 32
-		rock := z.Element.Linked().Rock()
+	for i := r.Intn(100); i > 0; i-- {
+		x := r.Float64()*192 + 32
+		y := r.Float64()*192 + 32
+		rock := z.Element.Linked(r).Rock(r)
 
 		for j := 0; j < 40; j++ {
-			r := rand.Float64() * 4
-			theta := rand.Float64() * 2 * math.Pi
-			tile := z.Tile(uint8(x+r*math.Cos(theta)), uint8(y+r*math.Sin(theta)))
+			radius := r.Float64() * 4
+			theta := r.Float64() * 2 * math.Pi
+			tile := z.Tile(uint8(x+radius*math.Cos(theta)), uint8(y+radius*math.Sin(theta)))
 
 			if !tile.Blocked() {
 				tile.Add(&Rock{

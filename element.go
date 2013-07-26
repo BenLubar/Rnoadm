@@ -160,12 +160,12 @@ func init() {
 	}
 }
 
-func (e Element) Linked() Element {
+func (e Element) Linked(r *rand.Rand) Element {
 	if e == Chaotic {
-		return Element(rand.Intn(int(elementCount)))
+		return Element(r.Intn(int(elementCount)))
 	}
 	el := elements[e].Links
-	i := rand.Intn(len(el) + 3)
+	i := r.Intn(len(el) + 3)
 	if i == len(el) {
 		return Nature
 	}
@@ -176,10 +176,10 @@ func (e Element) Linked() Element {
 
 }
 
-func (e Element) Rock() RockType {
+func (e Element) Rock(r *rand.Rand) RockType {
 	rocks := elements[e].Rocks
 	if len(rocks) == 0 {
-		return Nature.Rock()
+		return Nature.Rock(r)
 	}
-	return rocks[rand.Intn(len(rocks))]
+	return rocks[r.Intn(len(rocks))]
 }

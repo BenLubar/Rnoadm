@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"math/rand"
 	"time"
 
@@ -63,8 +64,12 @@ func paint() {
 var CurrentZone *Zone
 var CameraX, CameraY uint8 = 127, 127
 
+var Seed int64
+
 func main() {
-	rand.Seed(time.Now().UnixNano())
+	flag.Int64Var(&Seed, "seed", time.Now().UnixNano(), "the world seed (default: the number of nanoseconds since midnight UTC on 1970-01-01)")
+
+	flag.Parse()
 
 	if err := termbox.Init(); err != nil {
 		panic(err)
