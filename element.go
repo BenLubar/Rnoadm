@@ -45,97 +45,97 @@ var elements [elementCount]*element
 func init() {
 	air = element{
 		Name:  "Air",
-		Links: []*element{&smoke, &dust, &mist},
+		Links: []*element{&smoke, &dust, &mist, &nature},
 	}
 	elements[Air] = &air
 	earth = element{
 		Name:  "Earth",
-		Links: []*element{&dust, &mud, &lava},
+		Links: []*element{&dust, &mud, &lava, &nature},
 	}
 	elements[Earth] = &earth
 	fire = element{
 		Name:  "Fire",
-		Links: []*element{&smoke, &lava, &steam},
+		Links: []*element{&smoke, &lava, &steam, &nature},
 	}
 	elements[Fire] = &fire
 	ice = element{
 		Name:  "Ice",
-		Links: []*element{&water, &mist},
+		Links: []*element{&water, &mist, &nature},
 	}
 	elements[Ice] = &ice
 	nature = element{
 		Name:  "Nature",
-		Links: []*element{&earth, &air, &water},
+		Links: []*element{}, //special: all elements contain nature
 	}
 	elements[Nature] = &nature
 	dust = element{
 		Name:  "Dust",
-		Links: []*element{&earth, &air},
+		Links: []*element{&earth, &air, &nature}, 
 	}
 	elements[Dust] = &dust
 	lava = element{
 		Name:  "Lava",
-		Links: []*element{&earth, &fire},
+		Links: []*element{&earth, &fire, &nature},
 	}
 	elements[Lava] = &lava
 	water = element{
 		Name:  "Water",
-		Links: []*element{&mist, &steam, &mud, &ice},
+		Links: []*element{&mist, &steam, &mud, &ice, &nature},
 	}
 	elements[Water] = &water
 	steam = element{
 		Name:  "Steam",
-		Links: []*element{&water, &fire},
+		Links: []*element{&water, &fire, &nature},
 	}
 	elements[Steam] = &steam
 	mist = element{
 		Name:  "Mist",
-		Links: []*element{&air, &water},
+		Links: []*element{&air, &water, &nature},
 	}
 	elements[Mist] = &mist
 	smoke = element{
 		Name:  "Smoke",
-		Links: []*element{&air, &fire},
+		Links: []*element{&air, &fire, &nature},
 	}
 	elements[Smoke] = &smoke
 	mud = element{
 		Name:  "Mud",
-		Links: []*element{&water, &earth},
+		Links: []*element{&water, &earth, &nature},
 	}
 	elements[Mud] = &mud
 	time_ = element{
 		Name:  "Time",
-		Links: []*element{&earth, &gravity, &void},
+		Links: []*element{&earth, &gravity, &void, &nature},
 	}
 	elements[Time] = &time_
 	gravity = element{
 		Name:  "Gravity",
-		Links: []*element{&earth, &water, &time_},
+		Links: []*element{&earth, &water, &time_, &nature},
 	}
 	elements[Gravity] = &gravity
 	electric = element{
 		Name:  "Electric",
-		Links: []*element{&air, &light, &void},
+		Links: []*element{&air, &light, &void, &nature},
 	}
 	elements[Electric] = &electric
 	light = element{
 		Name:  "Light",
-		Links: []*element{&air, &water, &electric},
+		Links: []*element{&air, &water, &electric, $spiritual, &nature},
 	}
 	elements[Light] = &light
 	dark = element{
 		Name:  "Dark",
-		Links: []*element{&fire, &smoke, &void},
+		Links: []*element{&fire, &smoke, &void, &spiritual, &nature},
 	}
 	elements[Dark] = &dark
 	void = element{
 		Name:  "Void",
-		Links: []*element{&dark, &time_, &illusion},
+		Links: []*element{&dark, &time_, &illusion, &nature},
 	}
 	elements[Void] = &void
 	spiritual = element{
 		Name:  "Spiritual",
-		Links: []*element{&air, &mist, &time_},
+		Links: []*element{&air, &mist, &time_, &nature},
 	}
 	elements[Spiritual] = &spiritual
 	chaotic = element{
@@ -145,7 +145,7 @@ func init() {
 	elements[Chaotic] = &chaotic
 	illusion = element{
 		Name:  "Illusion",
-		Links: []*element{&void, &time_, &gravity},
+		Links: []*element{&void, &time_, &gravity, &nature},
 	}
 	elements[Illusion] = &illusion
 }
