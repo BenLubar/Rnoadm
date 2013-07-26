@@ -28,55 +28,72 @@ const (
 )
 
 var rockTypeInfo = [rockTypeCount]struct {
-	Name string
+	Name  string
+	Color termbox.Attribute
 }{
 	Coal: {
-		Name: "coal",
+		Name:  "coal",
+		Color: termbox.ColorBlue,
 	},
 	Iron: {
-		Name: "iron",
+		Name:  "iron",
+		Color: termbox.ColorRed,
 	},
 	Granite: {
-		Name: "granite",
+		Name:  "granite",
+		Color: termbox.ColorCyan,
 	},
 	Quartz: {
-		Name: "quartz",
+		Name:  "quartz",
+		Color: termbox.ColorWhite,
 	},
 	Limestone: {
-		Name: "limestone",
+		Name:  "limestone",
+		Color: termbox.ColorCyan,
 	},
 	Sandstone: {
-		Name: "sandstone",
+		Name:  "sandstone",
+		Color: termbox.ColorYellow,
 	},
 	Obsidian: {
-		Name: "obsidian",
+		Name:  "obsidian",
+		Color: termbox.ColorBlue,
 	},
 	Diamond: {
-		Name: "diamond",
+		Name:  "diamond",
+		Color: termbox.ColorWhite,
 	},
 	Plastic: {
-		Name: "plastic",
+		Name:  "plastic",
+		Color: termbox.ColorMagenta,
 	},
 	Empty: {
-		Name: "empty",
+		Name:  "empty",
+		Color: termbox.ColorBlue,
 	},
 	Vorpal: {
-		Name: "vorpal",
+		Name:  "vorpal",
+		Color: termbox.ColorMagenta,
 	},
 	Wabe: {
-		Name: "wabe",
+		Name:  "wabe",
+		Color: termbox.ColorGreen,
 	},
 	Molten: {
-		Name: "molten",
+		Name:  "molten",
+		Color: termbox.ColorRed,
 	},
 	Sand: {
-		Name: "sand",
+		Name:  "sand",
+		Color: termbox.ColorYellow,
 	},
 	Carbonite: {
-		Name: "carbonite",
+		Name:  "carbonite",
+		Color: termbox.ColorBlue,
 	},
 	Helium: {
-		Name: "helium",
+		Name:  "helium",
+		Color: termbox.ColorWhite,
 	},
 }
 
@@ -93,7 +110,7 @@ func (r *Rock) Examine() string {
 }
 
 func (r *Rock) Paint() (rune, termbox.Attribute) {
-	return '\u25B2', termbox.ColorWhite
+	return '\u25B2', rockTypeInfo[r.Type].Color
 }
 
 func (r *Rock) Blocking() bool {

@@ -63,6 +63,7 @@ func (z *Zone) Generate() {
 	for i := rand.Intn(100); i > 0; i-- {
 		x := rand.Float64()*192 + 32
 		y := rand.Float64()*192 + 32
+		rock := z.Element.Linked().Rock()
 
 		for j := 0; j < 40; j++ {
 			r := rand.Float64() * 4
@@ -70,7 +71,9 @@ func (z *Zone) Generate() {
 			tile := z.Tile(uint8(x+r*math.Cos(theta)), uint8(y+r*math.Sin(theta)))
 
 			if !tile.Blocked() {
-				tile.Add(&Rock{})
+				tile.Add(&Rock{
+					Type: rock,
+				})
 			}
 		}
 	}
@@ -78,6 +81,7 @@ func (z *Zone) Generate() {
 
 type Tile struct {
 	Objects []Object
+	Ground  rune
 }
 
 func (t *Tile) Add(o Object) {
@@ -97,8 +101,12 @@ func (t *Tile) Blocked() bool {
 }
 
 func (t *Tile) Paint() (rune, termbox.Attribute) {
+	if t.Ground == 0 {
+		const ground = " ,.'-`"
+		t.Ground = rune(ground[rand.Intn(len(ground))])
+	}
 	if len(t.Objects) == 0 {
-		return '.', termbox.ColorWhite
+		return t.Ground, termbox.ColorWhite
 	}
 	return t.Objects[len(t.Objects)-1].Paint()
 }

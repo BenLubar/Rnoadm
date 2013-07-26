@@ -175,3 +175,11 @@ func (e Element) Linked() Element {
 	return el[i]
 
 }
+
+func (e Element) Rock() RockType {
+	rocks := elements[e].Rocks
+	if len(rocks) == 0 {
+		return Nature.Rock()
+	}
+	return rocks[rand.Intn(len(rocks))]
+}
