@@ -38,7 +38,11 @@ func TestElements(t *testing.T) {
 			} else {
 				name = " (" + elements[i].Name + ")"
 			}
-			if len(elements[i].Links) == 0 {
+			if elements[i] == &chaotic {
+				if len(chaotic.Links) != 0 {
+					t.Errorf("elements[%d]%s has explicit links (Chaotic)", i, name)
+				}
+			} else if len(elements[i].Links) == 0 {
 				t.Errorf("elements[%d]%s has no links", i, name)
 			}
 			for _, l := range elements[i].Links {
