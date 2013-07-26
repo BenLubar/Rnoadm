@@ -1,16 +1,14 @@
 package main
 
+import (
+	"math/rand"
+)
+
 type element struct {
 	Name  string
-	Links []*element
+	Links []Element
+	Rocks []RockType
 }
-
-var (
-	air, earth, fire, ice, nature              element
-	dust, lava, water, steam, mist, smoke, mud element
-	time_, gravity, electric, light, dark      element
-	void, spiritual, chaotic, illusion         element
-)
 
 type Element uint8
 
@@ -40,7 +38,7 @@ const (
 	elementCount
 )
 
-var elements [elementCount]*element
+var elements [elementCount]element
 var weakness = map[Element]Element{
 	Air:       Mud,
 	Water:     Electric,
@@ -64,109 +62,116 @@ var weakness = map[Element]Element{
 }
 
 func init() {
-	air = element{
+	elements[Air] = element{
 		Name:  "Air",
-		Links: []*element{&smoke, &dust, &mist},
+		Links: []Element{Smoke, Dust, Mist},
+		Rocks: []RockType{Helium},
 	}
-	elements[Air] = &air
-	earth = element{
+	elements[Earth] = element{
 		Name:  "Earth",
-		Links: []*element{&dust, &mud, &lava},
+		Links: []Element{Dust, Mud, Lava},
 	}
-	elements[Earth] = &earth
-	fire = element{
+	elements[Fire] = element{
 		Name:  "Fire",
-		Links: []*element{&smoke, &lava, &steam},
+		Links: []Element{Smoke, Lava, Steam},
+		Rocks: []RockType{Molten},
 	}
-	elements[Fire] = &fire
-	ice = element{
+	elements[Ice] = element{
 		Name:  "Ice",
-		Links: []*element{&water, &mist},
+		Links: []Element{Water, Mist},
+		Rocks: []RockType{Carbonite},
 	}
-	elements[Ice] = &ice
-	nature = element{
+	elements[Nature] = element{
 		Name:  "Nature",
-		Links: []*element{&air, &water, &earth},
+		Links: []Element{Air, Water, Earth},
+		Rocks: []RockType{Coal, Iron, Granite, Quartz, Limestone, Sandstone},
 	}
-	elements[Nature] = &nature
-	dust = element{
+	elements[Dust] = element{
 		Name:  "Dust",
-		Links: []*element{&earth, &air},
+		Links: []Element{Earth, Air},
+		Rocks: []RockType{Sand},
 	}
-	elements[Dust] = &dust
-	lava = element{
+	elements[Lava] = element{
 		Name:  "Lava",
-		Links: []*element{&earth, &fire},
+		Links: []Element{Earth, Fire},
+		Rocks: []RockType{Molten, Obsidian},
 	}
-	elements[Lava] = &lava
-	water = element{
+	elements[Water] = element{
 		Name:  "Water",
-		Links: []*element{&mist, &steam, &mud, &ice},
+		Links: []Element{Mist, Steam, Mud, Ice},
 	}
-	elements[Water] = &water
-	steam = element{
+	elements[Steam] = element{
 		Name:  "Steam",
-		Links: []*element{&water, &fire},
+		Links: []Element{Water, Fire},
 	}
-	elements[Steam] = &steam
-	mist = element{
+	elements[Mist] = element{
 		Name:  "Mist",
-		Links: []*element{&air, &water},
+		Links: []Element{Air, Water},
 	}
-	elements[Mist] = &mist
-	smoke = element{
+	elements[Smoke] = element{
 		Name:  "Smoke",
-		Links: []*element{&air, &fire},
+		Links: []Element{Air, Fire},
 	}
-	elements[Smoke] = &smoke
-	mud = element{
+	elements[Mud] = element{
 		Name:  "Mud",
-		Links: []*element{&water, &earth},
+		Links: []Element{Water, Earth},
 	}
-	elements[Mud] = &mud
-	time_ = element{
+	elements[Time] = element{
 		Name:  "Time",
-		Links: []*element{&earth, &gravity, &void},
+		Links: []Element{Earth, Gravity, Void},
+		Rocks: []RockType{Diamond},
 	}
-	elements[Time] = &time_
-	gravity = element{
+	elements[Gravity] = element{
 		Name:  "Gravity",
-		Links: []*element{&earth, &water, &time_},
+		Links: []Element{Earth, Water, Time},
+		Rocks: []RockType{Diamond},
 	}
-	elements[Gravity] = &gravity
-	electric = element{
+	elements[Electric] = element{
 		Name:  "Electric",
-		Links: []*element{&air, &light, &void},
+		Links: []Element{Air, Light, Void},
 	}
-	elements[Electric] = &electric
-	light = element{
+	elements[Light] = element{
 		Name:  "Light",
-		Links: []*element{&air, &water, &electric, &spiritual},
+		Links: []Element{Air, Water, Electric, Spiritual},
+		Rocks: []RockType{Plastic},
 	}
-	elements[Light] = &light
-	dark = element{
+	elements[Dark] = element{
 		Name:  "Dark",
-		Links: []*element{&fire, &smoke, &void, &spiritual},
+		Links: []Element{Fire, Smoke, Void, Spiritual},
+		Rocks: []RockType{Obsidian},
 	}
-	elements[Dark] = &dark
-	void = element{
+	elements[Void] = element{
 		Name:  "Void",
-		Links: []*element{&dark, &time_, &illusion},
+		Links: []Element{Dark, Time, Illusion},
+		Rocks: []RockType{Empty},
 	}
-	elements[Void] = &void
-	spiritual = element{
+	elements[Spiritual] = element{
 		Name:  "Spiritual",
-		Links: []*element{&air, &mist, &time_},
+		Links: []Element{Air, Mist, Time},
 	}
-	elements[Spiritual] = &spiritual
-	chaotic = element{
+	elements[Chaotic] = element{
 		Name: "Chaotic",
 		// Special: Chaotic zones contain all element types.
+		Rocks: []RockType{Vorpal, Wabe},
 	}
-	elements[Chaotic] = &chaotic
-	illusion = element{
+	elements[Illusion] = element{
 		Name:  "Illusion",
-		Links: []*element{&void, &time_, &gravity},
+		Links: []Element{Void, Time, Gravity},
 	}
-	elements[Illusion] = &illusion
+}
+
+func (e Element) Linked() Element {
+	if e == Chaotic {
+		return Element(rand.Intn(int(elementCount)))
+	}
+	el := elements[e].Links
+	i := rand.Intn(len(el) + 3)
+	if i == len(el) {
+		return Nature
+	}
+	if i > len(el) {
+		return e
+	}
+	return el[i]
+
 }

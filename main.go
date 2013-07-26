@@ -74,15 +74,8 @@ func main() {
 	events := make(chan termbox.Event)
 	go pollEvents(events)
 	repaint()
-	CurrentZone = &Zone{X: 0, Y: 0, Element: Nature}
-	for i := uint8(64); i < 192; i++ {
-		CurrentZone.Tile(i, 64).Add(&Wall{})
-		CurrentZone.Tile(i, 191).Add(&Wall{})
-		if i != 64 && i != 191 {
-			CurrentZone.Tile(64, i).Add(&Wall{})
-			CurrentZone.Tile(191, i).Add(&Wall{})
-		}
-	}
+	CurrentZone = &Zone{X: 0, Y: 0}
+	CurrentZone.Generate()
 
 	for {
 		select {

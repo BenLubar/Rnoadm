@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"math"
+	"math/rand"
 
 	"github.com/nsf/termbox-go"
 )
@@ -47,11 +48,7 @@ type Zone struct {
 }
 
 func (z *Zone) Blocked(x, y uint8) bool {
-	tile := z.Tile(x, y)
-	if tile == nil {
-		return true
-	}
-	return tile.Blocked()
+	return z.Tile(x, y).Blocked()
 }
 
 func (z *Zone) Tile(x, y uint8) *Tile {
@@ -59,6 +56,24 @@ func (z *Zone) Tile(x, y uint8) *Tile {
 		return nil
 	}
 	return &z.Tiles[rowOffset[y]+int(x-zoneOffset[y])]
+}
+
+func (z *Zone) Generate() {
+	z.Element = Nature
+	for i := rand.Intn(100); i > 0; i-- {
+		x := rand.Float64()*192 + 32
+		y := rand.Float64()*192 + 32
+
+		for j := 0; j < 40; j++ {
+			r := rand.Float64() * 4
+			theta := rand.Float64() * 2 * math.Pi
+			tile := z.Tile(uint8(x+r*math.Cos(theta)), uint8(y+r*math.Sin(theta)))
+
+			if !tile.Blocked() {
+				tile.Add(&Rock{})
+			}
+		}
+	}
 }
 
 type Tile struct {
@@ -70,6 +85,9 @@ func (t *Tile) Add(o Object) {
 }
 
 func (t *Tile) Blocked() bool {
+	if t == nil {
+		return true
+	}
 	for _, o := range t.Objects {
 		if o.Blocking() {
 			return true
