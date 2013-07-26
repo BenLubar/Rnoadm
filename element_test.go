@@ -4,6 +4,18 @@ import (
 	"testing"
 )
 
+func TestGenerateGraph(t *testing.T) {
+	buf := []byte("https://chart.googleapis.com/chart?cht=gv&chs=800x800&chl=digraph{")
+
+	for _, e := range elements {
+		for _, l := range e.Links {
+			buf = append(append(append(append(buf, ' '), e.Name...), "->"...), l.Name...)
+		}
+	}
+
+	t.Log(string(append(buf, " }"...)))
+}
+
 func TestElements(t *testing.T) {
 	reverse := make(map[*element]Element)
 	for i, e := range elements {
