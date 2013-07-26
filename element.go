@@ -120,7 +120,7 @@ func init() {
 	elements[Electric] = &electric
 	light = element{
 		Name:  "Light",
-		Links: []*element{&air, &water, &electric, $spiritual, &nature},
+		Links: []*element{&air, &water, &electric, &spiritual, &nature},
 	}
 	elements[Light] = &light
 	dark = element{
