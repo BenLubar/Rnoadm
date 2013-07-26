@@ -45,22 +45,22 @@ var elements [elementCount]*element
 func init() {
 	air = element{
 		Name:  "Air",
-		Links: []*element{&smoke, &dust, &mist, &nature},
+		Links: []*element{&smoke, &dust, &mist},
 	}
 	elements[Air] = &air
 	earth = element{
 		Name:  "Earth",
-		Links: []*element{&dust, &mud, &lava, &nature},
+		Links: []*element{&dust, &mud, &lava},
 	}
 	elements[Earth] = &earth
 	fire = element{
 		Name:  "Fire",
-		Links: []*element{&smoke, &lava, &steam, &nature},
+		Links: []*element{&smoke, &lava, &steam},
 	}
 	elements[Fire] = &fire
 	ice = element{
 		Name:  "Ice",
-		Links: []*element{&water, &mist, &nature},
+		Links: []*element{&water, &mist},
 	}
 	elements[Ice] = &ice
 	nature = element{
