@@ -94,4 +94,5 @@ type Object interface {
 
 func init() {
 	gob.Register(Object(&Rock{}))
+	gob.Register(Object(&Wall{}))
 }
