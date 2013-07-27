@@ -98,16 +98,18 @@ func main() {
 		ThePlayer = p
 	}
 	z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
-	defer ReleaseZone(z)
-
 	z.Lock()
 	z.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
 	z.Unlock()
+	// no release as we just added a player
 	defer func() {
 		err := ThePlayer.Save()
 		if err != nil {
 			panic(err)
 		}
+		z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
+		ReleaseZone(z)
+		ReleaseZone(z)
 		EachLoadedZone(func(z *Zone) {
 			err := z.Save()
 			if err != nil {
