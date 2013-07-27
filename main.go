@@ -72,31 +72,6 @@ func paint() {
 	termbox.Flush()
 }
 
-func move(dx, dy int) {
-	for dx+int(ThePlayer.TileX) > 255 {
-		dx--
-	}
-	for dx+int(ThePlayer.TileX) < 0 {
-		dx++
-	}
-	for dy+int(ThePlayer.TileY) > 255 {
-		dy--
-	}
-	for dy+int(ThePlayer.TileY) < 0 {
-		dy++
-	}
-	CurrentZone.Lock()
-	defer CurrentZone.Unlock()
-	if CurrentZone.Blocked(ThePlayer.TileX+uint8(dx), ThePlayer.TileY+uint8(dy)) {
-		return
-	}
-	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Remove(ThePlayer)
-	ThePlayer.TileX += uint8(dx)
-	ThePlayer.TileY += uint8(dy)
-	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
-	repaint()
-}
-
 var CurrentZone *Zone
 var ThePlayer *Player
 
@@ -140,6 +115,8 @@ func main() {
 		}
 	}()
 
+	ticker := time.Tick(time.Second)
+
 	for {
 		select {
 		case event := <-events:
@@ -158,13 +135,13 @@ func main() {
 				if event.Ch != 0 {
 					switch event.Ch {
 					case 'w':
-						move(0, -1)
+						ThePlayer.Move(0, -1)
 					case 'a':
-						move(-1, 0)
+						ThePlayer.Move(-1, 0)
 					case 's':
-						move(0, 1)
+						ThePlayer.Move(0, 1)
 					case 'd':
-						move(1, 0)
+						ThePlayer.Move(1, 0)
 
 					case 'e':
 						HUD = &InteractHUD{Player: ThePlayer}
@@ -179,19 +156,22 @@ func main() {
 
 				switch event.Key {
 				case termbox.KeyArrowLeft:
-					move(-1, 0)
+					ThePlayer.Move(-1, 0)
 				case termbox.KeyArrowRight:
-					move(1, 0)
+					ThePlayer.Move(1, 0)
 				case termbox.KeyArrowUp:
-					move(0, -1)
+					ThePlayer.Move(0, -1)
 				case termbox.KeyArrowDown:
-					move(0, 1)
+					ThePlayer.Move(0, 1)
 
 				default:
 					// TODO: handle more keys
 					return
 				}
 			}
+
+		case <-ticker:
+			CurrentZone.Think()
 
 		case <-shouldPaint:
 			paint()

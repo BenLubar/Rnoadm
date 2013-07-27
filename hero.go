@@ -18,6 +18,36 @@ type Player struct {
 	TileX, TileY uint8
 }
 
+func (p *Player) Move(dx, dy int) {
+	for dx+int(p.TileX) > 255 {
+		dx--
+	}
+	for dx+int(p.TileX) < 0 {
+		dx++
+	}
+	for dy+int(p.TileY) > 255 {
+		dy--
+	}
+	for dy+int(p.TileY) < 0 {
+		dy++
+	}
+	// TODO: multi-zone support
+	CurrentZone.Lock()
+	defer CurrentZone.Unlock()
+	if p.Delay > 0 {
+		return
+	}
+	if CurrentZone.Blocked(p.TileX+uint8(dx), p.TileY+uint8(dy)) {
+		return
+	}
+	CurrentZone.Tile(p.TileX, p.TileY).Remove(p)
+	p.TileX += uint8(dx)
+	p.TileY += uint8(dy)
+	p.Delay = 1
+	CurrentZone.Tile(p.TileX, p.TileY).Add(p)
+	repaint()
+}
+
 func playerFilename(id uint64) string {
 	var buf [binary.MaxVarintLen64]byte
 	i := binary.PutUvarint(buf[:], id)
@@ -74,8 +104,13 @@ func LoadPlayer(id uint64) (*Player, error) {
 	return &p, nil
 }
 
+func (p *Player) Think() {
+	p.think(false)
+}
+
 type Hero struct {
 	Name_ string
+	Delay uint
 }
 
 func (h *Hero) Name() string {
@@ -95,4 +130,15 @@ func (h *Hero) Blocking() bool {
 
 func (h *Hero) Paint() (rune, termbox.Attribute) {
 	return '☻', termbox.ColorWhite
+}
+
+func (h *Hero) Think() {
+	h.think(true)
+}
+
+func (h *Hero) think(ai bool) {
+	if h.Delay > 0 {
+		h.Delay--
+		return
+	}
 }

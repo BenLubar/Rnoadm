@@ -184,6 +184,19 @@ func LoadZone(x, y int64) (*Zone, error) {
 	return &z, nil
 }
 
+func (z *Zone) Think() {
+	z.Lock()
+	defer z.Unlock()
+
+	for i := range z.Tiles {
+		for _, o := range z.Tiles[i].Objects {
+			if t, ok := o.(Thinker); ok {
+				t.Think()
+			}
+		}
+	}
+}
+
 type Tile struct {
 	Objects []Object
 	Ground  rune
@@ -231,6 +244,10 @@ type Object interface {
 	Examine() string
 	Paint() (rune, termbox.Attribute)
 	Blocking() bool
+}
+
+type Thinker interface {
+	Think()
 }
 
 func init() {
