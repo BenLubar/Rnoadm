@@ -110,7 +110,7 @@ func (r *Rock) Examine() string {
 }
 
 func (r *Rock) Paint() (rune, termbox.Attribute) {
-	return '\u25B2', rockTypeInfo[r.Type].Color
+	return '◊', rockTypeInfo[r.Type].Color
 }
 
 func (r *Rock) Blocking() bool {
