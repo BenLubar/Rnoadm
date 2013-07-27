@@ -95,6 +95,16 @@ func (t *Tile) Add(o Object) {
 	t.Objects = append(t.Objects, o)
 }
 
+func (t *Tile) Remove(o Object) bool {
+	for i := range t.Objects {
+		if t.Objects[i] == o {
+			t.Objects = append(t.Objects[:i], t.Objects[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 func (t *Tile) Blocked() bool {
 	if t == nil {
 		return true
@@ -128,4 +138,6 @@ type Object interface {
 func init() {
 	gob.Register(Object(&Rock{}))
 	gob.Register(Object(&Wall{}))
+	gob.Register(Object(&Hero{}))
+	// Players are removed from Zones before saving.
 }

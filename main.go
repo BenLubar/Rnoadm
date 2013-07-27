@@ -24,10 +24,10 @@ func paint() {
 
 	w, h := termbox.Size()
 
-	camX := int(CameraX)
-	camY := int(CameraY)
+	camX := int(ThePlayer.TileX)
+	camY := int(ThePlayer.TileY)
 
-	termbox.SetCursor(w/2, h/2)
+	termbox.SetCursor(-1, -1)
 
 	for x := 0; x < w; x++ {
 		xCoord := x - w/2 + camX
@@ -61,8 +61,32 @@ func paint() {
 	termbox.Flush()
 }
 
+func move(dx, dy int) {
+	for dx+int(ThePlayer.TileX) > 255 {
+		dx--
+	}
+	for dx+int(ThePlayer.TileX) < 0 {
+		dx++
+	}
+	for dy+int(ThePlayer.TileY) > 255 {
+		dy--
+	}
+	for dy+int(ThePlayer.TileY) < 0 {
+		dy++
+	}
+	if CurrentZone.Blocked(ThePlayer.TileX+uint8(dx), ThePlayer.TileY+uint8(dy)) {
+		// TODO: interact with object
+		return
+	}
+	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Remove(ThePlayer)
+	ThePlayer.TileX += uint8(dx)
+	ThePlayer.TileY += uint8(dy)
+	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
+	repaint()
+}
+
 var CurrentZone *Zone
-var CameraX, CameraY uint8 = 127, 127
+var ThePlayer *Player
 
 var Seed int64
 
@@ -81,6 +105,8 @@ func main() {
 	repaint()
 	CurrentZone = &Zone{X: 0, Y: 0}
 	CurrentZone.Generate()
+	ThePlayer = &Player{TileX: 127, TileY: 127}
+	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
 
 	for {
 		select {
@@ -95,25 +121,13 @@ func main() {
 			case termbox.EventKey:
 				switch event.Key {
 				case termbox.KeyArrowLeft:
-					if CameraX != 0 && !CurrentZone.Blocked(CameraX-1, CameraY) {
-						CameraX--
-						repaint()
-					}
+					move(-1, 0)
 				case termbox.KeyArrowRight:
-					if CameraX != 255 && !CurrentZone.Blocked(CameraX+1, CameraY) {
-						CameraX++
-						repaint()
-					}
+					move(1, 0)
 				case termbox.KeyArrowUp:
-					if CameraY != 0 && !CurrentZone.Blocked(CameraX, CameraY-1) {
-						CameraY--
-						repaint()
-					}
+					move(0, -1)
 				case termbox.KeyArrowDown:
-					if CameraY != 255 && !CurrentZone.Blocked(CameraX, CameraY+1) {
-						CameraY++
-						repaint()
-					}
+					move(0, 1)
 
 				default:
 					// TODO: handle more keys
