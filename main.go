@@ -18,6 +18,10 @@ func repaint() {
 }
 
 var titlePerm []int
+var HUD interface {
+	Paint()
+	Key(termbox.Event) bool
+}
 
 func paint() {
 	termbox.Clear(termbox.ColorWhite, termbox.ColorBlack)
@@ -59,6 +63,10 @@ func paint() {
 	termbox.SetCell(w/2+2, h/4, 'm', termbox.ColorWhite|termbox.AttrBold, termbox.ColorBlack)
 	for i, j := range titlePerm {
 		termbox.SetCell(w/2-2+i, h/4, rune("ando"[j]), termbox.ColorWhite|termbox.AttrBold, termbox.ColorBlack)
+	}
+
+	if HUD != nil {
+		HUD.Paint()
 	}
 
 	termbox.Flush()
@@ -135,6 +143,32 @@ func main() {
 				repaint()
 
 			case termbox.EventKey:
+				if HUD != nil && HUD.Key(event) {
+					break
+				}
+
+				if event.Ch != 0 {
+					switch event.Ch {
+					case 'w':
+						move(0, -1)
+					case 'a':
+						move(-1, 0)
+					case 's':
+						move(0, 1)
+					case 'd':
+						move(1, 0)
+
+					case 'e':
+						HUD = &InteractHUD{Player: ThePlayer}
+						repaint()
+
+					default:
+						// TODO: handle more keys
+						return
+					}
+					break
+				}
+
 				switch event.Key {
 				case termbox.KeyArrowLeft:
 					move(-1, 0)
@@ -161,4 +195,101 @@ func pollEvents(ch chan<- termbox.Event) {
 	for {
 		ch <- termbox.PollEvent()
 	}
+}
+
+type InteractHUD struct {
+	Player       *Player
+	TileX, TileY uint8
+	Objects      []Object
+	Offset       int
+}
+
+func (h *InteractHUD) Paint() {
+	if h.Player.TileX != h.TileX || h.Player.TileY != h.TileY || h.Objects == nil {
+		h.TileX, h.TileY = h.Player.TileX, h.Player.TileY
+		minX := h.TileX - 1
+		if minX == 255 {
+			minX = 0
+		}
+		maxX := h.TileX + 1
+		if maxX == 0 {
+			maxX = 255
+		}
+		minY := h.TileY - 1
+		if minY == 255 {
+			minY = 0
+		}
+		maxY := h.TileY + 1
+		if maxY == 0 {
+			maxY = 255
+		}
+		var objects []Object
+		for x := minX; x >= minX && x <= maxX; x++ {
+			for y := minY; y >= minY && y <= maxY; y++ {
+				objects = append(objects, CurrentZone.Tile(x, y).Objects...)
+			}
+		}
+		h.Objects = objects
+		h.Offset = 0
+	}
+	const keys = "12345678"
+	for i, o := range h.Objects[h.Offset:] {
+		if i >= len(keys) {
+			break
+		}
+		termbox.SetCell(0, i, rune(keys[i]), termbox.AttrBold|termbox.AttrReverse, 0)
+		termbox.SetCell(1, i, ' ', termbox.AttrReverse, 0)
+		j := 1
+		for _, r := range o.Name() {
+			j++
+			termbox.SetCell(j, i, r, termbox.AttrReverse, 0)
+		}
+	}
+	if h.Offset > 0 {
+		termbox.SetCell(0, 8, '9', termbox.AttrBold|termbox.AttrReverse, 0)
+		termbox.SetCell(1, 8, ' ', termbox.AttrReverse, 0)
+		j := 1
+		for _, r := range "previous" {
+			j++
+			termbox.SetCell(j, 8, r, termbox.AttrReverse, 0)
+		}
+	}
+	if len(h.Objects) > h.Offset+len(keys) {
+		termbox.SetCell(0, 9, '0', termbox.AttrBold|termbox.AttrReverse, 0)
+		termbox.SetCell(1, 9, ' ', termbox.AttrReverse, 0)
+		j := 1
+		for _, r := range "next" {
+			j++
+			termbox.SetCell(j, 9, r, termbox.AttrReverse, 0)
+		}
+	}
+}
+
+func (h *InteractHUD) Key(e termbox.Event) bool {
+	switch e.Ch {
+	case '1', '2', '3', '4', '5', '6', '7', '8':
+		// TODO
+		return true
+	case '9':
+		if h.Offset > 0 {
+			h.Offset--
+			repaint()
+		}
+		return true
+	case '0':
+		if h.Offset+8 < len(h.Objects) {
+			h.Offset++
+			repaint()
+		}
+		return true
+
+	case 0:
+		switch e.Key {
+		case termbox.KeyEsc:
+			HUD = nil
+			repaint()
+			return true
+		}
+	}
+	return false
 }
