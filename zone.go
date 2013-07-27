@@ -1,11 +1,15 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/base32"
 	"encoding/binary"
 	"encoding/gob"
 	"math"
 	"math/rand"
+	"os"
+	"path/filepath"
+	"sync"
 
 	"github.com/nsf/termbox-go"
 )
@@ -28,6 +32,18 @@ func init() {
 	}
 }
 
+func seedFilename() string {
+	var buf [binary.MaxVarintLen64]byte
+	i := binary.PutVarint(buf[:], Seed)
+	encoded := base32.StdEncoding.EncodeToString(buf[:i])
+
+	l := len(encoded)
+	for encoded[l-1] == '=' {
+		l--
+	}
+	return "rnoadm-" + encoded[:l]
+}
+
 func zoneFilename(x, y int64) string {
 	var buf [binary.MaxVarintLen64 * 2]byte
 	i := binary.PutVarint(buf[:], x)
@@ -46,6 +62,15 @@ type Zone struct {
 	X, Y    int64
 	Element Element
 	Tiles   [zoneTiles]Tile
+	mtx     sync.Mutex
+}
+
+func (z *Zone) Lock() {
+	z.mtx.Lock()
+}
+
+func (z *Zone) Unlock() {
+	z.mtx.Unlock()
 }
 
 func (z *Zone) Blocked(x, y uint8) bool {
@@ -64,6 +89,9 @@ func (z *Zone) Rand() *rand.Rand {
 }
 
 func (z *Zone) Generate() {
+	z.Lock()
+	defer z.Unlock()
+
 	z.Seed.Seed(Seed ^ z.X ^ int64(uint64(z.Y)<<32|uint64(z.Y)>>32))
 	r := z.Rand()
 	z.Element = Nature
@@ -87,6 +115,78 @@ func (z *Zone) Generate() {
 			}
 		}
 	}
+}
+
+func (z *Zone) Save() error {
+	players := make(map[int][]*Player)
+
+	z.Lock()
+	defer z.Unlock()
+
+	// remove players before saving
+	for i := range z.Tiles {
+		for j := 0; j < len(z.Tiles[i].Objects); j++ {
+			if p, ok := z.Tiles[i].Objects[j].(*Player); ok {
+				z.Tiles[i].Objects = append(z.Tiles[i].Objects[:j], z.Tiles[i].Objects[j+1:]...)
+				players[i] = append(players[i], p)
+			}
+		}
+	}
+	defer func() {
+		// add players back in
+		for i, l := range players {
+			for _, p := range l {
+				z.Tiles[i].Add(p)
+			}
+		}
+	}()
+
+	dir := seedFilename()
+	os.MkdirAll(dir, 0755)
+
+	f, err := os.Create(filepath.Join(dir, zoneFilename(z.X, z.Y)))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	g, err := gzip.NewWriterLevel(f, gzip.BestCompression)
+	if err != nil {
+		return err
+	}
+	defer g.Close()
+
+	e := gob.NewEncoder(g)
+	err = e.Encode(z)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func LoadZone(x, y int64) (*Zone, error) {
+	dir := seedFilename()
+
+	f, err := os.Open(filepath.Join(dir, zoneFilename(x, y)))
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	g, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, err
+	}
+	defer g.Close()
+
+	d := gob.NewDecoder(g)
+	var z Zone
+	err = d.Decode(&z)
+	if err != nil {
+		return nil, err
+	}
+	return &z, nil
 }
 
 type Tile struct {

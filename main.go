@@ -29,6 +29,9 @@ func paint() {
 
 	termbox.SetCursor(-1, -1)
 
+	CurrentZone.Lock()
+	defer CurrentZone.Unlock()
+
 	for x := 0; x < w; x++ {
 		xCoord := x - w/2 + camX
 		if xCoord < 0 || xCoord > 255 {
@@ -74,8 +77,9 @@ func move(dx, dy int) {
 	for dy+int(ThePlayer.TileY) < 0 {
 		dy++
 	}
+	CurrentZone.Lock()
+	defer CurrentZone.Unlock()
 	if CurrentZone.Blocked(ThePlayer.TileX+uint8(dx), ThePlayer.TileY+uint8(dy)) {
-		// TODO: interact with object
 		return
 	}
 	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Remove(ThePlayer)
@@ -103,10 +107,22 @@ func main() {
 	events := make(chan termbox.Event)
 	go pollEvents(events)
 	repaint()
-	CurrentZone = &Zone{X: 0, Y: 0}
-	CurrentZone.Generate()
+	if z, err := LoadZone(0, 0); err != nil {
+		CurrentZone = &Zone{X: 0, Y: 0}
+		CurrentZone.Generate()
+	} else {
+		CurrentZone = z
+	}
 	ThePlayer = &Player{TileX: 127, TileY: 127}
+	CurrentZone.Lock()
 	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
+	CurrentZone.Unlock()
+	defer func() {
+		err := CurrentZone.Save()
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	for {
 		select {
