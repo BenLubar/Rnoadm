@@ -10,8 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-
-	"github.com/nsf/termbox-go"
 )
 
 const root3 = 1.7320508075688772935274463415058723669428052538103806
@@ -247,6 +245,13 @@ func (z *Zone) Think() {
 			}
 		}
 	}
+	for i := range z.Tiles {
+		for _, o := range z.Tiles[i].Objects {
+			if p, ok := o.(*Player); ok {
+				p.Repaint()
+			}
+		}
+	}
 }
 
 type Tile struct {
@@ -280,13 +285,15 @@ func (t *Tile) Blocked() bool {
 	return false
 }
 
-func (t *Tile) Paint() (rune, termbox.Attribute) {
+type Color string
+
+func (t *Tile) Paint() (rune, Color) {
 	if t.Ground == 0 {
 		const ground = " ,.'-`"
 		t.Ground = rune(ground[rand.Intn(len(ground))])
 	}
 	if len(t.Objects) == 0 {
-		return t.Ground, termbox.ColorWhite
+		return t.Ground, "#fff"
 	}
 	return t.Objects[len(t.Objects)-1].Paint()
 }
@@ -294,7 +301,7 @@ func (t *Tile) Paint() (rune, termbox.Attribute) {
 type Object interface {
 	Name() string
 	Examine() string
-	Paint() (rune, termbox.Attribute)
+	Paint() (rune, Color)
 	Blocking() bool
 }
 

@@ -1,9 +1,5 @@
 package main
 
-import (
-	"github.com/nsf/termbox-go"
-)
-
 type Wall struct {
 }
 
@@ -15,8 +11,8 @@ func (w *Wall) Examine() string {
 	return "a wall"
 }
 
-func (w *Wall) Paint() (rune, termbox.Attribute) {
-	return '\u2588', termbox.ColorWhite
+func (w *Wall) Paint() (rune, Color) {
+	return '\u2588', "#fff"
 }
 
 func (w *Wall) Blocking() bool {

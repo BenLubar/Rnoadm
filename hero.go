@@ -7,8 +7,6 @@ import (
 	"encoding/gob"
 	"os"
 	"path/filepath"
-
-	"github.com/nsf/termbox-go"
 )
 
 type Player struct {
@@ -16,6 +14,11 @@ type Player struct {
 	Hero
 	ZoneX, ZoneY int64
 	TileX, TileY uint8
+	hud          interface {
+		Paint(func(int, int, rune, Color))
+		Key(int) bool
+	}
+	repaint chan struct{}
 }
 
 func (p *Player) Move(dx, dy int) {
@@ -72,6 +75,7 @@ func (p *Player) Move(dx, dy int) {
 				p.TileY = 64
 			}
 		}
+		p.Save()
 		z = GrabZone(p.ZoneX, p.ZoneY)
 		GrabZone(p.ZoneX, p.ZoneY) // player has entered zone
 		z.Lock()
@@ -81,7 +85,6 @@ func (p *Player) Move(dx, dy int) {
 	}
 	p.Delay = 1
 	z.Tile(p.TileX, p.TileY).Add(p)
-	repaint()
 	z.Unlock()
 	ReleaseZone(z)
 }
@@ -139,7 +142,15 @@ func LoadPlayer(id uint64) (*Player, error) {
 	if err != nil {
 		return nil, err
 	}
+	p.repaint = make(chan struct{}, 1)
 	return &p, nil
+}
+
+func (p *Player) Repaint() {
+	select {
+	case p.repaint <- struct{}{}:
+	default:
+	}
 }
 
 func (p *Player) Think() {
@@ -166,8 +177,8 @@ func (h *Hero) Blocking() bool {
 	return false
 }
 
-func (h *Hero) Paint() (rune, termbox.Attribute) {
-	return '☻', termbox.ColorWhite
+func (h *Hero) Paint() (rune, Color) {
+	return '☻', "#fff"
 }
 
 func (h *Hero) Think() {

@@ -2,80 +2,10 @@ package main
 
 import (
 	"flag"
-	"math/rand"
+	"log"
+	"net/http"
 	"time"
-
-	"github.com/nsf/termbox-go"
 )
-
-var shouldPaint = make(chan struct{}, 1)
-
-func repaint() {
-	select {
-	case shouldPaint <- struct{}{}:
-	default:
-	}
-}
-
-var titlePerm []int
-var HUD interface {
-	Paint()
-	Key(termbox.Event) bool
-}
-
-func paint() {
-	termbox.Clear(termbox.ColorWhite, termbox.ColorBlack)
-
-	w, h := termbox.Size()
-
-	camX := int(ThePlayer.TileX)
-	camY := int(ThePlayer.TileY)
-
-	termbox.SetCursor(-1, -1)
-
-	z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
-	z.Lock()
-
-	for x := 0; x < w; x++ {
-		xCoord := x - w/2 + camX
-		if xCoord < 0 || xCoord > 255 {
-			continue
-		}
-		x8 := uint8(xCoord)
-		for y := 0; y < h; y++ {
-			yCoord := y - h/2 + camY
-			if yCoord < 0 || yCoord > 255 {
-				continue
-			}
-			y8 := uint8(yCoord)
-			if tile := z.Tile(x8, y8); tile != nil {
-				r, fg := tile.Paint()
-				bg := termbox.ColorBlack
-				termbox.SetCell(x, y, r, fg, bg)
-			}
-		}
-	}
-
-	z.Unlock()
-	ReleaseZone(z)
-
-	if titlePerm == nil {
-		titlePerm = rand.Perm(4)
-	}
-	termbox.SetCell(w/2-3, h/4, 'R', termbox.ColorWhite|termbox.AttrBold, termbox.ColorBlack)
-	termbox.SetCell(w/2+2, h/4, 'm', termbox.ColorWhite|termbox.AttrBold, termbox.ColorBlack)
-	for i, j := range titlePerm {
-		termbox.SetCell(w/2-2+i, h/4, rune("ando"[j]), termbox.ColorWhite|termbox.AttrBold, termbox.ColorBlack)
-	}
-
-	if HUD != nil {
-		HUD.Paint()
-	}
-
-	termbox.Flush()
-}
-
-var ThePlayer *Player
 
 var Seed int64
 
@@ -84,109 +14,25 @@ func main() {
 
 	flag.Parse()
 
-	if err := termbox.Init(); err != nil {
-		panic(err)
-	}
-	defer termbox.Close()
-
-	events := make(chan termbox.Event)
-	go pollEvents(events)
-	repaint()
-	if p, err := LoadPlayer(0); err != nil {
-		ThePlayer = &Player{TileX: 127, TileY: 127}
-	} else {
-		ThePlayer = p
-	}
-	z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
-	z.Lock()
-	z.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
-	z.Unlock()
-	// no release as we just added a player
-	defer func() {
-		err := ThePlayer.Save()
-		if err != nil {
-			panic(err)
+	go func() {
+		for _ = range time.Tick(time.Minute) {
+			EachLoadedZone(func(z *Zone) {
+				z.Save()
+			})
 		}
-		z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
-		ReleaseZone(z)
-		ReleaseZone(z)
-		EachLoadedZone(func(z *Zone) {
-			err := z.Save()
-			if err != nil {
-				panic(err)
-			}
-		})
 	}()
 
-	ticker := time.Tick(time.Second)
-
-	for {
-		select {
-		case event := <-events:
-			switch event.Type {
-			case termbox.EventError:
-				panic(event.Err)
-
-			case termbox.EventResize:
-				repaint()
-
-			case termbox.EventKey:
-				if HUD != nil && HUD.Key(event) {
-					break
-				}
-
-				if event.Ch != 0 {
-					switch event.Ch {
-					case 'w':
-						ThePlayer.Move(0, -1)
-					case 'a':
-						ThePlayer.Move(-1, 0)
-					case 's':
-						ThePlayer.Move(0, 1)
-					case 'd':
-						ThePlayer.Move(1, 0)
-
-					case 'e':
-						HUD = &InteractHUD{Player: ThePlayer}
-						repaint()
-
-					default:
-						// TODO: handle more keys
-						return
-					}
-					break
-				}
-
-				switch event.Key {
-				case termbox.KeyArrowLeft:
-					ThePlayer.Move(-1, 0)
-				case termbox.KeyArrowRight:
-					ThePlayer.Move(1, 0)
-				case termbox.KeyArrowUp:
-					ThePlayer.Move(0, -1)
-				case termbox.KeyArrowDown:
-					ThePlayer.Move(0, 1)
-
-				default:
-					// TODO: handle more keys
-					return
-				}
-			}
-
-		case <-ticker:
+	go func() {
+		for _ = range time.Tick(time.Second / 4) {
 			EachLoadedZone(func(z *Zone) {
 				z.Think()
 			})
-
-		case <-shouldPaint:
-			paint()
 		}
-	}
-}
+	}()
 
-func pollEvents(ch chan<- termbox.Event) {
 	for {
-		ch <- termbox.PollEvent()
+		log.Print(http.ListenAndServe(":2064", nil))
+		time.Sleep(time.Second)
 	}
 }
 
@@ -197,7 +43,7 @@ type InteractHUD struct {
 	Offset       int
 }
 
-func (h *InteractHUD) Paint() {
+func (h *InteractHUD) Paint(setcell func(int, int, rune, Color)) {
 	if h.Player.TileX != h.TileX || h.Player.TileY != h.TileY || h.Objects == nil {
 		h.TileX, h.TileY = h.Player.TileX, h.Player.TileY
 		minX := h.TileX - 1
@@ -216,7 +62,7 @@ func (h *InteractHUD) Paint() {
 		if maxY == 0 {
 			maxY = 255
 		}
-		z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
+		z := GrabZone(h.Player.ZoneX, h.Player.ZoneY)
 		z.Lock()
 		var objects []Object
 		for x := minX; x >= minX && x <= maxX; x++ {
@@ -234,59 +80,56 @@ func (h *InteractHUD) Paint() {
 		if i >= len(keys) {
 			break
 		}
-		termbox.SetCell(0, i, rune(keys[i]), termbox.AttrBold|termbox.AttrReverse, 0)
-		termbox.SetCell(1, i, ' ', termbox.AttrReverse, 0)
+		setcell(0, i, rune(keys[i]), "#fff")
+		setcell(1, i, ' ', "#fff")
 		j := 1
 		for _, r := range o.Name() {
 			j++
-			termbox.SetCell(j, i, r, termbox.AttrReverse, 0)
+			setcell(j, i, r, "#fff")
 		}
 	}
 	if h.Offset > 0 {
-		termbox.SetCell(0, 8, '9', termbox.AttrBold|termbox.AttrReverse, 0)
-		termbox.SetCell(1, 8, ' ', termbox.AttrReverse, 0)
+		setcell(0, 8, '9', "#fff")
+		setcell(1, 8, ' ', "#fff")
 		j := 1
 		for _, r := range "previous" {
 			j++
-			termbox.SetCell(j, 8, r, termbox.AttrReverse, 0)
+			setcell(j, 8, r, "#fff")
 		}
 	}
 	if len(h.Objects) > h.Offset+len(keys) {
-		termbox.SetCell(0, 9, '0', termbox.AttrBold|termbox.AttrReverse, 0)
-		termbox.SetCell(1, 9, ' ', termbox.AttrReverse, 0)
+		setcell(0, 9, '0', "#fff")
+		setcell(1, 9, ' ', "#fff")
 		j := 1
 		for _, r := range "next" {
 			j++
-			termbox.SetCell(j, 9, r, termbox.AttrReverse, 0)
+			setcell(j, 9, r, "#fff")
 		}
 	}
 }
 
-func (h *InteractHUD) Key(e termbox.Event) bool {
-	switch e.Ch {
+func (h *InteractHUD) Key(code int) bool {
+	switch code {
 	case '1', '2', '3', '4', '5', '6', '7', '8':
 		// TODO
 		return true
 	case '9':
 		if h.Offset > 0 {
 			h.Offset--
-			repaint()
+			h.Player.Repaint()
 		}
 		return true
 	case '0':
 		if h.Offset+8 < len(h.Objects) {
 			h.Offset++
-			repaint()
+			h.Player.Repaint()
 		}
 		return true
 
-	case 0:
-		switch e.Key {
-		case termbox.KeyEsc:
-			HUD = nil
-			repaint()
-			return true
-		}
+	case 27: // esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
 	}
 	return false
 }

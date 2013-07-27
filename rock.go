@@ -1,9 +1,5 @@
 package main
 
-import (
-	"github.com/nsf/termbox-go"
-)
-
 type RockType uint8
 
 const (
@@ -29,71 +25,71 @@ const (
 
 var rockTypeInfo = [rockTypeCount]struct {
 	Name  string
-	Color termbox.Attribute
+	Color Color
 }{
 	Coal: {
 		Name:  "coal",
-		Color: termbox.ColorBlue,
+		Color: "blue",
 	},
 	Iron: {
 		Name:  "iron",
-		Color: termbox.ColorRed,
+		Color: "red",
 	},
 	Granite: {
 		Name:  "granite",
-		Color: termbox.ColorCyan,
+		Color: "cyan",
 	},
 	Quartz: {
 		Name:  "quartz",
-		Color: termbox.ColorWhite,
+		Color: "white",
 	},
 	Limestone: {
 		Name:  "limestone",
-		Color: termbox.ColorCyan,
+		Color: "cyan",
 	},
 	Sandstone: {
 		Name:  "sandstone",
-		Color: termbox.ColorYellow,
+		Color: "yellow",
 	},
 	Obsidian: {
 		Name:  "obsidian",
-		Color: termbox.ColorBlue,
+		Color: "blue",
 	},
 	Diamond: {
 		Name:  "diamond",
-		Color: termbox.ColorWhite,
+		Color: "white",
 	},
 	Plastic: {
 		Name:  "plastic",
-		Color: termbox.ColorMagenta,
+		Color: "magenta",
 	},
 	Empty: {
 		Name:  "empty",
-		Color: termbox.ColorBlue,
+		Color: "blue",
 	},
 	Vorpal: {
 		Name:  "vorpal",
-		Color: termbox.ColorMagenta,
+		Color: "magenta",
 	},
 	Wabe: {
 		Name:  "wabe",
-		Color: termbox.ColorGreen,
+		Color: "green",
 	},
 	Molten: {
 		Name:  "molten",
-		Color: termbox.ColorRed,
+		Color: "red",
 	},
 	Sand: {
 		Name:  "sand",
-		Color: termbox.ColorYellow,
+		Color: "yellow",
 	},
 	Carbonite: {
 		Name:  "carbonite",
-		Color: termbox.ColorBlue,
+		Color: "blue",
 	},
 	Helium: {
 		Name:  "helium",
-		Color: termbox.ColorWhite,
+		Color: "white",
 	},
 }
 
@@ -109,7 +105,7 @@ func (r *Rock) Examine() string {
 	return "a rock containing " + rockTypeInfo[r.Type].Name + " ore."
 }
 
-func (r *Rock) Paint() (rune, termbox.Attribute) {
+func (r *Rock) Paint() (rune, Color) {
 	return '◊', rockTypeInfo[r.Type].Color
 }
 
