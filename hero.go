@@ -31,20 +31,21 @@ func (p *Player) Move(dx, dy int) {
 	for dy+int(p.TileY) < 0 {
 		dy++
 	}
-	// TODO: multi-zone support
-	CurrentZone.Lock()
-	defer CurrentZone.Unlock()
+	z := GrabZone(p.ZoneX, p.ZoneY)
+	defer ReleaseZone(z)
+	z.Lock()
+	defer z.Unlock()
 	if p.Delay > 0 {
 		return
 	}
-	if CurrentZone.Blocked(p.TileX+uint8(dx), p.TileY+uint8(dy)) {
+	if z.Blocked(p.TileX+uint8(dx), p.TileY+uint8(dy)) {
 		return
 	}
-	CurrentZone.Tile(p.TileX, p.TileY).Remove(p)
+	z.Tile(p.TileX, p.TileY).Remove(p)
 	p.TileX += uint8(dx)
 	p.TileY += uint8(dy)
 	p.Delay = 1
-	CurrentZone.Tile(p.TileX, p.TileY).Add(p)
+	z.Tile(p.TileX, p.TileY).Add(p)
 	repaint()
 }
 

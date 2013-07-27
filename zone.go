@@ -32,6 +32,58 @@ func init() {
 	}
 }
 
+type loadedZone struct {
+	zone *Zone
+	ref  uint
+}
+
+var loadedZones = make(map[[2]int64]*loadedZone)
+var loadedZoneLock sync.Mutex
+
+func GrabZone(x, y int64) *Zone {
+	loadedZoneLock.Lock()
+	defer loadedZoneLock.Unlock()
+
+	if z, ok := loadedZones[[2]int64{x, y}]; ok {
+		z.ref++
+		return z.zone
+	}
+
+	z, err := LoadZone(x, y)
+	if err != nil {
+		z = &Zone{X: x, Y: y}
+		z.Generate()
+	}
+
+	loadedZones[[2]int64{x, y}] = &loadedZone{
+		zone: z,
+		ref:  1,
+	}
+	return z
+}
+
+func ReleaseZone(z *Zone) {
+	loadedZoneLock.Lock()
+	defer loadedZoneLock.Unlock()
+
+	l := loadedZones[[2]int64{z.X, z.Y}]
+	l.ref--
+	if l.ref == 0 {
+		l.zone.Save()
+		delete(loadedZones, [2]int64{z.X, z.Y})
+	}
+}
+
+func EachLoadedZone(f func(*Zone)) {
+	loadedZoneLock.Lock()
+	for _, z := range loadedZones {
+		loadedZoneLock.Unlock()
+		f(z.zone)
+		loadedZoneLock.Lock()
+	}
+	loadedZoneLock.Unlock()
+}
+
 func seedFilename() string {
 	var buf [binary.MaxVarintLen64]byte
 	i := binary.PutVarint(buf[:], Seed)

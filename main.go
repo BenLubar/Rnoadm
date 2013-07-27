@@ -33,8 +33,8 @@ func paint() {
 
 	termbox.SetCursor(-1, -1)
 
-	CurrentZone.Lock()
-	defer CurrentZone.Unlock()
+	z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
+	z.Lock()
 
 	for x := 0; x < w; x++ {
 		xCoord := x - w/2 + camX
@@ -48,13 +48,16 @@ func paint() {
 				continue
 			}
 			y8 := uint8(yCoord)
-			if tile := CurrentZone.Tile(x8, y8); tile != nil {
+			if tile := z.Tile(x8, y8); tile != nil {
 				r, fg := tile.Paint()
 				bg := termbox.ColorBlack
 				termbox.SetCell(x, y, r, fg, bg)
 			}
 		}
 	}
+
+	z.Unlock()
+	ReleaseZone(z)
 
 	if titlePerm == nil {
 		titlePerm = rand.Perm(4)
@@ -72,7 +75,6 @@ func paint() {
 	termbox.Flush()
 }
 
-var CurrentZone *Zone
 var ThePlayer *Player
 
 var Seed int64
@@ -90,29 +92,28 @@ func main() {
 	events := make(chan termbox.Event)
 	go pollEvents(events)
 	repaint()
-	if z, err := LoadZone(0, 0); err != nil {
-		CurrentZone = &Zone{X: 0, Y: 0}
-		CurrentZone.Generate()
-	} else {
-		CurrentZone = z
-	}
 	if p, err := LoadPlayer(0); err != nil {
 		ThePlayer = &Player{TileX: 127, TileY: 127}
 	} else {
 		ThePlayer = p
 	}
-	CurrentZone.Lock()
-	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
-	CurrentZone.Unlock()
+	z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
+	defer ReleaseZone(z)
+
+	z.Lock()
+	z.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
+	z.Unlock()
 	defer func() {
-		err := CurrentZone.Save()
+		err := ThePlayer.Save()
 		if err != nil {
 			panic(err)
 		}
-		err = ThePlayer.Save()
-		if err != nil {
-			panic(err)
-		}
+		EachLoadedZone(func(z *Zone) {
+			err := z.Save()
+			if err != nil {
+				panic(err)
+			}
+		})
 	}()
 
 	ticker := time.Tick(time.Second)
@@ -171,7 +172,9 @@ func main() {
 			}
 
 		case <-ticker:
-			CurrentZone.Think()
+			EachLoadedZone(func(z *Zone) {
+				z.Think()
+			})
 
 		case <-shouldPaint:
 			paint()
@@ -211,12 +214,16 @@ func (h *InteractHUD) Paint() {
 		if maxY == 0 {
 			maxY = 255
 		}
+		z := GrabZone(ThePlayer.ZoneX, ThePlayer.ZoneY)
+		z.Lock()
 		var objects []Object
 		for x := minX; x >= minX && x <= maxX; x++ {
 			for y := minY; y >= minY && y <= maxY; y++ {
-				objects = append(objects, CurrentZone.Tile(x, y).Objects...)
+				objects = append(objects, z.Tile(x, y).Objects...)
 			}
 		}
+		z.Unlock()
+		ReleaseZone(z)
 		h.Objects = objects
 		h.Offset = 0
 	}
