@@ -5,7 +5,7 @@ type RandomSource uint64
 func (s *RandomSource) Int63() int64 {
 	const a = 6364136223846793005
 	const c = 1442695040888963407
-	const sixtythree = 1<<64 - 1
+	const sixtythree = 1<<63 - 1
 
 	// https://en.wikipedia.org/wiki/Linear_congruential_generator
 	*s = a**s + c
