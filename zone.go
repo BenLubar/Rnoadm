@@ -70,7 +70,10 @@ func (z *Zone) Generate() {
 	for i := r.Intn(100); i > 0; i-- {
 		x := r.Float64()*192 + 32
 		y := r.Float64()*192 + 32
-		rock := z.Element.Linked(r).Rock(r)
+		rock, ok := z.Element.Rock(r)
+		if !ok {
+			break
+		}
 
 		for j := 0; j < 40; j++ {
 			radius := r.Float64() * 4

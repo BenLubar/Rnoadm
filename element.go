@@ -176,10 +176,10 @@ func (e Element) Linked(r *rand.Rand) Element {
 
 }
 
-func (e Element) Rock(r *rand.Rand) RockType {
+func (e Element) Rock(r *rand.Rand) (RockType, bool) {
 	rocks := elements[e].Rocks
 	if len(rocks) == 0 {
-		return Nature.Rock(r)
+		return 0, false
 	}
-	return rocks[r.Intn(len(rocks))]
+	return rocks[r.Intn(len(rocks))], true
 }
