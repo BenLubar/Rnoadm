@@ -157,12 +157,7 @@ func (z *Zone) Save() error {
 	defer g.Close()
 
 	e := gob.NewEncoder(g)
-	err = e.Encode(z)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return e.Encode(z)
 }
 
 func LoadZone(x, y int64) (*Zone, error) {

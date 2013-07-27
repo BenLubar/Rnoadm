@@ -121,12 +121,20 @@ func main() {
 	} else {
 		CurrentZone = z
 	}
-	ThePlayer = &Player{TileX: 127, TileY: 127}
+	if p, err := LoadPlayer(0); err != nil {
+		ThePlayer = &Player{TileX: 127, TileY: 127}
+	} else {
+		ThePlayer = p
+	}
 	CurrentZone.Lock()
 	CurrentZone.Tile(ThePlayer.TileX, ThePlayer.TileY).Add(ThePlayer)
 	CurrentZone.Unlock()
 	defer func() {
 		err := CurrentZone.Save()
+		if err != nil {
+			panic(err)
+		}
+		err = ThePlayer.Save()
 		if err != nil {
 			panic(err)
 		}
