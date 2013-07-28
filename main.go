@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"unicode"
 )
 
 var Seed int64
@@ -34,6 +35,34 @@ func main() {
 		log.Print(http.ListenAndServe(":2064", nil))
 		time.Sleep(time.Second)
 	}
+}
+
+type ExamineHUD struct {
+	Player *Player
+	Object Object
+}
+
+func (h *ExamineHUD) Paint(setcell func(int, int, rune, Color)) {
+	i := 0
+	for _, r := range h.Object.Name() {
+		setcell(i, 0, unicode.ToUpper(r), "#fff")
+		i++
+	}
+	i = 0
+	for _, r := range h.Object.Examine() {
+		setcell(i, 1, r, "#fff")
+		i++
+	}
+}
+
+func (h *ExamineHUD) Key(code int) bool {
+	switch code {
+	case 27: // esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	return false
 }
 
 type InteractHUD struct {
@@ -75,35 +104,38 @@ func (h *InteractHUD) Paint(setcell func(int, int, rune, Color)) {
 		h.Objects = objects
 		h.Offset = 0
 	}
+	for i, r := range "EXAMINE" {
+		setcell(i, 0, r, "#fff")
+	}
 	const keys = "12345678"
 	for i, o := range h.Objects[h.Offset:] {
 		if i >= len(keys) {
 			break
 		}
-		setcell(0, i, rune(keys[i]), "#fff")
-		setcell(1, i, ' ', "#fff")
-		j := 1
+		setcell(0, i+1, rune(keys[i]), "#fff")
+		setcell(1, i+1, ' ', "#fff")
+		j := 2
 		for _, r := range o.Name() {
+			setcell(j, i+1, r, "#fff")
 			j++
-			setcell(j, i, r, "#fff")
 		}
 	}
 	if h.Offset > 0 {
-		setcell(0, 8, '9', "#fff")
-		setcell(1, 8, ' ', "#fff")
+		setcell(0, 9, '9', "#fff")
+		setcell(1, 9, ' ', "#fff")
 		j := 1
 		for _, r := range "previous" {
 			j++
-			setcell(j, 8, r, "#fff")
+			setcell(j, 9, r, "#fff")
 		}
 	}
 	if len(h.Objects) > h.Offset+len(keys) {
-		setcell(0, 9, '0', "#fff")
-		setcell(1, 9, ' ', "#fff")
-		j := 1
+		setcell(0, 10, '0', "#fff")
+		setcell(1, 10, ' ', "#fff")
+		j := 2
 		for _, r := range "next" {
+			setcell(j, 10, r, "#fff")
 			j++
-			setcell(j, 9, r, "#fff")
 		}
 	}
 }
@@ -111,7 +143,14 @@ func (h *InteractHUD) Paint(setcell func(int, int, rune, Color)) {
 func (h *InteractHUD) Key(code int) bool {
 	switch code {
 	case '1', '2', '3', '4', '5', '6', '7', '8':
-		// TODO
+		i := code - '1' + h.Offset
+		if i < len(h.Objects) {
+			h.Player.hud = &ExamineHUD{
+				Player: h.Player,
+				Object: h.Objects[i],
+			}
+			h.Player.Repaint()
+		}
 		return true
 	case '9':
 		if h.Offset > 0 {
