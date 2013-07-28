@@ -51,7 +51,7 @@ func GenerateName(r *rand.Rand, subtypes ...NameSubtype) *Name {
 		Name: "TODONAME",
 	}
 	if len(subtypes) == 0 {
-		subtypes = []NameSubtype{NameGeneric}
+		return n
 	}
 	if r.Intn(2) == 0 {
 		n.FrontCompoundST = subtypes[r.Intn(len(subtypes))]
@@ -87,8 +87,7 @@ func GenerateName(r *rand.Rand, subtypes ...NameSubtype) *Name {
 type NameSubtype uint16
 
 const (
-	NameGeneric NameSubtype = iota
-	NameZone
+	NameZone NameSubtype = iota
 	NameForest
 	NamePlains
 	NameHills
@@ -99,9 +98,6 @@ const (
 
 // leave the first one of each subtype blank. add only to the end of each list.
 var names = [nameSubtypeCount][]string{
-	NameGeneric: {
-		"",
-	},
 	NameZone: {
 		"",
 		"area",
