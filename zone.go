@@ -147,6 +147,7 @@ func (z *Zone) Generate() {
 	z.Seed.Seed(Seed ^ z.X ^ int64(uint64(z.Y)<<32|uint64(z.Y)>>32))
 	r := z.Rand()
 	z.Element = Nature
+	z.Name_ = GenerateName_Zone(r)
 	for i := r.Intn(100); i > 0; i-- {
 		x := r.Float64()*192 + 32
 		y := r.Float64()*192 + 32
@@ -266,9 +267,6 @@ func (z *Zone) Repaint() {
 }
 
 func (z *Zone) Name() string {
-	if z.Name_ == nil {
-		z.Name_ = &Name{Name: "zone"} // TODO: name generator
-	}
 	return z.Name_.String()
 }
 

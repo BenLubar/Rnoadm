@@ -1,5 +1,9 @@
 package main
 
+import (
+	"math/rand"
+)
+
 type Name struct {
 	Name           string
 	FrontCompound  uint16
@@ -11,7 +15,7 @@ type Name struct {
 	Of             uint16
 }
 
-func (n Name) String() string {
+func (n *Name) String() string {
 	s := n.Name
 	if n.FrontCompound != 0 || n.RearCompound != 0 {
 		s += " " + names[n.FrontCompound] + names[n.RearCompound]
@@ -35,6 +39,68 @@ func (n Name) String() string {
 	return s
 }
 
+func GenerateName_Zone(r *rand.Rand) *Name {
+	n := &Name{
+		Name: "zonename",
+	}
+	if r.Intn(2) == 0 {
+		n.FrontCompound = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(2) == 0 {
+		n.RearCompound = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(2) == 0 {
+		n.Adjective1 = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(2) == 0 {
+		n.Adjective2 = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(2) == 0 {
+		n.HyphenCompound = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(2) == 0 {
+		n.The = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(2) == 0 {
+		n.Of = uint16(r.Intn(len(names)))
+	}
+	return n
+}
+
+func GenerateName_Hero(r *rand.Rand) *Name {
+	n := &Name{
+		Name: "heroname",
+	}
+	if r.Intn(3) == 0 {
+		n.FrontCompound = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(3) == 0 {
+		n.RearCompound = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(3) == 0 {
+		n.Adjective1 = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(3) == 0 {
+		n.Adjective2 = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(3) == 0 {
+		n.HyphenCompound = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(3) == 0 {
+		n.The = uint16(r.Intn(len(names)))
+	}
+	if r.Intn(3) == 0 {
+		n.Of = uint16(r.Intn(len(names)))
+	}
+	return n
+}
+
 var names = []string{
 	"", // leave this one blank. add only to the end of the list.
+	"area",
+	"zone",
+	"region",
+	"lair",
+	"territory",
+	"realm",
 }

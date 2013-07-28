@@ -121,11 +121,12 @@ func websocketHandler(conn *websocket.Conn) {
 			repaint: make(chan struct{}, 1),
 		}
 	}
-	player.Name_ = addr
+	player.Name_ = &Name{Name: addr}
 	player.Repaint()
 	zone := GrabZone(player.ZoneX, player.ZoneY)
 	zone.Lock()
 	zone.Tile(player.TileX, player.TileY).Add(player)
+	player.hud = ZoneEntryHUD(zone.Name())
 	zone.Unlock()
 	defer func() {
 		zone := GrabZone(player.ZoneX, player.ZoneY)

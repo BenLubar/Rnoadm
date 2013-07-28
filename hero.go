@@ -80,11 +80,12 @@ func (p *Player) Move(dx, dy int) {
 		z = GrabZone(p.ZoneX, p.ZoneY)
 		GrabZone(p.ZoneX, p.ZoneY) // player has entered zone
 		z.Lock()
+		p.hud = ZoneEntryHUD(z.Name())
 	} else {
 		p.TileX = uint8(destX)
 		p.TileY = uint8(destY)
 	}
-	p.Delay = 4
+	p.Delay = 2
 	z.Tile(p.TileX, p.TileY).Add(p)
 	z.Unlock()
 	ReleaseZone(z)
@@ -165,15 +166,26 @@ func (p *Player) Think() {
 	p.think(false)
 }
 
+type ZoneEntryHUD string
+
+func (zeh ZoneEntryHUD) Paint(setcell func(int, int, rune, Color)) {
+	i := 0
+	for _, r := range zeh {
+		setcell(i, 0, r, "#fff")
+		i++
+	}
+}
+
+func (zeh ZoneEntryHUD) Key(code int) bool {
+	return false
+}
+
 type Hero struct {
 	Name_ *Name
 	Delay uint
 }
 
 func (h *Hero) Name() string {
-	if h.Name_ == nil {
-		h.Name_ = &Name{Name: "hero"} // TODO: name generator
-	}
 	return h.Name_.String()
 }
 
