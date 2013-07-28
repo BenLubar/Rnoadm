@@ -92,6 +92,7 @@ const (
 	NamePlains
 	NameHills
 	NameLake
+	NameHero
 
 	nameSubtypeCount
 )
@@ -144,5 +145,23 @@ var names = [nameSubtypeCount][]string{
 		"reservoir",
 		"basin",
 		"sea",
+	},
+	NameHero: {
+		"",
+		"brave",
+		"strong",
+		"feeble",
+		"feared",
+		"man",
+		"woman",
+		"child",
+		"son",
+		"daughter",
+		"good",
+		"bad",
+		"weak",
+		"shy",
+		"blade",
+		"master",
 	},
 }

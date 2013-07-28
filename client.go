@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"hash/crc64"
 	"log"
+	"math/rand"
 	"net/http"
 )
 
@@ -137,13 +138,15 @@ func websocketHandler(conn *websocket.Conn) {
 	player, err := LoadPlayer(playerID)
 	if err != nil {
 		player = &Player{
-			ID:      playerID,
-			TileX:   127,
-			TileY:   127,
+			ID:    playerID,
+			TileX: 127,
+			TileY: 127,
+			Hero: Hero{
+				Name_: GenerateName(rand.New(rand.NewSource(int64(playerID))), NameHero),
+			},
 			repaint: make(chan struct{}, 1),
 		}
 	}
-	player.Name_ = &Name{Name: "player"}
 	player.Repaint()
 	zone := GrabZone(player.ZoneX, player.ZoneY)
 	zone.Lock()
