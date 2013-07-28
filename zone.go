@@ -168,6 +168,17 @@ func (z *Zone) Generate() {
 			}
 		}
 	}
+	for i := range z.Tiles {
+		if !z.Tiles[i].Blocked() && r.Intn(4) == 0 {
+			flora, ok := z.Element.Flora(r)
+			if !ok {
+				break
+			}
+			z.Tiles[i].Add(&Flora{
+				Type: flora,
+			})
+		}
+	}
 }
 
 func (z *Zone) Save() error {
@@ -303,13 +314,13 @@ func (t *Tile) Blocked() bool {
 
 type Color string
 
-func (t *Tile) Paint() (rune, Color) {
+func (t *Tile) Paint(z *Zone) (rune, Color) {
 	if t.Ground == 0 {
 		const ground = " ,.'-`"
 		t.Ground = rune(ground[rand.Intn(len(ground))])
 	}
 	if len(t.Objects) == 0 {
-		return t.Ground, "#fff"
+		return t.Ground, "#333"
 	}
 	return t.Objects[len(t.Objects)-1].Paint()
 }
@@ -326,8 +337,9 @@ type Thinker interface {
 }
 
 func init() {
-	gob.Register(Object(&Rock{}))
-	gob.Register(Object(&Wall{}))
 	gob.Register(Object(&Hero{}))
 	// Players are removed from Zones before saving.
+	gob.Register(Object(&Flora{}))
+	gob.Register(Object(&Rock{}))
+	gob.Register(Object(&Wall{}))
 }

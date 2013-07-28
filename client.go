@@ -34,11 +34,15 @@ table {
 	font-family: monospace;
 	margin:      0 auto;
 }
+td {
+	width:       1em;
+	height:      1em;
+}
 </style>
 </head>
 <body>
 <script>
-var front, back;
+var canvas;
 var ws = new WebSocket('ws://' + location.host + '/ws');
 var wsonopen = ws.onopen = function() {
 	console.log("open");
@@ -46,27 +50,26 @@ var wsonopen = ws.onopen = function() {
 var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
 	if (msg.Paint) {
-		back = document.createElement('table');
-		back.style.display = 'none';
-		document.body.appendChild(back);
+		if (!canvas) {
+			canvas = document.createElement('table');
+			for (var i = 0; i < 24; i++) {
+				var row = document.createElement('tr');
+				for (var j = 0; j < 80; j++) {
+					row.appendChild(document.createElement('td'));
+				}
+				canvas.appendChild(row);
+			}
+			document.body.appendChild(canvas);
+		}
 
 		for (var i = 0; i < 24; i++) {
-			var row = document.createElement('tr');
+			var row = canvas.children[i];
 			for (var j = 0; j < 80; j++) {
-				var cell = document.createElement('td');
-				cell.textContent = msg.Paint[j][i].Char;
-				cell.style.color = msg.Paint[j][i].Color;
-				row.appendChild(cell);
+				var cell = row.children[j];
+				cell.textContent = msg.Paint[j][i].R;
+				cell.style.color = msg.Paint[j][i].C;
 			}
-			back.appendChild(row);
 		}
-
-		if (front) {
-			front.parentNode.removeChild(front);
-		}
-		back.style.display = 'inline-block';
-		front = back;
-		back = null;
 	}
 };
 var wsonclose = ws.onclose = function() {
@@ -96,7 +99,7 @@ type packetIn struct {
 }
 type packetPaint struct {
 	Paint [80][24]struct {
-		Char, Color string
+		R, C string
 	}
 }
 
@@ -176,22 +179,16 @@ func websocketHandler(conn *websocket.Conn) {
 					player.hud = &InteractHUD{Player: player}
 					player.Repaint()
 				default:
-					log.Printf("[%s] %d", addr, p.Key.Code)
+					//log.Printf("[%s] %d", addr, p.Key.Code)
 				}
 			}
 		case <-player.repaint:
 			var paint packetPaint
-			for i := range paint.Paint {
-				for j := range paint.Paint[i] {
-					paint.Paint[i][j].Char = " "
-					paint.Paint[i][j].Color = "#fff"
-				}
-			}
 			setcell := func(x, y int, ch rune, color Color) {
 				if x >= 0 && x < len(paint.Paint) {
 					if y >= 0 && y < len(paint.Paint[x]) {
-						paint.Paint[x][y].Char = string(ch)
-						paint.Paint[x][y].Color = string(color)
+						paint.Paint[x][y].R = string(ch)
+						paint.Paint[x][y].C = string(color)
 					}
 				}
 			}
@@ -217,7 +214,7 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 					y8 := uint8(yCoord)
 					if tile := z.Tile(x8, y8); tile != nil {
-						r, fg := tile.Paint()
+						r, fg := tile.Paint(z)
 						setcell(x, y, r, fg)
 					}
 				}

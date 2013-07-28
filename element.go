@@ -8,6 +8,7 @@ type element struct {
 	Name  string
 	Links []Element
 	Rocks []RockType
+	Flora []FloraType
 }
 
 type Element uint8
@@ -85,6 +86,7 @@ func init() {
 		Name:  "Nature",
 		Links: []Element{Air, Water, Earth},
 		Rocks: []RockType{Coal, Iron, Granite, Quartz, Limestone, Sandstone},
+		Flora: []FloraType{0},
 	}
 	elements[Dust] = element{
 		Name:  "Dust",
@@ -182,4 +184,12 @@ func (e Element) Rock(r *rand.Rand) (RockType, bool) {
 		return 0, false
 	}
 	return rocks[r.Intn(len(rocks))], true
+}
+
+func (e Element) Flora(r *rand.Rand) (FloraType, bool) {
+	flora := elements[e].Flora
+	if len(flora) == 0 {
+		return 0, false
+	}
+	return flora[r.Intn(len(flora))], true
 }
