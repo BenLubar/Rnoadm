@@ -239,12 +239,13 @@ func websocketHandler(conn *websocket.Conn) {
 				}
 			}
 
+			if player.hud == nil {
+				player.hud = ZoneEntryHUD(z.Name())
+			}
 			z.Unlock()
 			ReleaseZone(z)
 
-			if player.hud != nil {
-				player.hud.Paint(setcell)
-			}
+			player.hud.Paint(setcell)
 			websocket.JSON.Send(conn, &paint)
 		}
 	}

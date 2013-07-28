@@ -187,12 +187,13 @@ func (z *Zone) Save() error {
 	z.Lock()
 	defer z.Unlock()
 
-	// remove players before saving
+	// remove and save players before saving the zone
 	for i := range z.Tiles {
 		for j := 0; j < len(z.Tiles[i].Objects); j++ {
 			if p, ok := z.Tiles[i].Objects[j].(*Player); ok {
 				z.Tiles[i].Objects = append(z.Tiles[i].Objects[:j], z.Tiles[i].Objects[j+1:]...)
 				players[i] = append(players[i], p)
+				p.Save()
 			}
 		}
 	}
