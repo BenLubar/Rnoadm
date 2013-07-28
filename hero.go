@@ -43,6 +43,7 @@ func (p *Player) Move(dx, dy int) {
 	z.Tile(p.TileX, p.TileY).Remove(p)
 	if zoneChange {
 		z.Unlock()
+		p.RepaintZone()
 		ReleaseZone(z) // player has left zone
 		ReleaseZone(z)
 		if destY < 0 {
@@ -83,10 +84,11 @@ func (p *Player) Move(dx, dy int) {
 		p.TileX = uint8(destX)
 		p.TileY = uint8(destY)
 	}
-	p.Delay = 1
+	p.Delay = 4
 	z.Tile(p.TileX, p.TileY).Add(p)
 	z.Unlock()
 	ReleaseZone(z)
+	p.RepaintZone()
 }
 
 func playerFilename(id uint64) string {
@@ -153,20 +155,26 @@ func (p *Player) Repaint() {
 	}
 }
 
+func (p *Player) RepaintZone() {
+	z := GrabZone(p.ZoneX, p.ZoneY)
+	z.Repaint()
+	ReleaseZone(z)
+}
+
 func (p *Player) Think() {
 	p.think(false)
 }
 
 type Hero struct {
-	Name_ string
+	Name_ *Name
 	Delay uint
 }
 
 func (h *Hero) Name() string {
-	if h.Name_ == "" {
-		h.Name_ = "hero" // TODO: name generator
+	if h.Name_ == nil {
+		h.Name_ = &Name{Name: "hero"} // TODO: name generator
 	}
-	return h.Name_
+	return h.Name_.String()
 }
 
 func (h *Hero) Examine() string {

@@ -24,6 +24,17 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 <meta charset="utf-8">
 <title>Rnoadm</title>
 <script>document.title = 'R' + 'ando'.split('').sort(function(a, b) {return Math.random()-.5}).join('') + 'm'</script>
+<style>
+html {
+	background:  #000;
+	text-align:  center;
+}
+table {
+	background:  #000;
+	font-family: monospace;
+	margin:      0 auto;
+}
+</style>
 </head>
 <body>
 <script>
@@ -37,8 +48,6 @@ var wsonmessage = ws.onmessage = function(e) {
 	if (msg.Paint) {
 		back = document.createElement('table');
 		back.style.display = 'none';
-		back.style.background = '#000';
-		back.style.fontFamily = 'monospace';
 		document.body.appendChild(back);
 
 		for (var i = 0; i < 24; i++) {
@@ -55,7 +64,7 @@ var wsonmessage = ws.onmessage = function(e) {
 		if (front) {
 			front.parentNode.removeChild(front);
 		}
-		back.style.display = 'block';
+		back.style.display = 'inline-block';
 		front = back;
 		back = null;
 	}
@@ -112,6 +121,7 @@ func websocketHandler(conn *websocket.Conn) {
 			repaint: make(chan struct{}, 1),
 		}
 	}
+	player.Name_ = addr
 	player.Repaint()
 	zone := GrabZone(player.ZoneX, player.ZoneY)
 	zone.Lock()
@@ -153,19 +163,15 @@ func websocketHandler(conn *websocket.Conn) {
 					break
 				}
 				switch p.Key.Code {
-				case 38, 'w':
+				case 38, 'W':
 					player.Move(0, -1)
-					player.Repaint()
-				case 37, 'a':
+				case 37, 'A':
 					player.Move(-1, 0)
-					player.Repaint()
-				case 40, 's':
+				case 40, 'S':
 					player.Move(0, 1)
-					player.Repaint()
-				case 39, 'd':
+				case 39, 'D':
 					player.Move(1, 0)
-					player.Repaint()
-				case 'e':
+				case 'E':
 					player.hud = &InteractHUD{Player: player}
 					player.Repaint()
 				default:

@@ -23,7 +23,7 @@ func main() {
 	}()
 
 	go func() {
-		for _ = range time.Tick(time.Second / 4) {
+		for _ = range time.Tick(200 * time.Millisecond) {
 			EachLoadedZone(func(z *Zone) {
 				z.Think()
 			})

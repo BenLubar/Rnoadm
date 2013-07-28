@@ -112,6 +112,8 @@ type Zone struct {
 	X, Y    int64
 	Element Element
 	Tiles   [zoneTiles]Tile
+	Name_   *Name
+	dirty   bool
 	mtx     sync.Mutex
 }
 
@@ -245,13 +247,29 @@ func (z *Zone) Think() {
 			}
 		}
 	}
-	for i := range z.Tiles {
-		for _, o := range z.Tiles[i].Objects {
-			if p, ok := o.(*Player); ok {
-				p.Repaint()
+	if z.dirty {
+		for i := range z.Tiles {
+			for _, o := range z.Tiles[i].Objects {
+				if p, ok := o.(*Player); ok {
+					p.Repaint()
+				}
 			}
 		}
+		z.dirty = false
 	}
+}
+
+func (z *Zone) Repaint() {
+	z.Lock()
+	z.dirty = true
+	z.Unlock()
+}
+
+func (z *Zone) Name() string {
+	if z.Name_ == nil {
+		z.Name_ = &Name{Name: "zone"} // TODO: name generator
+	}
+	return z.Name_.String()
 }
 
 type Tile struct {
