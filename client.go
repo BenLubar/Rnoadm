@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"time"
 )
 
 func init() {
@@ -145,8 +146,13 @@ func websocketHandler(conn *websocket.Conn) {
 				Name_: GenerateName(rand.New(rand.NewSource(int64(playerID))), NameHero),
 			},
 			repaint: make(chan struct{}, 1),
+			Joined:  time.Now().UTC(),
 		}
 	}
+	if player.Joined.IsZero() {
+		player.Joined = time.Now().UTC()
+	}
+	player.LastLogin = time.Now().UTC()
 	player.Repaint()
 	zone := GrabZone(player.ZoneX, player.ZoneY)
 	zone.Lock()

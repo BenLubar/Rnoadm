@@ -7,6 +7,7 @@ import (
 	"encoding/gob"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Player struct {
@@ -19,6 +20,10 @@ type Player struct {
 		Key(int) bool
 	}
 	repaint chan struct{}
+
+	Joined    time.Time
+	LastLogin time.Time
+	Admin     bool
 }
 
 func (p *Player) Move(dx, dy int) {
