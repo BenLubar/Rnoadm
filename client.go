@@ -42,10 +42,14 @@ td {
 </head>
 <body>
 <script>
+var authkey = localStorage['rnoadm-auth'] || (localStorage['rnoadm-auth'] = generateAuthKey());
 var canvas;
+function generateAuthKey() {
+	return '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').sort(function(a, b) {return Math.random()-.5}).join('');
+}
 var ws = new WebSocket('ws://' + location.host + '/ws');
 var wsonopen = ws.onopen = function() {
-	console.log("open");
+	send({Auth:{Key:authkey}});
 };
 var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
@@ -73,7 +77,6 @@ var wsonmessage = ws.onmessage = function(e) {
 	}
 };
 var wsonclose = ws.onclose = function() {
-	console.log("close");
 	setTimeout(function() {
 		ws = new WebSocket('ws://' + location.host + '/ws');
 		ws.onopen = wsonopen;
@@ -93,6 +96,9 @@ document.onkeydown = function(e) {
 }
 
 type packetIn struct {
+	Auth *struct {
+		Key string
+	}
 	Key *struct {
 		Code int
 	}
@@ -114,7 +120,20 @@ func websocketHandler(conn *websocket.Conn) {
 		}
 	}
 
-	playerID := crc64.Checksum([]byte(addr), crc64.MakeTable(crc64.ISO))
+	var playerID uint64
+	{
+		var p packetIn
+		err := websocket.JSON.Receive(conn, &p)
+		if err != nil {
+			log.Printf("[%s] %v", addr, err)
+			return
+		}
+		if p.Auth == nil {
+			log.Printf("[%s] noauth", addr)
+			return
+		}
+		playerID = crc64.Checksum([]byte(p.Auth.Key), crc64.MakeTable(crc64.ISO))
+	}
 	player, err := LoadPlayer(playerID)
 	if err != nil {
 		player = &Player{
@@ -124,7 +143,7 @@ func websocketHandler(conn *websocket.Conn) {
 			repaint: make(chan struct{}, 1),
 		}
 	}
-	player.Name_ = &Name{Name: addr}
+	player.Name_ = &Name{Name: "player"}
 	player.Repaint()
 	zone := GrabZone(player.ZoneX, player.ZoneY)
 	zone.Lock()
