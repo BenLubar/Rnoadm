@@ -152,22 +152,30 @@ func (h *AdminTeleportHUD) Key(code int) bool {
 		if i < len(h.List) {
 			p := h.List[i]
 			p.lock.Lock()
-			z := p.zone
 			zx, zy := p.ZoneX, p.ZoneY
 			tx, ty := p.TileX, p.TileY
+			name := p.Name()
 			p.lock.Unlock()
 
 			h.Player.lock.Lock()
 			az := h.Player.zone
+			azx, azy := h.Player.ZoneX, h.Player.ZoneY
 			atx, aty := h.Player.TileX, h.Player.TileY
+			aname := h.Player.Name()
 			h.Player.lock.Unlock()
+
+			AdminLog.Printf("TELEPORT [%d:%q] (%d:%d, %d:%d) => [%d:%q] (%d:%d, %d:%d)", h.Player.ID, aname, azx, atx, azy, aty, p.ID, name, zx, tx, zy, ty)
 
 			az.Lock()
 			az.Tile(atx, aty).Remove(h.Player)
 			az.Repaint()
 			az.Unlock()
 
+			ReleaseZone(az)
+			z := GrabZone(zx, zy)
+
 			h.Player.lock.Lock()
+			h.Player.zone = z
 			h.Player.ZoneX, h.Player.ZoneY = zx, zy
 			h.Player.TileX, h.Player.TileY = tx, ty
 			h.Player.lock.Unlock()
