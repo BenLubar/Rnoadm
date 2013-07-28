@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -13,6 +15,12 @@ func main() {
 	flag.Int64Var(&Seed, "seed", time.Now().UnixNano(), "the world seed (default: the number of nanoseconds since midnight UTC on 1970-01-01)")
 
 	flag.Parse()
+
+	f, err := os.OpenFile(filepath.Join(seedFilename(), "admin.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		panic(err)
+	}
+	AdminLog = log.New(f, "[ADMIN] ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	go func() {
 		for _ = range time.Tick(time.Minute) {

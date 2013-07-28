@@ -113,7 +113,7 @@ type Zone struct {
 	Element Element
 	Tiles   [zoneTiles]Tile
 	Name_   *Name
-	dirty   bool
+	dirty   chan struct{}
 	mtx     sync.Mutex
 }
 
@@ -143,6 +143,8 @@ func (z *Zone) Rand() *rand.Rand {
 func (z *Zone) Generate() {
 	z.Lock()
 	defer z.Unlock()
+
+	z.dirty = make(chan struct{}, 1)
 
 	z.Seed.Seed(Seed ^ z.X ^ int64(uint64(z.Y)<<32|uint64(z.Y)>>32))
 	r := z.Rand()
@@ -246,6 +248,7 @@ func LoadZone(x, y int64) (*Zone, error) {
 	if err != nil {
 		return nil, err
 	}
+	z.dirty = make(chan struct{}, 1)
 	return &z, nil
 }
 
@@ -260,7 +263,8 @@ func (z *Zone) Think() {
 			}
 		}
 	}
-	if z.dirty {
+	select {
+	case <-z.dirty:
 		for i := range z.Tiles {
 			for _, o := range z.Tiles[i].Objects {
 				if p, ok := o.(*Player); ok {
@@ -268,14 +272,15 @@ func (z *Zone) Think() {
 				}
 			}
 		}
-		z.dirty = false
+	default:
 	}
 }
 
 func (z *Zone) Repaint() {
-	z.Lock()
-	z.dirty = true
-	z.Unlock()
+	select {
+	case z.dirty <- struct{}{}:
+	default:
+	}
 }
 
 func (z *Zone) Name() string {

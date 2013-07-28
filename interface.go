@@ -58,7 +58,9 @@ func (h *InteractHUD) Paint(setcell func(int, int, rune, Color)) {
 		if maxY == 0 {
 			maxY = 255
 		}
-		z := GrabZone(h.Player.ZoneX, h.Player.ZoneY)
+		h.Player.lock.Lock()
+		z := h.Player.zone
+		h.Player.lock.Unlock()
 		z.Lock()
 		var objects []Object
 		for x := minX; x >= minX && x <= maxX; x++ {
@@ -67,7 +69,6 @@ func (h *InteractHUD) Paint(setcell func(int, int, rune, Color)) {
 			}
 		}
 		z.Unlock()
-		ReleaseZone(z)
 		h.Objects = objects
 		h.Offset = 0
 	}

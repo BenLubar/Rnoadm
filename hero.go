@@ -5,8 +5,10 @@ import (
 	"encoding/base32"
 	"encoding/binary"
 	"encoding/gob"
+	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -24,6 +26,9 @@ type Player struct {
 	Joined    time.Time
 	LastLogin time.Time
 	Admin     bool
+
+	zone *Zone
+	lock sync.Mutex
 }
 
 func (p *Player) Move(dx, dy int) {
@@ -35,22 +40,24 @@ func (p *Player) Move(dx, dy int) {
 
 	zoneChange := destX < 0 || destY < 0 || destX > 255 || destY > 255
 
-	z := GrabZone(p.ZoneX, p.ZoneY)
+	p.lock.Lock()
+	z := p.zone
+	p.lock.Unlock()
 	z.Lock()
 	if !zoneChange {
 		zoneChange = z.Tile(uint8(destX), uint8(destY)) == nil
 	}
 	if !zoneChange && z.Blocked(uint8(destX), uint8(destY)) {
 		z.Unlock()
-		ReleaseZone(z)
 		return
 	}
 	z.Tile(p.TileX, p.TileY).Remove(p)
+	z.Unlock()
 	if zoneChange {
-		z.Unlock()
 		p.RepaintZone()
-		ReleaseZone(z) // player has left zone
 		ReleaseZone(z)
+		p.lock.Lock()
+		p.Delay = 2
 		if destY < 0 {
 			p.ZoneY -= 2
 			p.TileX = 127
@@ -81,19 +88,21 @@ func (p *Player) Move(dx, dy int) {
 				p.TileY = 64
 			}
 		}
-		p.Save()
 		z = GrabZone(p.ZoneX, p.ZoneY)
-		GrabZone(p.ZoneX, p.ZoneY) // player has entered zone
-		z.Lock()
-		p.hud = ZoneEntryHUD(z.Name())
+		p.zone = z
+		p.lock.Unlock()
+		p.Save()
+		p.hud = nil
 	} else {
+		p.lock.Lock()
 		p.TileX = uint8(destX)
 		p.TileY = uint8(destY)
+		p.Delay = 2
+		p.lock.Unlock()
 	}
-	p.Delay = 2
+	z.Lock()
 	z.Tile(p.TileX, p.TileY).Add(p)
 	z.Unlock()
-	ReleaseZone(z)
 	p.RepaintZone()
 }
 
@@ -109,24 +118,31 @@ func playerFilename(id uint64) string {
 	return "p" + encoded[:l] + ".gz"
 }
 
-func (p *Player) Save() error {
+func (p *Player) Save() {
+	p.lock.Lock()
+	defer p.lock.Unlock()
+
 	dir := seedFilename()
 	os.MkdirAll(dir, 0755)
 
 	f, err := os.Create(filepath.Join(dir, playerFilename(p.ID)))
 	if err != nil {
-		return err
+		log.Printf("[save:%d] %v", p.ID, err)
+		return
 	}
 	defer f.Close()
 
 	g, err := gzip.NewWriterLevel(f, gzip.BestCompression)
 	if err != nil {
-		return err
+		log.Printf("[save:%d] %v", p.ID, err)
+		return
 	}
 	defer g.Close()
 
-	e := gob.NewEncoder(g)
-	return e.Encode(p)
+	err = gob.NewEncoder(g).Encode(p)
+	if err != nil {
+		log.Printf("[save:%d] %v", p.ID, err)
+	}
 }
 
 func LoadPlayer(id uint64) (*Player, error) {
@@ -162,9 +178,11 @@ func (p *Player) Repaint() {
 }
 
 func (p *Player) RepaintZone() {
-	z := GrabZone(p.ZoneX, p.ZoneY)
-	z.Repaint()
-	ReleaseZone(z)
+	go func() {
+		p.lock.Lock()
+		p.zone.Repaint()
+		p.lock.Unlock()
+	}()
 }
 
 func (p *Player) Think() {
@@ -173,15 +191,15 @@ func (p *Player) Think() {
 
 type ZoneEntryHUD string
 
-func (zeh ZoneEntryHUD) Paint(setcell func(int, int, rune, Color)) {
+func (h ZoneEntryHUD) Paint(setcell func(int, int, rune, Color)) {
 	i := 0
-	for _, r := range zeh {
+	for _, r := range h {
 		setcell(i, 0, r, "#fff")
 		i++
 	}
 }
 
-func (zeh ZoneEntryHUD) Key(code int) bool {
+func (h ZoneEntryHUD) Key(code int) bool {
 	return false
 }
 

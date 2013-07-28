@@ -6,8 +6,12 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 )
+
+var OnlinePlayers = make(map[uint64]*Player)
+var onlinePlayersLock sync.Mutex
 
 func init() {
 	http.HandleFunc("/", httpHandler)
@@ -91,6 +95,9 @@ function send(packet) {
 }
 document.onkeydown = function(e) {
 	send({Key:{Code:e.keyCode}});
+	if (e.keyCode == 8) {
+		e.preventDefault()
+	}
 };
 </script>
 </body>
@@ -153,18 +160,38 @@ func websocketHandler(conn *websocket.Conn) {
 		player.Joined = time.Now().UTC()
 	}
 	player.LastLogin = time.Now().UTC()
+
+	onlinePlayersLock.Lock()
+	if OnlinePlayers[playerID] != nil {
+		onlinePlayersLock.Unlock()
+		log.Printf("[%s:%d] multilog", addr, playerID)
+		return
+	}
+	OnlinePlayers[playerID] = player
+	onlinePlayersLock.Unlock()
+	defer func() {
+		onlinePlayersLock.Lock()
+		delete(OnlinePlayers, playerID)
+		onlinePlayersLock.Unlock()
+	}()
+
 	player.Repaint()
+	player.lock.Lock()
 	zone := GrabZone(player.ZoneX, player.ZoneY)
+	player.zone = zone
+	tx, ty := player.TileX, player.TileY
+	player.lock.Unlock()
 	zone.Lock()
-	zone.Tile(player.TileX, player.TileY).Add(player)
-	player.hud = ZoneEntryHUD(zone.Name())
+	zone.Tile(tx, ty).Add(player)
 	zone.Unlock()
 	defer func() {
-		zone := GrabZone(player.ZoneX, player.ZoneY)
+		player.lock.Lock()
+		zone := player.zone
+		tx, ty := player.TileX, player.TileY
+		player.lock.Unlock()
 		zone.Lock()
-		zone.Tile(player.TileX, player.TileY).Remove(player)
+		zone.Tile(tx, ty).Remove(player)
 		zone.Unlock()
-		ReleaseZone(zone)
 		ReleaseZone(zone)
 		player.Save()
 	}()
@@ -175,11 +202,15 @@ func websocketHandler(conn *websocket.Conn) {
 			var p packetIn
 			err := websocket.JSON.Receive(conn, &p)
 			if err != nil {
-				log.Printf("[%s] %v", addr, err)
+				log.Printf("[%s:%d] %v", addr, playerID, err)
 				close(packets)
 				return
 			}
-			packets <- p
+			select {
+			case packets <- p:
+			case <-time.After(time.Second):
+				log.Printf("[%s:%d] dropped a packet (server)", addr, playerID)
+			}
 		}
 	}()
 
@@ -206,8 +237,13 @@ func websocketHandler(conn *websocket.Conn) {
 				case 'E':
 					player.hud = &InteractHUD{Player: player}
 					player.Repaint()
+				case 192: // `
+					if player.Admin {
+						player.hud = &AdminHUD{Player: player}
+						player.Repaint()
+					}
 				default:
-					//log.Printf("[%s] %d", addr, p.Key.Code)
+					//log.Printf("[%s:%d] %d", addr, playerID, p.Key.Code)
 				}
 			}
 		case <-player.repaint:
@@ -226,7 +262,9 @@ func websocketHandler(conn *websocket.Conn) {
 			camX := int(player.TileX)
 			camY := int(player.TileY)
 
-			z := GrabZone(player.ZoneX, player.ZoneY)
+			player.lock.Lock()
+			z := player.zone
+			player.lock.Unlock()
 			z.Lock()
 
 			for x := 0; x < w; x++ {
@@ -252,7 +290,6 @@ func websocketHandler(conn *websocket.Conn) {
 				player.hud = ZoneEntryHUD(z.Name())
 			}
 			z.Unlock()
-			ReleaseZone(z)
 
 			player.hud.Paint(setcell)
 			websocket.JSON.Send(conn, &paint)
