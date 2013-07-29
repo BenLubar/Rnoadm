@@ -16,9 +16,8 @@ const (
 	Vorpal
 	Wabe
 	Molten
-	Sand
 	Carbonite
-	Helium
+	Aetherite
 
 	rockTypeCount
 )
@@ -79,16 +78,12 @@ var rockTypeInfo = [rockTypeCount]struct {
 		Name:  "molten",
 		Color: "red",
 	},
-	Sand: {
-		Name:  "sand",
-		Color: "yellow",
-	},
 	Carbonite: {
 		Name:  "carbonite",
 		Color: "blue",
 	},
-	Helium: {
-		Name:  "helium",
+	Aetherite: {
+		Name:  "Aetherite",
 		Color: "white",
 	},
 }
