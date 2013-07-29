@@ -102,10 +102,6 @@ const (
 )
 
 var syllables = []string{
-	"TO",
-	"DO",
-	"NA",
-	"ME",
 	"ba",
 	"be",
 	"bi",

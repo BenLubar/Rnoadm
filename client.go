@@ -202,24 +202,23 @@ func websocketHandler(conn *websocket.Conn) {
 			Joined:  time.Now().UTC(),
 		}
 	}
-	if player.Joined.IsZero() {
-		player.Joined = time.Now().UTC()
-	}
-	player.LastLogin = time.Now().UTC()
 
 	onlinePlayersLock.Lock()
 	if OnlinePlayers[playerID] != nil {
-		onlinePlayersLock.Unlock()
-		log.Printf("[%s:%d] multilog", addr, playerID)
-		return
+		player = OnlinePlayers[playerID]
+	} else {
+		OnlinePlayers[playerID] = player
 	}
-	OnlinePlayers[playerID] = player
 	onlinePlayersLock.Unlock()
 	defer func() {
 		onlinePlayersLock.Lock()
 		delete(OnlinePlayers, playerID)
 		onlinePlayersLock.Unlock()
 	}()
+	if player.Joined.IsZero() {
+		player.Joined = time.Now().UTC()
+	}
+	player.LastLogin = time.Now().UTC()
 
 	player.Repaint()
 	player.lock.Lock()
