@@ -41,3 +41,29 @@ func (t *Tree) Blocking() bool {
 func (t *Tree) InteractOptions() []string {
 	return []string{"chop down"}
 }
+
+type Logs struct {
+	Type WoodType
+}
+
+func (l *Logs) Name() string {
+	return woodTypeInfo[l.Type].Name + " logs"
+}
+
+func (l *Logs) Examine() string {
+	return "some " + woodTypeInfo[l.Type].Name + " logs."
+}
+
+func (l *Logs) Paint() (rune, Color) {
+	return '➬', woodTypeInfo[l.Type].Color
+}
+
+func (l *Logs) Blocking() bool {
+	return false
+}
+
+func (l *Logs) InteractOptions() []string {
+	return nil
+}
+
+func (l *Logs) IsItem() {}

@@ -53,9 +53,14 @@ func init() {
 	}
 	for t := range woodTypeInfo {
 		wt := WoodType(t)
-		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[t].Name)+" TREE"] = func(p *Player) {
+		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" TREE"] = func(p *Player) {
 			p.lock.Lock()
 			p.GiveItem(&Tree{Type: wt})
+			p.lock.Unlock()
+		}
+		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" LOGS"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&Logs{Type: wt})
 			p.lock.Unlock()
 		}
 	}
