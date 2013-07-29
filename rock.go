@@ -97,6 +97,9 @@ func (r *Rock) Examine() string {
 
 func (r *Rock) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	setcell(x, y, "", "rock_base_l0", rockTypeInfo[r.Type].Color)
+	if r.Ore != 0 {
+		setcell(x, y, "", "rock_tinychunks_l1", metalTypeInfo[r.Ore].Color)
+	}
 }
 
 func (r *Rock) Blocking() bool {

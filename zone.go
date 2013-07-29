@@ -164,8 +164,30 @@ func (z *Zone) Generate() {
 			tile := z.Tile(uint8(x+radius*math.Cos(theta)), uint8(y+radius*math.Sin(theta)))
 
 			if !tile.Blocked() {
+				ore, _ := z.Element.Ore(r)
 				tile.Add(&Rock{
 					Type: rock,
+					Ore:  ore,
+				})
+			}
+		}
+	}
+	for i := r.Intn(100); i > 0; i-- {
+		x := r.Float64()*192 + 32
+		y := r.Float64()*192 + 32
+		wood, ok := z.Element.Wood(r)
+		if !ok {
+			break
+		}
+
+		for j := 0; j < 40; j++ {
+			radius := r.Float64() * 4
+			theta := r.Float64() * 2 * math.Pi
+			tile := z.Tile(uint8(x+radius*math.Cos(theta)), uint8(y+radius*math.Sin(theta)))
+
+			if !tile.Blocked() {
+				tile.Add(&Tree{
+					Type: wood,
 				})
 			}
 		}

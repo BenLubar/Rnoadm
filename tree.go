@@ -9,25 +9,34 @@ type WoodType uint8
 const (
 	Oak WoodType = iota
 	Beonetwon
+	DeadTree
 
 	woodTypeCount
 )
 
 var woodTypeInfo = [woodTypeCount]struct {
-	Name     string
-	Color    Color
-	Strength uint64
-	sqrtStr  uint64
+	Name      string
+	Color     Color
+	LeafColor Color
+	Strength  uint64
+	sqrtStr   uint64
 }{
 	Oak: {
-		Name:     "oak",
-		Color:    "#dab583",
-		Strength: 10,
+		Name:      "oak",
+		Color:     "#dab583",
+		LeafColor: "#070",
+		Strength:  10,
 	},
 	Beonetwon: {
-		Name:     "beonetwon",
-		Color:    "#b1b2b0",
-		Strength: 1 << 63,
+		Name:      "beonetwon",
+		Color:     "#b1b2b0",
+		LeafColor: "#c0ffee",
+		Strength:  1 << 63,
+	},
+	DeadTree: {
+		Name:     "dead",
+		Color:    "#999",
+		Strength: 5,
 	},
 }
 
@@ -55,7 +64,9 @@ func (t *Tree) Examine() string {
 
 func (t *Tree) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	setcell(x, y, "", "tree_trunk_l0", woodTypeInfo[t.Type].Color)
-	setcell(x, y, "", "tree_leaves_l1", "green")
+	if color := woodTypeInfo[t.Type].LeafColor; color != "" {
+		setcell(x, y, "", "tree_leaves_l1", color)
+	}
 }
 
 func (t *Tree) Blocking() bool {

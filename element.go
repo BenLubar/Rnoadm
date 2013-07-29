@@ -8,7 +8,9 @@ type element struct {
 	Name  string
 	Links []Element
 	Rocks []RockType
+	Ores  []MetalType
 	Flora []FloraType
+	Trees []WoodType
 }
 
 type Element uint8
@@ -27,7 +29,6 @@ const (
 	Smoke
 	Mud
 	Time
-	Gravity
 	Electric
 	Light
 	Dark
@@ -44,7 +45,7 @@ var weakness = map[Element]Element{
 	Air:       Mud,
 	Water:     Electric,
 	Ice:       Fire,
-	Earth:     Gravity,
+	Earth:     Air,
 	Fire:      Water,
 	Dust:      Time,
 	Lava:      Mist,
@@ -53,7 +54,6 @@ var weakness = map[Element]Element{
 	Smoke:     Light,
 	Mud:       Steam,
 	Time:      Ice,
-	Gravity:   Air,
 	Electric:  Earth,
 	Light:     Void,
 	Dark:      Dust,
@@ -83,7 +83,9 @@ func init() {
 		Name:  "Nature",
 		Links: []Element{Air, Water, Earth},
 		Rocks: []RockType{Granite},
-		Flora: []FloraType{0},
+		Ores:  []MetalType{0, Iron},
+		Flora: []FloraType{LeafPlant, FlowerPlant, BulbPlant},
+		Trees: []WoodType{Oak, DeadTree},
 	}
 	elements[Dust] = element{
 		Name:  "Dust",
@@ -115,11 +117,7 @@ func init() {
 	}
 	elements[Time] = element{
 		Name:  "Time",
-		Links: []Element{Earth, Gravity, Void},
-	}
-	elements[Gravity] = element{
-		Name:  "Gravity",
-		Links: []Element{Earth, Water, Time},
+		Links: []Element{Earth, Air, Void},
 	}
 	elements[Electric] = element{
 		Name:  "Electric",
@@ -147,7 +145,7 @@ func init() {
 	}
 	elements[Illusion] = element{
 		Name:  "Illusion",
-		Links: []Element{Void, Time, Gravity},
+		Links: []Element{Void, Time, Smoke},
 	}
 }
 
@@ -175,10 +173,26 @@ func (e Element) Rock(r *rand.Rand) (RockType, bool) {
 	return rocks[r.Intn(len(rocks))], true
 }
 
+func (e Element) Ore(r *rand.Rand) (MetalType, bool) {
+	ores := elements[e].Ores
+	if len(ores) == 0 {
+		return 0, false
+	}
+	return ores[r.Intn(len(ores))], true
+}
+
 func (e Element) Flora(r *rand.Rand) (FloraType, bool) {
 	flora := elements[e].Flora
 	if len(flora) == 0 {
 		return 0, false
 	}
 	return flora[r.Intn(len(flora))], true
+}
+
+func (e Element) Wood(r *rand.Rand) (WoodType, bool) {
+	trees := elements[e].Trees
+	if len(trees) == 0 {
+		return 0, false
+	}
+	return trees[r.Intn(len(trees))], true
 }
