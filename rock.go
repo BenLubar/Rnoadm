@@ -142,7 +142,7 @@ func (s *Stone) Examine() string {
 }
 
 func (s *Stone) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "✧", "", rockTypeInfo[s.Type].Color)
+	setcell(x, y, "", "item_stone", rockTypeInfo[s.Type].Color)
 }
 
 func (s *Stone) Blocking() bool {
@@ -172,7 +172,7 @@ func (o *Ore) Examine() string {
 }
 
 func (o *Ore) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "❖", "", metalTypeInfo[o.Type].Color)
+	setcell(x, y, "", "item_ore", metalTypeInfo[o.Type].Color)
 }
 
 func (o *Ore) Blocking() bool {

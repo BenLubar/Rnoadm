@@ -13,7 +13,7 @@ func (w *WallStone) Examine() string {
 }
 
 func (w *WallStone) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "\u2588", "", rockTypeInfo[w.Type].Color)
+	setcell(x, y, "", "wall_stone", rockTypeInfo[w.Type].Color)
 }
 
 func (w *WallStone) Blocking() bool {
@@ -37,7 +37,7 @@ func (w *WallMetal) Examine() string {
 }
 
 func (w *WallMetal) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "\u2588", "", metalTypeInfo[w.Type].Color)
+	setcell(x, y, "", "wall_metal", metalTypeInfo[w.Type].Color)
 }
 
 func (w *WallMetal) Blocking() bool {
@@ -61,7 +61,7 @@ func (w *WallWood) Examine() string {
 }
 
 func (w *WallWood) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "\u2588", "", woodTypeInfo[w.Type].Color)
+	setcell(x, y, "", "wall_wood", woodTypeInfo[w.Type].Color)
 }
 
 func (w *WallWood) Blocking() bool {

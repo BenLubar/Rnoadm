@@ -49,7 +49,7 @@ var woodTypeInfo = [woodTypeCount]struct {
 	Birch: {
 		Name:      "birch",
 		Color:     "#f5ead5",
-		LeafColor: "#899a8c",
+		LeafColor: "#89eaac",
 		Strength:  12,
 	},
 }
@@ -104,7 +104,7 @@ func (l *Logs) Examine() string {
 }
 
 func (l *Logs) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "➬", "", woodTypeInfo[l.Type].Color)
+	setcell(x, y, "", "item_logs", woodTypeInfo[l.Type].Color)
 }
 
 func (l *Logs) Blocking() bool {
