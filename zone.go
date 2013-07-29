@@ -339,6 +339,13 @@ type Object interface {
 	InteractOptions() []string
 }
 
+type Item interface {
+	IsItem()
+}
+
+var _ Item = (*Ore)(nil)
+var _ Item = (*Stone)(nil)
+
 type Thinker interface {
 	Think()
 }

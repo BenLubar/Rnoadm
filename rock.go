@@ -89,6 +89,8 @@ func (s *Stone) InteractOptions() []string {
 	return nil
 }
 
+func (s *Stone) IsItem() {}
+
 type Ore struct {
 	Type MetalType
 }
@@ -112,3 +114,5 @@ func (o *Ore) Blocking() bool {
 func (o *Ore) InteractOptions() []string {
 	return nil
 }
+
+func (o *Ore) IsItem() {}

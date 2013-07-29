@@ -153,6 +153,7 @@ type InteractMenuHUD struct {
 	Options []string
 	Offset  int
 
+	Take      int
 	Drop      int
 	Examine   int
 	AdminTake int
@@ -164,6 +165,11 @@ type InteractMenuHUD struct {
 func (h *InteractMenuHUD) Paint(setcell func(int, int, rune, Color)) {
 	if h.Options == nil {
 		h.Options = append(h.Options, h.Object.InteractOptions()...)
+		h.Take = -1
+		if _, ok := h.Object.(Item); !h.Inventory && ok {
+			h.Take = len(h.Options)
+			h.Options = append(h.Options, "take")
+		}
 		h.Drop = -1
 		if h.Inventory {
 			h.Drop = len(h.Options)
@@ -249,7 +255,7 @@ func (h *InteractMenuHUD) Key(code int) bool {
 				}
 				h.Player.hud = nil
 				h.Player.Repaint()
-			} else if i == h.AdminTake {
+			} else if i == h.Take || i == h.AdminTake {
 				if h.Inventory {
 					h.Player.lock.Lock()
 					if h.Slot < len(h.Player.Backpack) && h.Player.Backpack[h.Slot] == h.Object {
@@ -295,7 +301,9 @@ func (h *InteractMenuHUD) Key(code int) bool {
 									z.Unlock()
 									h.Player.lock.Lock()
 									h.Player.GiveItem(o)
-									AdminLog.Printf("TAKE [%d:%q] (%d:%d %d:%d) %q %q", h.Player.ID, h.Player.Name(), h.Player.ZoneX, x, h.Player.ZoneY, y, o.Name(), o.Examine())
+									if i == h.AdminTake {
+										AdminLog.Printf("TAKE [%d:%q] (%d:%d %d:%d) %q %q", h.Player.ID, h.Player.Name(), h.Player.ZoneX, x, h.Player.ZoneY, y, o.Name(), o.Examine())
+									}
 									h.Player.lock.Unlock()
 									found = true
 									break
