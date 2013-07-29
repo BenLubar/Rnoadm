@@ -2,7 +2,6 @@ package main
 
 import (
 	"strings"
-	"unicode"
 )
 
 type ExamineHUD struct {
@@ -11,17 +10,9 @@ type ExamineHUD struct {
 	Examine string
 }
 
-func (h *ExamineHUD) Paint(setcell func(int, int, rune, Color)) {
-	i := 0
-	for _, r := range h.Name {
-		setcell(i, 0, unicode.ToUpper(r), "#fff")
-		i++
-	}
-	i = 0
-	for _, r := range h.Examine {
-		setcell(i, 1, r, "#fff")
-		i++
-	}
+func (h *ExamineHUD) Paint(setcell func(int, int, string, string, Color)) {
+	setcell(0, 0, strings.ToUpper(h.Name), "", "#fff")
+	setcell(0, 1, h.Examine, "", "#fff")
 }
 
 func (h *ExamineHUD) Key(code int, special bool) bool {
@@ -44,7 +35,7 @@ type InteractHUD struct {
 	Offset       int
 }
 
-func (h *InteractHUD) Paint(setcell func(int, int, rune, Color)) {
+func (h *InteractHUD) Paint(setcell func(int, int, string, string, Color)) {
 	h.Player.lock.Lock()
 	tx, ty := h.Player.TileX, h.Player.TileY
 	h.Player.lock.Unlock()
@@ -81,39 +72,21 @@ func (h *InteractHUD) Paint(setcell func(int, int, rune, Color)) {
 		h.Objects = objects
 		h.Offset = 0
 	}
-	for i, r := range "INTERACT" {
-		setcell(i, 0, r, "#fff")
-	}
-	const keys = "12345678"
+	setcell(0, 0, "INTERACT", "", "#fff")
 	for i, o := range h.Objects[h.Offset:] {
-		if i >= len(keys) {
+		if i == 8 {
 			break
 		}
-		setcell(0, i+1, rune(keys[i]), "#fff")
-		setcell(1, i+1, ' ', "#fff")
-		j := 2
-		for _, r := range o.Name() {
-			setcell(j, i+1, r, "#fff")
-			j++
-		}
+		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
+		setcell(2, i+1, o.Name(), "", "#fff")
 	}
 	if h.Offset > 0 {
-		setcell(0, 9, '9', "#fff")
-		setcell(1, 9, ' ', "#fff")
-		j := 1
-		for _, r := range "previous" {
-			j++
-			setcell(j, 9, r, "#fff")
-		}
+		setcell(0, 9, "9", "", "#fff")
+		setcell(2, 9, "previous", "", "#fff")
 	}
-	if len(h.Objects) > h.Offset+len(keys) {
-		setcell(0, 10, '0', "#fff")
-		setcell(1, 10, ' ', "#fff")
-		j := 2
-		for _, r := range "next" {
-			setcell(j, 10, r, "#fff")
-			j++
-		}
+	if len(h.Objects) > h.Offset+8 {
+		setcell(0, 10, "0", "", "#fff")
+		setcell(2, 10, "next", "", "#fff")
 	}
 }
 
@@ -168,7 +141,7 @@ type InteractMenuHUD struct {
 	Slot      int
 }
 
-func (h *InteractMenuHUD) Paint(setcell func(int, int, rune, Color)) {
+func (h *InteractMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
 	if h.Options == nil {
 		h.Options = append(h.Options, h.Object.InteractOptions()...)
 		h.Take = -1
@@ -194,42 +167,22 @@ func (h *InteractMenuHUD) Paint(setcell func(int, int, rune, Color)) {
 		}
 	}
 
-	i := 0
-	for _, r := range strings.ToUpper(h.Object.Name()) {
-		setcell(i, 0, r, "#fff")
-		i++
-	}
+	setcell(0, 0, strings.ToUpper(h.Object.Name()), "", "#fff")
 	for i, o := range h.Options[h.Offset:] {
 		if i == 8 {
 			break
 		}
-		setcell(0, i+1, rune(i)+'1', "#fff")
-		setcell(1, i+1, ' ', "#fff")
-		j := 2
-		for _, r := range o {
-			setcell(j, i+1, r, "#fff")
-			j++
-		}
+		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
+		setcell(2, i+1, o, "", "#fff")
 	}
 	if h.Offset > 0 {
-		setcell(0, 9, '9', "#fff")
-		setcell(1, 9, ' ', "#fff")
-		j := 1
-		for _, r := range "previous" {
-			j++
-			setcell(j, 9, r, "#fff")
-		}
+		setcell(0, 9, "9", "", "#fff")
+		setcell(2, 9, "previous", "", "#fff")
 	}
 	if len(h.Options) > h.Offset+8 {
-		setcell(0, 10, '0', "#fff")
-		setcell(1, 10, ' ', "#fff")
-		j := 2
-		for _, r := range "next" {
-			setcell(j, 10, r, "#fff")
-			j++
-		}
+		setcell(0, 10, "0", "", "#fff")
+		setcell(2, 10, "next", "", "#fff")
 	}
-
 }
 
 func (h *InteractMenuHUD) Key(code int, special bool) bool {
@@ -359,7 +312,7 @@ type InventoryHUD struct {
 	Offset int
 }
 
-func (h *InventoryHUD) Paint(setcell func(int, int, rune, Color)) {
+func (h *InventoryHUD) Paint(setcell func(int, int, string, string, Color)) {
 	h.Player.lock.Lock()
 	defer h.Player.lock.Unlock()
 
@@ -367,41 +320,22 @@ func (h *InventoryHUD) Paint(setcell func(int, int, rune, Color)) {
 		h.Offset = 0
 	}
 
-	for i, r := range "INVENTORY" {
-		setcell(i, 0, r, "#fff")
-	}
+	setcell(0, 0, "INVENTORY", "", "#fff")
 	for i, o := range h.Player.Backpack[h.Offset:] {
 		if i == 8 {
 			break
 		}
-		setcell(0, i+1, rune(i)+'1', "#fff")
-		setcell(1, i+1, ' ', "#fff")
-		r, color := o.Paint()
-		setcell(2, i+1, r, color)
-		setcell(3, i+1, ' ', "#fff")
-		j := 4
-		for _, r = range o.Name() {
-			setcell(j, i+1, r, "#fff")
-			j++
-		}
+		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
+		o.Paint(2, i+1, setcell)
+		setcell(4, i+1, o.Name(), "", "#fff")
 	}
 	if h.Offset > 0 {
-		setcell(0, 9, '9', "#fff")
-		setcell(1, 9, ' ', "#fff")
-		j := 1
-		for _, r := range "previous" {
-			j++
-			setcell(j, 9, r, "#fff")
-		}
+		setcell(0, 9, "9", "", "#fff")
+		setcell(2, 9, "previous", "", "#fff")
 	}
 	if len(h.Player.Backpack) > h.Offset+8 {
-		setcell(0, 10, '0', "#fff")
-		setcell(1, 10, ' ', "#fff")
-		j := 2
-		for _, r := range "next" {
-			setcell(j, 10, r, "#fff")
-			j++
-		}
+		setcell(0, 10, "0", "", "#fff")
+		setcell(2, 10, "next", "", "#fff")
 	}
 }
 

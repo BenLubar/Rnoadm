@@ -15,8 +15,8 @@ func (f *Flora) Examine() string {
 	return "a plant."
 }
 
-func (f *Flora) Paint() (rune, Color) {
-	return '"', "#8f0"
+func (f *Flora) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "", "plant_base_l0", "#8f0")
 }
 
 func (f *Flora) Blocking() bool {

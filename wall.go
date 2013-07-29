@@ -12,8 +12,8 @@ func (w *WallStone) Examine() string {
 	return "a wall made of " + rockTypeInfo[w.Type].Name + "."
 }
 
-func (w *WallStone) Paint() (rune, Color) {
-	return '\u2588', rockTypeInfo[w.Type].Color
+func (w *WallStone) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "\u2588", "", rockTypeInfo[w.Type].Color)
 }
 
 func (w *WallStone) Blocking() bool {
@@ -36,8 +36,8 @@ func (w *WallMetal) Examine() string {
 	return "a wall made of " + metalTypeInfo[w.Type].Name + "."
 }
 
-func (w *WallMetal) Paint() (rune, Color) {
-	return '\u2588', metalTypeInfo[w.Type].Color
+func (w *WallMetal) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "\u2588", "", metalTypeInfo[w.Type].Color)
 }
 
 func (w *WallMetal) Blocking() bool {
@@ -60,8 +60,8 @@ func (w *WallWood) Examine() string {
 	return "a wall made of " + woodTypeInfo[w.Type].Name + "."
 }
 
-func (w *WallWood) Paint() (rune, Color) {
-	return '\u2588', woodTypeInfo[w.Type].Color
+func (w *WallWood) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "\u2588", "", woodTypeInfo[w.Type].Color)
 }
 
 func (w *WallWood) Blocking() bool {

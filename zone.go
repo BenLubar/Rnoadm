@@ -289,7 +289,7 @@ func (z *Zone) Name() string {
 
 type Tile struct {
 	Objects []Object
-	Ground  rune
+	Ground  string
 }
 
 func (t *Tile) Add(o Object) {
@@ -320,21 +320,21 @@ func (t *Tile) Blocked() bool {
 
 type Color string
 
-func (t *Tile) Paint(z *Zone) (rune, Color) {
-	if t.Ground == 0 {
+func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, string, string, Color)) {
+	if t.Ground == "" {
 		const ground = " ,.'-`"
-		t.Ground = rune(ground[rand.Intn(len(ground))])
+		t.Ground = string(rune(ground[rand.Intn(len(ground))]))
 	}
-	if len(t.Objects) == 0 {
-		return t.Ground, "#333"
+	setcell(i, j, t.Ground, "ground_grass_l0", "#268f1e")
+	for _, o := range t.Objects {
+		o.Paint(i, j, setcell)
 	}
-	return t.Objects[len(t.Objects)-1].Paint()
 }
 
 type Object interface {
 	Name() string
 	Examine() string
-	Paint() (rune, Color)
+	Paint(int, int, func(int, int, string, string, Color))
 	Blocking() bool
 	InteractOptions() []string
 }

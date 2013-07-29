@@ -19,7 +19,7 @@ type Player struct {
 	TileX, TileY uint8
 
 	hud interface {
-		Paint(func(int, int, rune, Color))
+		Paint(func(int, int, string, string, Color))
 		Key(int, bool) bool
 	}
 	repaint chan struct{}
@@ -197,11 +197,11 @@ func (p *Player) Examine() string {
 	return p.Hero.Examine()
 }
 
-func (p *Player) Paint() (rune, Color) {
+func (p *Player) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	p.Hero.Paint(x, y, setcell)
 	if p.Admin {
-		return '♚', "#fa0"
+		setcell(x, y, "", "player_adminheadband_l2", "#f00")
 	}
-	return p.Hero.Paint()
 }
 
 func (p *Player) Think() {
@@ -210,12 +210,8 @@ func (p *Player) Think() {
 
 type ZoneEntryHUD string
 
-func (h ZoneEntryHUD) Paint(setcell func(int, int, rune, Color)) {
-	i := 0
-	for _, r := range h {
-		setcell(i, 0, r, "#fff")
-		i++
-	}
+func (h ZoneEntryHUD) Paint(setcell func(int, int, string, string, Color)) {
+	setcell(0, 0, string(h), "", "#fff")
 }
 
 func (h ZoneEntryHUD) Key(code int, special bool) bool {
@@ -224,6 +220,9 @@ func (h ZoneEntryHUD) Key(code int, special bool) bool {
 
 type Hero struct {
 	Name_ *Name
+
+	BaseColor  Color
+	ArmorColor Color
 
 	lock     sync.Mutex
 	Delay    uint
@@ -242,8 +241,18 @@ func (h *Hero) Blocking() bool {
 	return false
 }
 
-func (h *Hero) Paint() (rune, Color) {
-	return '☻', "#fff"
+func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
+	if h.BaseColor == "" {
+		h.BaseColor = "#fff"
+	}
+	if h.ArmorColor == "" {
+		h.ArmorColor = "#fff"
+	}
+	setcell(x, y, "", "player_base_l0", h.BaseColor)
+	setcell(x, y, "", "player_armor_l1", h.ArmorColor)
 }
 
 func (h *Hero) Think() {

@@ -17,6 +17,11 @@ var adminCommands = map[string]func(*Player){
 	"CHANGE EXAMINE": func(p *Player) {
 		p.hud = &AdminChangeExamineHUD{Player: p, Input: []rune(p.Examine())}
 	},
+	"CHANGE SKIN COLOR": func(p *Player) {
+		p.lock.Lock()
+		p.hud = &AdminChangeColorHUD{Player: p, Input: []rune(string(p.BaseColor))}
+		p.lock.Unlock()
+	},
 	"DELETE THE ENTIRE ZONE": func(p *Player) {
 		p.lock.Lock()
 		z := p.zone
@@ -145,17 +150,14 @@ type AdminHUD struct {
 	Input  []rune
 }
 
-func (h *AdminHUD) Paint(setcell func(int, int, rune, Color)) {
+func (h *AdminHUD) Paint(setcell func(int, int, string, string, Color)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
 	}
 
-	setcell(0, 0, '>', "#00f")
-	setcell(1, 0, ' ', "#00f")
-	for i, r := range h.Input {
-		setcell(i+2, 0, r, "#00f")
-	}
+	setcell(0, 0, ">", "", "#00f")
+	setcell(2, 0, string(h.Input), "", "#00f")
 }
 
 func (h *AdminHUD) Key(code int, special bool) bool {
@@ -219,7 +221,7 @@ type AdminTeleportHUD struct {
 	Offset int
 }
 
-func (h *AdminTeleportHUD) Paint(setcell func(int, int, rune, Color)) {
+func (h *AdminTeleportHUD) Paint(setcell func(int, int, string, string, Color)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -233,47 +235,28 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, rune, Color)) {
 		onlinePlayersLock.Unlock()
 		sort.Sort(h.List)
 	}
-	for i, r := range "TELEPORT TO PLAYER" {
-		setcell(i, 0, r, "#fff")
-	}
+	setcell(0, 0, "TELEPORT TO PLAYER", "", "#fff")
 	for i, p := range h.List[h.Offset:] {
 		if i == 8 {
 			break
 		}
-		setcell(0, i+1, '1'+rune(i), "#fff")
-		setcell(1, i+1, ' ', "#fff")
+		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
 		id := p.ID
 		for k := 0; k < 16; k++ {
-			setcell(17-k, i+1, rune("0123456789ABCDEF"[id&15]), "#44f")
+			setcell(17-k, i+1, string(rune("0123456789ABCDEF"[id&15])), "", "#44f")
 			id >>= 4
 		}
-		setcell(18, i+1, ' ', "#00f")
-		j := 19
 		p.lock.Lock()
-		name := p.Name()
+		setcell(19, i+1, p.Name(), "", "#00f")
 		p.lock.Unlock()
-		for _, r := range name {
-			setcell(j, i+1, r, "#00f")
-			j++
-		}
 	}
 	if h.Offset > 0 {
-		setcell(0, 9, '9', "#fff")
-		setcell(1, 9, ' ', "#fff")
-		j := 1
-		for _, r := range "previous" {
-			j++
-			setcell(j, 9, r, "#fff")
-		}
+		setcell(0, 9, "9", "", "#fff")
+		setcell(2, 9, "previous", "", "#fff")
 	}
 	if len(h.List) > h.Offset+8 {
-		setcell(0, 10, '0', "#fff")
-		setcell(1, 10, ' ', "#fff")
-		j := 2
-		for _, r := range "next" {
-			setcell(j, 10, r, "#fff")
-			j++
-		}
+		setcell(0, 10, "0", "", "#fff")
+		setcell(2, 10, "next", "", "#fff")
 	}
 }
 
@@ -356,24 +339,18 @@ type AdminChangeExamineHUD struct {
 	Input  []rune
 }
 
-func (h *AdminChangeExamineHUD) Paint(setcell func(int, int, rune, Color)) {
+func (h *AdminChangeExamineHUD) Paint(setcell func(int, int, string, string, Color)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
 	}
 
 	h.Player.lock.Lock()
-	name := strings.ToUpper(h.Player.Name())
+	setcell(0, 0, strings.ToUpper(h.Player.Name()), "", "#fff")
 	h.Player.lock.Unlock()
 
-	for i, r := range []rune(name) {
-		setcell(i, 0, r, "#fff")
-	}
-	setcell(0, 1, '>', "#00f")
-	setcell(1, 1, ' ', "#00f")
-	for i, r := range h.Input {
-		setcell(i+2, 1, r, "#00f")
-	}
+	setcell(0, 1, ">", "", "#00f")
+	setcell(2, 1, string(h.Input), "", "#00f")
 }
 
 func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
@@ -404,6 +381,65 @@ func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
 		h.Player.lock.Lock()
 		AdminLog.Printf("CHANGEEXAMINE:%q [%d:%q] (%d:%d, %d:%d)", string(h.Input), h.Player.ID, h.Player.Name(), h.Player.ZoneX, h.Player.TileX, h.Player.ZoneY, h.Player.TileY)
 		h.Player.Examine_ = string(h.Input)
+		h.Player.lock.Unlock()
+
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	case 27: // esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	return true
+}
+
+type AdminChangeColorHUD struct {
+	Player *Player
+	Input  []rune
+}
+
+func (h *AdminChangeColorHUD) Paint(setcell func(int, int, string, string, Color)) {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		return
+	}
+
+	h.Player.lock.Lock()
+	setcell(0, 0, "SKIN COLOR", "", "#fff")
+	h.Player.lock.Unlock()
+
+	setcell(0, 1, ">", "", "#00f")
+	setcell(2, 1, string(h.Input), "", "#fff")
+}
+
+func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	if !special {
+		if code != 0 {
+			h.Input = append(h.Input, rune(code))
+			h.Player.Repaint()
+		}
+		return true
+	}
+	switch code {
+	case 37, 38, 39, 40: // arrow keys
+		return false
+	case 9, 16, 17, 18: // tab shift ctrl alt
+		return false
+	case 8: // backspace
+		if len(h.Input) > 0 {
+			h.Input = h.Input[:len(h.Input)-1]
+			h.Player.Repaint()
+		}
+		return true
+	case 13: // enter
+		h.Player.lock.Lock()
+		h.Player.BaseColor = Color(h.Input)
 		h.Player.lock.Unlock()
 
 		h.Player.hud = nil

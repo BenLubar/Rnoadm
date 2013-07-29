@@ -2,6 +2,7 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
+	"github.com/BenLubar/Rnoadm/resource"
 	"hash/crc64"
 	"log"
 	"math/rand"
@@ -20,6 +21,10 @@ func init() {
 
 func httpHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
+		if b, ok := resource.Resource[r.URL.Path[1:]]; ok {
+			w.Write(b)
+			return
+		}
 		http.NotFound(w, r)
 		return
 	}
@@ -32,17 +37,8 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 <script>document.title = 'R' + 'ando'.split('').sort(function(a, b) {return Math.random()-.5}).join('') + 'm'</script>
 <style>
 html {
-	background:  #000;
-	text-align:  center;
-}
-table {
-	background:  #000;
-	font-family: monospace;
-	margin:      0 auto;
-}
-td {
-	width:       1em;
-	height:      1em;
+	background: #000;
+	text-align: center;
 }
 </style>
 </head>
@@ -50,6 +46,8 @@ td {
 <script>
 var authkey = localStorage['rnoadm-auth'] || (localStorage['rnoadm-auth'] = generateAuthKey());
 var canvas;
+var images = {};
+var images_recolor = {};
 function generateAuthKey() {
 	return '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').sort(function(a, b) {return Math.random()-.5}).join('');
 }
@@ -61,23 +59,64 @@ var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
 	if (msg.Paint) {
 		if (!canvas) {
-			canvas = document.createElement('table');
-			for (var i = 0; i < 24; i++) {
-				var row = document.createElement('tr');
-				for (var j = 0; j < 80; j++) {
-					row.appendChild(document.createElement('td'));
-				}
-				canvas.appendChild(row);
-			}
+			canvas = document.createElement('canvas');
+			canvas.width = 40*16;
+			canvas.height = 24*16;
 			document.body.appendChild(canvas);
+			canvas = canvas.getContext('2d');
 		}
 
+		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
+
 		for (var i = 0; i < 24; i++) {
-			var row = canvas.children[i];
-			for (var j = 0; j < 80; j++) {
-				var cell = row.children[j];
-				cell.textContent = msg.Paint[j][i].R;
-				cell.style.color = msg.Paint[j][i].C;
+			for (var j = 40-1; j >= 0; j--) {
+				for (var k in (msg.Paint[j][i] || [])) {
+					var p = msg.Paint[j][i][k];
+					if (p.R) {
+						canvas.fillStyle = '#000';
+						canvas.fillText(p.R, j*16+4, i*16+13);
+						canvas.fillStyle = p.C;
+						canvas.fillText(p.R, j*16+4, i*16+12);
+					}
+					if (p.I) {
+						if (!images[p.I]) {
+							images[p.I] = true;
+							(function(img, p) {
+								img.onload = function() {
+									images[p.I] = img;
+									images_recolor[p.I] = {};
+									send({ForceRepaint:true});
+								};
+								img.src = p.I + '.png';
+							})(new Image(), p);
+						}
+						if (images[p.I] === true)
+							continue;
+						if (!images_recolor[p.I][p.C]) {
+							var buffer = document.createElement('canvas');
+							buffer.width = images[p.I].width || 1;
+							buffer.height = images[p.I].height || 1;
+							images_recolor[p.I][p.C] = buffer;
+							buffer = buffer.getContext('2d');
+							buffer.fillStyle = p.C;
+							buffer.fillRect(0, 0, 1, 1);
+							var data = buffer.getImageData(0, 0, 1, 1);
+							var r = data.data[0], g = data.data[1], b = data.data[2], a = data.data[3];
+							buffer.clearRect(0, 0, 1, 1);
+							buffer.drawImage(images[p.I], 0, 0);
+							data = buffer.getImageData(0, 0, buffer.canvas.width, buffer.canvas.height);
+							for (var l = 0; l < data.data.length; l += 4) {
+								data.data[l+0] = data.data[l+0]*r/255;
+								data.data[l+1] = data.data[l+1]*g/255;
+								data.data[l+2] = data.data[l+2]*b/255;
+								data.data[l+3] = data.data[l+3]*a/255;
+							}
+							buffer.putImageData(data, 0, 0);
+
+						}
+						canvas.drawImage(images_recolor[p.I][p.C], j*16, i*16);
+					}
+				}
 			}
 		}
 	}
@@ -111,15 +150,18 @@ type packetIn struct {
 	Auth *struct {
 		Key string
 	}
-	Key *struct {
+	ForceRepaint bool
+	Key          *struct {
 		Code    int
 		Special bool
 	}
 }
+
+type packetPaintCell struct {
+	R, I, C string `json:",omitempty"`
+}
 type packetPaint struct {
-	Paint [80][24]struct {
-		R, C string
-	}
+	Paint [40][24][]packetPaintCell
 }
 
 func websocketHandler(conn *websocket.Conn) {
@@ -227,6 +269,10 @@ func websocketHandler(conn *websocket.Conn) {
 				return
 			}
 
+			if p.ForceRepaint {
+				player.Repaint()
+			}
+
 			if p.Key != nil {
 				if player.hud != nil && player.hud.Key(p.Key.Code, p.Key.Special) {
 					break
@@ -260,11 +306,14 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 		case <-player.repaint:
 			var paint packetPaint
-			setcell := func(x, y int, ch rune, color Color) {
+			setcell := func(x, y int, ch string, sprite string, color Color) {
 				if x >= 0 && x < len(paint.Paint) {
 					if y >= 0 && y < len(paint.Paint[x]) {
-						paint.Paint[x][y].R = string(ch)
-						paint.Paint[x][y].C = string(color)
+						paint.Paint[x][y] = append(paint.Paint[x][y], packetPaintCell{
+							R: ch,
+							I: sprite,
+							C: string(color),
+						})
 					}
 				}
 			}
@@ -285,15 +334,14 @@ func websocketHandler(conn *websocket.Conn) {
 				for y := 0; y < h; y++ {
 					yCoord := y - h/2 + camY
 					if xCoord < 0 || xCoord > 255 || yCoord < 0 || yCoord > 255 {
-						setcell(x, y, '?', "#111")
+						setcell(x, y, "?", "", "#111")
 						continue
 					}
 					y8 := uint8(yCoord)
 					if tile := z.Tile(x8, y8); tile != nil {
-						r, fg := tile.Paint(z)
-						setcell(x, y, r, fg)
+						tile.Paint(z, x, y, setcell)
 					} else {
-						setcell(x, y, '?', "#111")
+						setcell(x, y, "?", "", "#111")
 					}
 				}
 			}

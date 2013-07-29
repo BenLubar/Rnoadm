@@ -53,8 +53,9 @@ func (t *Tree) Examine() string {
 	return "a tall " + woodTypeInfo[t.Type].Name + " tree."
 }
 
-func (t *Tree) Paint() (rune, Color) {
-	return '♣', "green"
+func (t *Tree) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "", "tree_trunk_l0", woodTypeInfo[t.Type].Color)
+	setcell(x, y, "", "tree_leaves_l1", "green")
 }
 
 func (t *Tree) Blocking() bool {
@@ -77,8 +78,8 @@ func (l *Logs) Examine() string {
 	return "some " + woodTypeInfo[l.Type].Name + " logs."
 }
 
-func (l *Logs) Paint() (rune, Color) {
-	return '➬', woodTypeInfo[l.Type].Color
+func (l *Logs) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "➬", "", woodTypeInfo[l.Type].Color)
 }
 
 func (l *Logs) Blocking() bool {

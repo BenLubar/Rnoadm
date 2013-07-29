@@ -95,8 +95,8 @@ func (r *Rock) Examine() string {
 	return "a " + rockTypeInfo[r.Type].Name + " rock."
 }
 
-func (r *Rock) Paint() (rune, Color) {
-	return '◊', rockTypeInfo[r.Type].Color
+func (r *Rock) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "", "rock_base_l0", rockTypeInfo[r.Type].Color)
 }
 
 func (r *Rock) Blocking() bool {
@@ -119,8 +119,8 @@ func (s *Stone) Examine() string {
 	return "a " + rockTypeInfo[s.Type].Name + " stone."
 }
 
-func (s *Stone) Paint() (rune, Color) {
-	return '✧', rockTypeInfo[s.Type].Color
+func (s *Stone) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "✧", "", rockTypeInfo[s.Type].Color)
 }
 
 func (s *Stone) Blocking() bool {
@@ -149,8 +149,8 @@ func (o *Ore) Examine() string {
 	return "some " + metalTypeInfo[o.Type].Name + " ore."
 }
 
-func (o *Ore) Paint() (rune, Color) {
-	return '❖', metalTypeInfo[o.Type].Color
+func (o *Ore) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "❖", "", metalTypeInfo[o.Type].Color)
 }
 
 func (o *Ore) Blocking() bool {
