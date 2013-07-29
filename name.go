@@ -47,8 +47,12 @@ func (n *Name) String() string {
 }
 
 func GenerateName(r *rand.Rand, subtypes ...NameSubtype) *Name {
+	var firstName []byte
+	for i := r.Intn(5) + 1; i > 0; i-- {
+		firstName = append(firstName, syllables[r.Intn(len(syllables))]...)
+	}
 	n := &Name{
-		Name: "TODONAME",
+		Name: string(firstName),
 	}
 	if len(subtypes) == 0 {
 		return n
@@ -96,6 +100,13 @@ const (
 
 	nameSubtypeCount
 )
+
+var syllables = []string{
+	"TO",
+	"DO",
+	"NA",
+	"ME",
+}
 
 // leave the first one of each subtype blank. add only to the end of each list.
 var names = [nameSubtypeCount][]string{
