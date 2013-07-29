@@ -83,7 +83,7 @@ var rockTypeInfo = [rockTypeCount]struct {
 		Color: "blue",
 	},
 	Aetherite: {
-		Name:  "Aetherite",
+		Name:  "aetherite",
 		Color: "white",
 	},
 }

@@ -7,60 +7,11 @@ import (
 
 type ExamineHUD struct {
 	Player  *Player
-	Object  Object
 	Name    string
 	Examine string
 }
 
 func (h *ExamineHUD) Paint(setcell func(int, int, rune, Color)) {
-	if h.Object != nil {
-		h.Name = h.Object.Name()
-
-		h.Player.lock.Lock()
-		z := h.Player.zone
-		tx, ty := h.Player.TileX, h.Player.TileY
-		h.Player.lock.Unlock()
-
-		minX := tx - 1
-		if minX > tx {
-			minX = 0
-		}
-		maxX := tx + 1
-		if maxX < tx {
-			maxX = 255
-		}
-		minY := ty - 1
-		if minY > ty {
-			minY = 0
-		}
-		maxY := ty + 1
-		if maxY < ty {
-			maxY = 255
-		}
-
-		z.Lock()
-		for x := minX; x >= minX && x <= maxX && h.Object != nil; x++ {
-			for y := minY; y >= minY && y <= maxY && h.Object != nil; y++ {
-				t := z.Tile(x, y)
-				if t != nil {
-					for _, o := range t.Objects {
-						if o == h.Object {
-							h.Object = nil
-							h.Examine = o.Examine()
-							break
-						}
-					}
-				}
-			}
-		}
-		z.Unlock()
-
-		if h.Object != nil {
-			h.Examine = "that is too far away!"
-			h.Object = nil
-		}
-	}
-
 	i := 0
 	for _, r := range h.Name {
 		setcell(i, 0, unicode.ToUpper(r), "#fff")
@@ -202,19 +153,32 @@ type InteractMenuHUD struct {
 	Options []string
 	Offset  int
 
+	Drop      int
 	Examine   int
 	AdminTake int
+
+	Inventory bool
+	Slot      int
 }
 
 func (h *InteractMenuHUD) Paint(setcell func(int, int, rune, Color)) {
 	if h.Options == nil {
 		h.Options = append(h.Options, h.Object.InteractOptions()...)
+		h.Drop = -1
+		if h.Inventory {
+			h.Drop = len(h.Options)
+			h.Options = append(h.Options, "drop")
+		}
 		h.Examine = len(h.Options)
 		h.Options = append(h.Options, "examine")
 		h.AdminTake = -1
 		if _, ok := h.Object.(*Player); h.Player.Admin && !ok {
 			h.AdminTake = len(h.Options)
-			h.Options = append(h.Options, "take [ADMIN]")
+			if h.Inventory {
+				h.Options = append(h.Options, "destroy [ADMIN]")
+			} else {
+				h.Options = append(h.Options, "take [ADMIN]")
+			}
 		}
 	}
 
@@ -263,11 +227,40 @@ func (h *InteractMenuHUD) Key(code int) bool {
 		if i < len(h.Options) {
 			if i == h.Examine {
 				h.Player.hud = &ExamineHUD{
-					Player: h.Player,
-					Object: h.Object,
+					Player:  h.Player,
+					Name:    h.Object.Name(),
+					Examine: h.Object.Examine(),
 				}
 				h.Player.Repaint()
+			} else if i == h.Drop {
+				h.Player.lock.Lock()
+				if h.Slot < len(h.Player.Backpack) && h.Player.Backpack[h.Slot] == h.Object {
+					zone := h.Player.zone
+					tx, ty := h.Player.TileX, h.Player.TileY
+					h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
+					h.Player.lock.Unlock()
+
+					zone.Lock()
+					zone.Tile(tx, ty).Add(h.Object)
+					zone.Unlock()
+					zone.Repaint()
+				} else {
+					h.Player.lock.Unlock()
+				}
+				h.Player.hud = nil
+				h.Player.Repaint()
 			} else if i == h.AdminTake {
+				if h.Inventory {
+					h.Player.lock.Lock()
+					if h.Slot < len(h.Player.Backpack) && h.Player.Backpack[h.Slot] == h.Object {
+						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
+					}
+					h.Player.lock.Unlock()
+					h.Player.hud = nil
+					h.Player.Repaint()
+					return true
+				}
+
 				h.Player.lock.Lock()
 				z := h.Player.zone
 				tx, ty := h.Player.TileX, h.Player.TileY
@@ -330,6 +323,95 @@ func (h *InteractMenuHUD) Key(code int) bool {
 		return true
 	case '0':
 		if h.Offset+8 < len(h.Options) {
+			h.Offset++
+			h.Player.Repaint()
+		}
+		return true
+
+	case 27: // esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	return false
+}
+
+type InventoryHUD struct {
+	Player *Player
+	Offset int
+}
+
+func (h *InventoryHUD) Paint(setcell func(int, int, rune, Color)) {
+	h.Player.lock.Lock()
+	defer h.Player.lock.Unlock()
+
+	if h.Offset > len(h.Player.Backpack) {
+		h.Offset = 0
+	}
+
+	for i, r := range "INVENTORY" {
+		setcell(i, 0, r, "#fff")
+	}
+	for i, o := range h.Player.Backpack[h.Offset:] {
+		if i == 8 {
+			break
+		}
+		setcell(0, i+1, rune(i)+'1', "#fff")
+		setcell(1, i+1, ' ', "#fff")
+		r, color := o.Paint()
+		setcell(2, i+1, r, color)
+		setcell(3, i+1, ' ', "#fff")
+		j := 4
+		for _, r = range o.Name() {
+			setcell(j, i+1, r, "#fff")
+			j++
+		}
+	}
+	if h.Offset > 0 {
+		setcell(0, 9, '9', "#fff")
+		setcell(1, 9, ' ', "#fff")
+		j := 1
+		for _, r := range "previous" {
+			j++
+			setcell(j, 9, r, "#fff")
+		}
+	}
+	if len(h.Player.Backpack) > h.Offset+8 {
+		setcell(0, 10, '0', "#fff")
+		setcell(1, 10, ' ', "#fff")
+		j := 2
+		for _, r := range "next" {
+			setcell(j, 10, r, "#fff")
+			j++
+		}
+	}
+}
+
+func (h *InventoryHUD) Key(code int) bool {
+	h.Player.lock.Lock()
+	defer h.Player.lock.Unlock()
+
+	switch code {
+	case '1', '2', '3', '4', '5', '6', '7', '8':
+		i := code - '1' + h.Offset
+		if i < len(h.Player.Backpack) {
+			h.Player.hud = &InteractMenuHUD{
+				Player:    h.Player,
+				Object:    h.Player.Backpack[i],
+				Inventory: true,
+				Slot:      i,
+			}
+			h.Player.Repaint()
+		}
+		return true
+	case '9':
+		if h.Offset > 0 {
+			h.Offset--
+			h.Player.Repaint()
+		}
+		return true
+	case '0':
+		if h.Offset+8 < len(h.Player.Backpack) {
 			h.Offset++
 			h.Player.Repaint()
 		}

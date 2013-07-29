@@ -237,6 +237,9 @@ func websocketHandler(conn *websocket.Conn) {
 				case 'E':
 					player.hud = &InteractHUD{Player: player}
 					player.Repaint()
+				case 'I':
+					player.hud = &InventoryHUD{Player: player}
+					player.Repaint()
 				case 192: // `
 					if player.Admin {
 						player.hud = &AdminHUD{Player: player}

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"time"
 )
@@ -38,8 +39,17 @@ func main() {
 		}
 	}()
 
-	for {
-		log.Print(http.ListenAndServe(":2064", nil))
-		time.Sleep(time.Second)
-	}
+	go func() {
+		for {
+			log.Print(http.ListenAndServe(":2064", nil))
+			time.Sleep(time.Second)
+		}
+	}()
+
+	sigkill := make(chan os.Signal, 1)
+	signal.Notify(sigkill, os.Kill)
+	<-sigkill
+	EachLoadedZone(func(z *Zone) {
+		z.Save()
+	})
 }

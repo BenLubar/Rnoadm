@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"sort"
+	"strings"
 )
 
 var AdminLog *log.Logger
@@ -10,8 +11,18 @@ var AdminLog *log.Logger
 var adminCommands = map[string]func(*Player){
 	"TP": func(p *Player) {
 		p.hud = &AdminTeleportHUD{Player: p}
-		p.Repaint()
 	},
+}
+
+func init() {
+	for t := range rockTypeInfo {
+		rt := RockType(t)
+		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[t].Name)+" ROCK"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&Rock{rt})
+			p.lock.Unlock()
+		}
+	}
 }
 
 type AdminHUD struct {
@@ -51,7 +62,9 @@ func (h *AdminHUD) Key(code int) bool {
 		return true
 	case 13: // enter
 		if f, ok := adminCommands[string(h.Input)]; ok {
+			h.Player.hud = nil
 			f(h.Player)
+			h.Player.Repaint()
 		}
 		return true
 	case 27: // esc
