@@ -162,6 +162,7 @@ func init() {
 type AdminHUD struct {
 	Player *Player
 	Input  []rune
+	Key    bool
 }
 
 func (h *AdminHUD) Paint(setcell func(int, int, string, string, Color)) {
@@ -181,7 +182,8 @@ func (h *AdminHUD) Key(code int, special bool) bool {
 		return true
 	}
 	if !special {
-		if code != 0 && code != '`' {
+		if code != 0 && h.Key {
+			h.Key = false
 			h.Input = append(h.Input, unicode.ToUpper(rune(code)))
 			h.Player.Repaint()
 		}
@@ -214,6 +216,7 @@ func (h *AdminHUD) Key(code int, special bool) bool {
 		h.Player.Repaint()
 		return true
 	}
+	h.Key = true
 	return true
 }
 
