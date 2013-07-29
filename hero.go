@@ -59,37 +59,31 @@ func (p *Player) Move(dx, dy int) {
 		p.Delay = 2
 		if destY < 0 {
 			p.ZoneY -= 2
-			p.TileX = 127
 			p.TileY = 255
 		} else if destY > 255 {
 			p.ZoneY += 2
-			p.TileX = 127
 			p.TileY = 0
 		} else if destX < 128 {
-			if p.ZoneY & 1 == 1 {
+			p.TileX = 255 - p.TileX
+			p.TileY = 255 - p.TileY
+			if p.ZoneY&1 == 0 {
 				p.ZoneX--
 			}
 			if destY < 128 {
 				p.ZoneY--
-				p.TileX = 255 - zoneOffset[255-64]
-				p.TileY = 255 - 64
 			} else {
 				p.ZoneY++
-				p.TileX = 255 - zoneOffset[64]
-				p.TileY = 64
 			}
 		} else {
-			if p.ZoneY & 1 == 1 {
+			p.TileX = 255 - p.TileX
+			p.TileY = 255 - p.TileY
+			if p.ZoneY&1 == 1 {
 				p.ZoneX++
 			}
 			if destY < 128 {
 				p.ZoneY--
-				p.TileX = zoneOffset[255-64]
-				p.TileY = 255 - 64
 			} else {
 				p.ZoneY++
-				p.TileX = zoneOffset[64]
-				p.TileY = 64
 			}
 		}
 		z = GrabZone(p.ZoneX, p.ZoneY)
