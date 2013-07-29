@@ -94,10 +94,13 @@ function send(packet) {
 	ws.send(JSON.stringify(packet));
 }
 document.onkeydown = function(e) {
-	send({Key:{Code:e.keyCode}});
+	send({Key:{Code:e.keyCode, Special:true}});
 	if (e.keyCode == 8) {
 		e.preventDefault()
 	}
+};
+document.onkeypress = function(e) {
+	send({Key:{Code:e.charCode, Special:false}});
 };
 </script>
 </body>
@@ -109,7 +112,8 @@ type packetIn struct {
 		Key string
 	}
 	Key *struct {
-		Code int
+		Code    int
+		Special bool
 	}
 }
 type packetPaint struct {
@@ -224,7 +228,10 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			if p.Key != nil {
-				if player.hud != nil && player.hud.Key(p.Key.Code) {
+				if player.hud != nil && player.hud.Key(p.Key.Code, p.Key.Special) {
+					break
+				}
+				if !p.Key.Special {
 					break
 				}
 				switch p.Key.Code {

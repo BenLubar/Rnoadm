@@ -24,7 +24,10 @@ func (h *ExamineHUD) Paint(setcell func(int, int, rune, Color)) {
 	}
 }
 
-func (h *ExamineHUD) Key(code int) bool {
+func (h *ExamineHUD) Key(code int, special bool) bool {
+	if !special {
+		return false
+	}
 	switch code {
 	case 27: // esc
 		h.Player.hud = nil
@@ -114,7 +117,10 @@ func (h *InteractHUD) Paint(setcell func(int, int, rune, Color)) {
 	}
 }
 
-func (h *InteractHUD) Key(code int) bool {
+func (h *InteractHUD) Key(code int, special bool) bool {
+	if !special {
+		return false
+	}
 	switch code {
 	case '1', '2', '3', '4', '5', '6', '7', '8':
 		i := code - '1' + h.Offset
@@ -226,7 +232,10 @@ func (h *InteractMenuHUD) Paint(setcell func(int, int, rune, Color)) {
 
 }
 
-func (h *InteractMenuHUD) Key(code int) bool {
+func (h *InteractMenuHUD) Key(code int, special bool) bool {
+	if !special {
+		return false
+	}
 	switch code {
 	case '1', '2', '3', '4', '5', '6', '7', '8':
 		i := code - '1' + h.Offset
@@ -396,7 +405,11 @@ func (h *InventoryHUD) Paint(setcell func(int, int, rune, Color)) {
 	}
 }
 
-func (h *InventoryHUD) Key(code int) bool {
+func (h *InventoryHUD) Key(code int, special bool) bool {
+	if !special {
+		return false
+	}
+
 	h.Player.lock.Lock()
 	defer h.Player.lock.Unlock()
 

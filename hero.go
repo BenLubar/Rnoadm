@@ -17,15 +17,17 @@ type Player struct {
 	Hero
 	ZoneX, ZoneY int64
 	TileX, TileY uint8
-	hud          interface {
+
+	hud interface {
 		Paint(func(int, int, rune, Color))
-		Key(int) bool
+		Key(int, bool) bool
 	}
 	repaint chan struct{}
 
 	Joined    time.Time
 	LastLogin time.Time
 	Admin     bool
+	Examine_  string
 
 	zone *Zone
 }
@@ -183,6 +185,18 @@ func (p *Player) RepaintZone() {
 	}()
 }
 
+func (p *Player) Examine() string {
+	if p.Admin {
+		p.lock.Lock()
+		defer p.lock.Unlock()
+		if p.Examine_ != "" {
+			return p.Examine_
+		}
+		return "an admin."
+	}
+	return p.Hero.Examine()
+}
+
 func (p *Player) Paint() (rune, Color) {
 	if p.Admin {
 		return '♚', "#fa0"
@@ -204,7 +218,7 @@ func (h ZoneEntryHUD) Paint(setcell func(int, int, rune, Color)) {
 	}
 }
 
-func (h ZoneEntryHUD) Key(code int) bool {
+func (h ZoneEntryHUD) Key(code int, special bool) bool {
 	return false
 }
 

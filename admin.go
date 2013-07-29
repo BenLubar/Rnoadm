@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"sort"
 	"strings"
+	"unicode"
 )
 
 var AdminLog *log.Logger
@@ -12,6 +13,9 @@ var AdminLog *log.Logger
 var adminCommands = map[string]func(*Player){
 	"TP": func(p *Player) {
 		p.hud = &AdminTeleportHUD{Player: p}
+	},
+	"CHANGE EXAMINE": func(p *Player) {
+		p.hud = &AdminChangeExamineHUD{Player: p, Input: []rune(p.Examine())}
 	},
 }
 
@@ -109,10 +113,17 @@ func (h *AdminHUD) Paint(setcell func(int, int, rune, Color)) {
 	}
 }
 
-func (h *AdminHUD) Key(code int) bool {
+func (h *AdminHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
+		return true
+	}
+	if !special {
+		if code != 0 && code != '`' {
+			h.Input = append(h.Input, unicode.ToUpper(rune(code)))
+			h.Player.Repaint()
+		}
 		return true
 	}
 	switch code {
@@ -142,8 +153,6 @@ func (h *AdminHUD) Key(code int) bool {
 		h.Player.Repaint()
 		return true
 	}
-	h.Input = append(h.Input, rune(code))
-	h.Player.Repaint()
 	return true
 }
 
@@ -223,11 +232,14 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, rune, Color)) {
 	}
 }
 
-func (h *AdminTeleportHUD) Key(code int) bool {
+func (h *AdminTeleportHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
 		return true
+	}
+	if !special {
+		return false
 	}
 	switch code {
 	case '1', '2', '3', '4', '5', '6', '7', '8':
@@ -292,4 +304,70 @@ func (h *AdminTeleportHUD) Key(code int) bool {
 		return true
 	}
 	return false
+}
+
+type AdminChangeExamineHUD struct {
+	Player *Player
+	Input  []rune
+}
+
+func (h *AdminChangeExamineHUD) Paint(setcell func(int, int, rune, Color)) {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		return
+	}
+
+	h.Player.lock.Lock()
+	name := strings.ToUpper(h.Player.Name())
+	h.Player.lock.Unlock()
+
+	for i, r := range []rune(name) {
+		setcell(i, 0, r, "#fff")
+	}
+	setcell(0, 1, '>', "#00f")
+	setcell(1, 1, ' ', "#00f")
+	for i, r := range h.Input {
+		setcell(i+2, 1, r, "#00f")
+	}
+}
+
+func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	if !special {
+		if code != 0 {
+			h.Input = append(h.Input, rune(code))
+			h.Player.Repaint()
+		}
+		return true
+	}
+	switch code {
+	case 37, 38, 39, 40: // arrow keys
+		return false
+	case 9, 16, 17, 18: // tab shift ctrl alt
+		return false
+	case 8: // backspace
+		if len(h.Input) > 0 {
+			h.Input = h.Input[:len(h.Input)-1]
+			h.Player.Repaint()
+		}
+		return true
+	case 13: // enter
+		h.Player.lock.Lock()
+		AdminLog.Printf("CHANGEEXAMINE:%q [%d:%q] (%d:%d, %d:%d)", string(h.Input), h.Player.ID, h.Player.Name(), h.Player.ZoneX, h.Player.TileX, h.Player.ZoneY, h.Player.TileY)
+		h.Player.Examine_ = string(h.Input)
+		h.Player.lock.Unlock()
+
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	case 27: // esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	return true
 }
