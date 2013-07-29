@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"sort"
 	"strings"
 )
@@ -19,9 +20,24 @@ func init() {
 		rt := RockType(t)
 		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[t].Name)+" ROCK"] = func(p *Player) {
 			p.lock.Lock()
-			p.GiveItem(&Rock{rt})
+			p.GiveItem(&Rock{Type: rt})
 			p.lock.Unlock()
 		}
+	}
+	adminCommands["SPAWN PLANT"] = func(p *Player) {
+		p.lock.Lock()
+		p.GiveItem(&Flora{Type: 0})
+		p.lock.Unlock()
+	}
+	adminCommands["SPAWN HERO"] = func(p *Player) {
+		p.lock.Lock()
+		p.GiveItem(&Hero{Name_: GenerateName(rand.New(rand.NewSource(rand.Int63())), NameHero)})
+		p.lock.Unlock()
+	}
+	adminCommands["SPAWN WALL"] = func(p *Player) {
+		p.lock.Lock()
+		p.GiveItem(&Wall{})
+		p.lock.Unlock()
 	}
 }
 
@@ -62,6 +78,10 @@ func (h *AdminHUD) Key(code int) bool {
 		return true
 	case 13: // enter
 		if f, ok := adminCommands[string(h.Input)]; ok {
+			h.Player.lock.Lock()
+			AdminLog.Printf("COMMAND:%q [%d:%q] (%d:%d, %d:%d)", string(h.Input), h.Player.ID, h.Player.Name(), h.Player.ZoneX, h.Player.TileX, h.Player.ZoneY, h.Player.TileY)
+			h.Player.lock.Unlock()
+
 			h.Player.hud = nil
 			f(h.Player)
 			h.Player.Repaint()
