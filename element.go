@@ -66,7 +66,7 @@ func init() {
 	elements[Air] = element{
 		Name:  "Air",
 		Links: []Element{Smoke, Dust, Mist},
-		Rocks: []RockType{Helium},
+		Rocks: []RockType{Aetherite},
 	}
 	elements[Earth] = element{
 		Name:  "Earth",
@@ -91,7 +91,7 @@ func init() {
 	elements[Dust] = element{
 		Name:  "Dust",
 		Links: []Element{Earth, Air},
-		Rocks: []RockType{Sand},
+		Rocks: []RockType{Sandstone},
 	}
 	elements[Lava] = element{
 		Name:  "Lava",
