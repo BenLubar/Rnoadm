@@ -11,7 +11,13 @@ import (
 var AdminLog *log.Logger
 
 var adminCommands = map[string]func(*Player){
+	"MENU": func(p *Player) {
+		p.hud = &AdminMenuHUD{Player: p}
+	},
 	"TP": func(p *Player) {
+		p.hud = &AdminTeleportHUD{Player: p}
+	},
+	"TELEPORT": func(p *Player) {
 		p.hud = &AdminTeleportHUD{Player: p}
 	},
 	"CHANGE EXAMINE": func(p *Player) {
@@ -459,4 +465,85 @@ func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
 		return true
 	}
 	return true
+}
+
+type AdminMenuHUD struct {
+	Player   *Player
+	Commands []string
+	Offset   int
+}
+
+func (h *AdminMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return
+	}
+
+	if h.Commands == nil {
+		h.Commands = make([]string, 0, len(adminCommands))
+		for c := range adminCommands {
+			h.Commands = append(h.Commands, c)
+		}
+		sort.Strings(h.Commands)
+	}
+
+	setcell(0, 0, "ADMIN MENU-O-MATIC", "", "#00f")
+	for i, c := range h.Commands[h.Offset:] {
+		if i == 8 {
+			break
+		}
+		setcell(0, i+1, string(rune(i)+'1'), "", "#0ff")
+		setcell(2, i+1, c, "", "#0ff")
+	}
+	if h.Offset > 0 {
+		setcell(0, 9, "9", "", "#fff")
+		setcell(2, 9, "previous", "", "#fff")
+	}
+	if len(h.Commands) > h.Offset+8 {
+		setcell(0, 10, "0", "", "#fff")
+		setcell(2, 10, "next", "", "#fff")
+	}
+}
+
+func (h *AdminMenuHUD) Key(code int, special bool) bool {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+
+	if !special {
+		return false
+	}
+	switch code {
+	case '1', '2', '3', '4', '5', '6', '7', '8':
+		i := code - '1' + h.Offset
+		if i < len(h.Commands) {
+			h.Player.hud = &AdminHUD{
+				Player: h.Player,
+				Input:  []rune(h.Commands[i]),
+			}
+			h.Player.Repaint()
+		}
+		return true
+	case '9':
+		if h.Offset > 0 {
+			h.Offset--
+			h.Player.Repaint()
+		}
+		return true
+	case '0':
+		if h.Offset+8 < len(h.Commands) {
+			h.Offset++
+			h.Player.Repaint()
+		}
+		return true
+
+	case 27: // esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	return false
 }
