@@ -10,6 +10,8 @@ const (
 	Oak WoodType = iota
 	Beonetwon
 	DeadTree
+	Maple
+	Birch
 
 	woodTypeCount
 )
@@ -24,7 +26,7 @@ var woodTypeInfo = [woodTypeCount]struct {
 	Oak: {
 		Name:      "oak",
 		Color:     "#dab583",
-		LeafColor: "#070",
+		LeafColor: "#919a2a",
 		Strength:  10,
 	},
 	Beonetwon: {
@@ -35,8 +37,20 @@ var woodTypeInfo = [woodTypeCount]struct {
 	},
 	DeadTree: {
 		Name:     "dead",
-		Color:    "#999",
+		Color:    "#975",
 		Strength: 5,
+	},
+	Maple: {
+		Name:      "maple",
+		Color:     "#ffb963",
+		LeafColor: "#aa5217",
+		Strength:  15,
+	},
+	Birch: {
+		Name:      "birch",
+		Color:     "#f5ead5",
+		LeafColor: "#899a8c",
+		Strength:  12,
 	},
 }
 

@@ -9,6 +9,7 @@ type RockType uint16
 const (
 	Granite RockType = iota
 	Adminstone
+	Limestone
 
 	rockTypeCount
 )
@@ -29,6 +30,11 @@ var rockTypeInfo = [rockTypeCount]struct {
 		Color:    "#1e0036",
 		Strength: 1 << 63,
 	},
+	Limestone: {
+		Name:     "limestone",
+		Color:    "#bebd8f",
+		Strength: 45,
+	},
 }
 
 func init() {
@@ -47,6 +53,7 @@ const (
 	_ MetalType = iota
 	Iron
 	Unobtainium
+	Copper
 
 	metalTypeCount
 )
@@ -66,6 +73,11 @@ var metalTypeInfo = [metalTypeCount]struct {
 		Name:     "unobtainium",
 		Color:    "#ff00ff",
 		Strength: 1 << 63,
+	},
+	Copper: {
+		Name:     "copper",
+		Color:    "#af633e",
+		Strength: 65,
 	},
 }
 

@@ -82,10 +82,10 @@ func init() {
 	elements[Nature] = element{
 		Name:  "Nature",
 		Links: []Element{Air, Water, Earth},
-		Rocks: []RockType{Granite},
-		Ores:  []MetalType{0, Iron},
+		Rocks: []RockType{Granite, Limestone},
+		Ores:  []MetalType{0, Iron, Copper},
 		Flora: []FloraType{LeafPlant, FlowerPlant, BulbPlant},
-		Trees: []WoodType{Oak, DeadTree},
+		Trees: []WoodType{Oak, DeadTree, Maple, Birch},
 	}
 	elements[Dust] = element{
 		Name:  "Dust",

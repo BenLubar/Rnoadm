@@ -20,7 +20,8 @@ var floraTypeInfo = [floraTypeCount]struct {
 }{
 	LeafPlant: {
 		Name:      "leaf",
-		LeafColor: "#4f0",
+		LeafColor: "#370",
+		StemColor: "#370",
 	},
 	FlowerPlant: {
 		Name:        "flower",
