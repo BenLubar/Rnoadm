@@ -39,6 +39,15 @@ var adminCommands = map[string]func(*Player){
 		z := p.zone
 		p.lock.Unlock()
 
+		z.Lock()
+		for i := range z.Tiles {
+			for _, o := range z.Tiles[i].Objects {
+				if _, ok := o.(*Player); !ok {
+					z.Tiles[i].Remove(o)
+				}
+			}
+		}
+		z.Unlock()
 		z.Generate()
 		z.Save()
 		z.Repaint()
