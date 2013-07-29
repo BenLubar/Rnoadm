@@ -24,6 +24,14 @@ func init() {
 			p.lock.Unlock()
 		}
 	}
+	for t := range woodTypeInfo {
+		wt := WoodType(t)
+		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[t].Name)+" TREE"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&Tree{Type: wt})
+			p.lock.Unlock()
+		}
+	}
 	adminCommands["SPAWN PLANT"] = func(p *Player) {
 		p.lock.Lock()
 		p.GiveItem(&Flora{Type: 0})
