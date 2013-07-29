@@ -24,10 +24,15 @@ var adminCommands = map[string]func(*Player){
 
 		z.Lock()
 		for i := range z.Tiles {
-			for _, o := range z.Tiles[i].Objects {
-				if _, ok := o.(*Player); !ok {
-					z.Tiles[i].Remove(o)
+			t := &z.Tiles[i]
+			for j := 0; j < len(t.Objects); j++ {
+				if _, ok := t.Objects[j].(*Player); !ok {
+					t.Objects = append(t.Objects[:j], t.Objects[j+1:]...)
+					j--
 				}
+			}
+			if len(t.Objects) == 0 {
+				t.Objects = nil
 			}
 		}
 		z.Unlock()
@@ -41,10 +46,15 @@ var adminCommands = map[string]func(*Player){
 
 		z.Lock()
 		for i := range z.Tiles {
-			for _, o := range z.Tiles[i].Objects {
-				if _, ok := o.(*Player); !ok {
-					z.Tiles[i].Remove(o)
+			t := &z.Tiles[i]
+			for j := 0; j < len(t.Objects); j++ {
+				if _, ok := t.Objects[j].(*Player); !ok {
+					t.Objects = append(t.Objects[:j], t.Objects[j+1:]...)
+					j--
 				}
+			}
+			if len(t.Objects) == 0 {
+				t.Objects = nil
 			}
 		}
 		z.Unlock()
