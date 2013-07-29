@@ -1,5 +1,9 @@
 package main
 
+import (
+	"math"
+)
+
 type RockType uint16
 
 const (
@@ -13,6 +17,7 @@ var rockTypeInfo = [rockTypeCount]struct {
 	Name     string
 	Color    Color
 	Strength uint64
+	sqrtStr  uint64
 }{
 	Granite: {
 		Name:     "granite",
@@ -22,8 +27,18 @@ var rockTypeInfo = [rockTypeCount]struct {
 	Adminstone: {
 		Name:     "adminstone",
 		Color:    "#1e0036",
-		Strength: 99999999999999999,
+		Strength: 1 << 63,
 	},
+}
+
+func init() {
+	for t := range rockTypeInfo {
+		if rockTypeInfo[t].Strength > 1<<63-1 {
+			rockTypeInfo[t].sqrtStr = rockTypeInfo[t].Strength - 1
+		} else {
+			rockTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(rockTypeInfo[t].Strength)))
+		}
+	}
 }
 
 type MetalType uint16
@@ -40,6 +55,7 @@ var metalTypeInfo = [metalTypeCount]struct {
 	Name     string
 	Color    Color
 	Strength uint64
+	sqrtStr  uint64
 }{
 	Iron: {
 		Name:     "iron",
@@ -49,8 +65,18 @@ var metalTypeInfo = [metalTypeCount]struct {
 	Unobtainium: {
 		Name:     "unobtainium",
 		Color:    "#ff00ff",
-		Strength: 99999999999999999,
+		Strength: 1 << 63,
 	},
+}
+
+func init() {
+	for t := range metalTypeInfo {
+		if metalTypeInfo[t].Strength > 1<<63-1 {
+			metalTypeInfo[t].sqrtStr = metalTypeInfo[t].Strength - 1
+		} else {
+			metalTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(metalTypeInfo[t].Strength)))
+		}
+	}
 }
 
 type Rock struct {
@@ -107,6 +133,10 @@ func (s *Stone) InteractOptions() []string {
 
 func (s *Stone) IsItem() {}
 
+func (s *Stone) AdminOnly() bool {
+	return rockTypeInfo[s.Type].Strength > 1<<63-1
+}
+
 type Ore struct {
 	Type MetalType
 }
@@ -132,3 +162,7 @@ func (o *Ore) InteractOptions() []string {
 }
 
 func (o *Ore) IsItem() {}
+
+func (o *Ore) AdminOnly() bool {
+	return metalTypeInfo[o.Type].Strength > 1<<63-1
+}

@@ -205,7 +205,7 @@ func (p *Player) Paint() (rune, Color) {
 }
 
 func (p *Player) Think() {
-	p.think(false)
+	p.think(p)
 }
 
 type ZoneEntryHUD string
@@ -247,12 +247,25 @@ func (h *Hero) Paint() (rune, Color) {
 }
 
 func (h *Hero) Think() {
-	h.think(true)
+	h.think(nil)
 }
 
-func (h *Hero) think(ai bool) {
+func (h *Hero) think(p *Player) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
+
+	if p == nil || !p.Admin {
+		for i := 0; i < len(h.Backpack); i++ {
+			o := h.Backpack[i]
+			if a, ok := o.(Item); !ok || a.AdminOnly() {
+				if p != nil {
+					AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+				}
+				h.Backpack = append(h.Backpack[:i], h.Backpack[i+1:]...)
+				i--
+			}
+		}
+	}
 
 	if h.Delay > 0 {
 		h.Delay--

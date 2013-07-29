@@ -1,5 +1,9 @@
 package main
 
+import (
+	"math"
+)
+
 type WoodType uint8
 
 const (
@@ -13,6 +17,7 @@ var woodTypeInfo = [woodTypeCount]struct {
 	Name     string
 	Color    Color
 	Strength uint64
+	sqrtStr  uint64
 }{
 	Oak: {
 		Name:     "oak",
@@ -22,8 +27,18 @@ var woodTypeInfo = [woodTypeCount]struct {
 	Beonetwon: {
 		Name:     "beonetwon",
 		Color:    "#b1b2b0",
-		Strength: 99999999999999999,
+		Strength: 1 << 63,
 	},
+}
+
+func init() {
+	for t := range woodTypeInfo {
+		if woodTypeInfo[t].Strength > 1<<63-1 {
+			woodTypeInfo[t].sqrtStr = woodTypeInfo[t].Strength - 1
+		} else {
+			woodTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(woodTypeInfo[t].Strength)))
+		}
+	}
 }
 
 type Tree struct {
@@ -75,3 +90,7 @@ func (l *Logs) InteractOptions() []string {
 }
 
 func (l *Logs) IsItem() {}
+
+func (l *Logs) AdminOnly() bool {
+	return woodTypeInfo[l.Type].Strength > 1<<63-1
+}

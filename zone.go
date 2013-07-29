@@ -341,10 +341,12 @@ type Object interface {
 
 type Item interface {
 	IsItem()
+	AdminOnly() bool
 }
 
 var _ Item = (*Ore)(nil)
 var _ Item = (*Stone)(nil)
+var _ Item = (*Logs)(nil)
 
 type Thinker interface {
 	Think()
