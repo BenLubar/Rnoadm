@@ -350,6 +350,9 @@ func init() {
 	gob.Register(Object(&Hero{}))
 	// Players are removed from Zones before saving.
 	gob.Register(Object(&Flora{}))
+	gob.Register(Object(&Tree{}))
 	gob.Register(Object(&Rock{}))
+	gob.Register(Object(&Stone{}))
+	gob.Register(Object(&Ore{}))
 	gob.Register(Object(&Wall{}))
 }

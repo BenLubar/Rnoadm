@@ -64,3 +64,51 @@ func (r *Rock) Blocking() bool {
 func (r *Rock) InteractOptions() []string {
 	return []string{"mine", "quarry", "prospect"}
 }
+
+type Stone struct {
+	Type RockType
+}
+
+func (s *Stone) Name() string {
+	return rockTypeInfo[s.Type].Name + " stone"
+}
+
+func (s *Stone) Examine() string {
+	return "a " + rockTypeInfo[s.Type].Name + " stone."
+}
+
+func (s *Stone) Paint() (rune, Color) {
+	return '✧', rockTypeInfo[s.Type].Color
+}
+
+func (s *Stone) Blocking() bool {
+	return false
+}
+
+func (s *Stone) InteractOptions() []string {
+	return nil
+}
+
+type Ore struct {
+	Type MetalType
+}
+
+func (o *Ore) Name() string {
+	return metalTypeInfo[o.Type].Name + " ore"
+}
+
+func (o *Ore) Examine() string {
+	return "some " + metalTypeInfo[o.Type].Name + " ore."
+}
+
+func (o *Ore) Paint() (rune, Color) {
+	return '❖', metalTypeInfo[o.Type].Color
+}
+
+func (o *Ore) Blocking() bool {
+	return false
+}
+
+func (o *Ore) InteractOptions() []string {
+	return nil
+}

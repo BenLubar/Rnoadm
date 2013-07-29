@@ -23,6 +23,11 @@ func init() {
 			p.GiveItem(&Rock{Type: rt})
 			p.lock.Unlock()
 		}
+		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" STONE"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&Stone{Type: rt})
+			p.lock.Unlock()
+		}
 		for m := range metalTypeInfo {
 			if m == 0 {
 				continue
@@ -33,6 +38,17 @@ func init() {
 				p.GiveItem(&Rock{Type: rt, Ore: mt})
 				p.lock.Unlock()
 			}
+		}
+	}
+	for t := range metalTypeInfo {
+		if t == 0 {
+			continue
+		}
+		mt := MetalType(t)
+		adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" ORE"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&Ore{Type: mt})
+			p.lock.Unlock()
 		}
 	}
 	for t := range woodTypeInfo {
