@@ -4,17 +4,25 @@ type WoodType uint8
 
 const (
 	Oak WoodType = iota
+	Beonetwon
 
 	woodTypeCount
 )
 
 var woodTypeInfo = [woodTypeCount]struct {
-	Name  string
-	Color Color
+	Name     string
+	Color    Color
+	Strength uint64
 }{
 	Oak: {
-		Name:  "oak",
-		Color: "#dab583",
+		Name:     "oak",
+		Color:    "#dab583",
+		Strength: 10,
+	},
+	Beonetwon: {
+		Name:     "beonetwon",
+		Color:    "#b1b2b0",
+		Strength: 99999999999999999,
 	},
 }
 
