@@ -97,6 +97,11 @@ func init() {
 				p.GiveItem(&Rock{Type: rt, Ore: mt})
 				p.lock.Unlock()
 			}
+			adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" ROCK WITH RICH "+strings.ToUpper(metalTypeInfo[mt].Name)+" ORE"] = func(p *Player) {
+				p.lock.Lock()
+				p.GiveItem(&Rock{Type: rt, Ore: mt, Big: true})
+				p.lock.Unlock()
+			}
 		}
 	}
 	for t := range metalTypeInfo {
@@ -133,10 +138,13 @@ func init() {
 			p.lock.Unlock()
 		}
 	}
-	adminCommands["SPAWN PLANT"] = func(p *Player) {
-		p.lock.Lock()
-		p.GiveItem(&Flora{Type: 0})
-		p.lock.Unlock()
+	for t := range floraTypeInfo {
+		ft := FloraType(t)
+		adminCommands["SPAWN "+strings.ToUpper(floraTypeInfo[ft].Name)+" PLANT"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&Flora{Type: ft})
+			p.lock.Unlock()
+		}
 	}
 	adminCommands["SPAWN HERO"] = func(p *Player) {
 		p.lock.Lock()

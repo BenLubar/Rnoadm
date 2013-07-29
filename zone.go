@@ -165,10 +165,18 @@ func (z *Zone) Generate() {
 
 			if !tile.Blocked() {
 				ore, _ := z.Element.Ore(r)
-				tile.Add(&Rock{
-					Type: rock,
-					Ore:  ore,
-				})
+				if ore != 0 && j%10 == 0 {
+					tile.Add(&Rock{
+						Type: rock,
+						Ore:  ore,
+						Big:  true,
+					})
+				} else {
+					tile.Add(&Rock{
+						Type: rock,
+						Ore:  ore,
+					})
+				}
 			}
 		}
 	}

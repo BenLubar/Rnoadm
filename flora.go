@@ -31,7 +31,7 @@ var floraTypeInfo = [floraTypeCount]struct {
 	},
 	BulbPlant: {
 		Name:      "bulb",
-		LeafColor: "#047",
+		LeafColor: "#0fc",
 		BulbColor: "#f0f",
 	},
 }

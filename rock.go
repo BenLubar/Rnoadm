@@ -82,6 +82,7 @@ func init() {
 type Rock struct {
 	Type RockType
 	Ore  MetalType
+	Big  bool
 }
 
 func (r *Rock) Name() string {
@@ -90,15 +91,21 @@ func (r *Rock) Name() string {
 
 func (r *Rock) Examine() string {
 	if r.Ore != 0 {
-		return "a " + rockTypeInfo[r.Type].Name + " rock containing " + metalTypeInfo[r.Ore].Name + " ore."
+		if r.Big {
+			return "a deposit of " + rockTypeInfo[r.Type].Name + " rock containing rich " + metalTypeInfo[r.Ore].Name + " ore."
+		}
+		return "a deposit of " + rockTypeInfo[r.Type].Name + " rock containing " + metalTypeInfo[r.Ore].Name + " ore."
 	}
-	return "a " + rockTypeInfo[r.Type].Name + " rock."
+	return "a deposit of " + rockTypeInfo[r.Type].Name + " rock."
 }
 
 func (r *Rock) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	setcell(x, y, "", "rock_base_l0", rockTypeInfo[r.Type].Color)
 	if r.Ore != 0 {
 		setcell(x, y, "", "rock_tinychunks_l1", metalTypeInfo[r.Ore].Color)
+		if r.Big {
+			setcell(x, y, "", "rock_hugechunks_l2", metalTypeInfo[r.Ore].Color)
+		}
 	}
 }
 
