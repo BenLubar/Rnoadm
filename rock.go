@@ -4,17 +4,25 @@ type RockType uint16
 
 const (
 	Granite RockType = iota
+	Adminstone
 
 	rockTypeCount
 )
 
 var rockTypeInfo = [rockTypeCount]struct {
-	Name  string
-	Color Color
+	Name     string
+	Color    Color
+	Strength uint64
 }{
 	Granite: {
-		Name:  "granite",
-		Color: "#948e85",
+		Name:     "granite",
+		Color:    "#948e85",
+		Strength: 50,
+	},
+	Adminstone: {
+		Name:     "adminstone",
+		Color:    "#1e0036",
+		Strength: 99999999999999999,
 	},
 }
 
@@ -23,17 +31,25 @@ type MetalType uint16
 const (
 	_ MetalType = iota
 	Iron
+	Unobtainium
 
 	metalTypeCount
 )
 
 var metalTypeInfo = [metalTypeCount]struct {
-	Name  string
-	Color Color
+	Name     string
+	Color    Color
+	Strength uint64
 }{
 	Iron: {
-		Name:  "iron",
-		Color: "#79493d",
+		Name:     "iron",
+		Color:    "#79493d",
+		Strength: 100,
+	},
+	Unobtainium: {
+		Name:     "unobtainium",
+		Color:    "#ff00ff",
+		Strength: 99999999999999999,
 	},
 }
 

@@ -362,5 +362,7 @@ func init() {
 	gob.Register(Object(&Rock{}))
 	gob.Register(Object(&Stone{}))
 	gob.Register(Object(&Ore{}))
-	gob.Register(Object(&Wall{}))
+	gob.Register(Object(&WallStone{}))
+	gob.Register(Object(&WallMetal{}))
+	gob.Register(Object(&WallWood{}))
 }

@@ -28,6 +28,11 @@ func init() {
 			p.GiveItem(&Stone{Type: rt})
 			p.lock.Unlock()
 		}
+		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" WALL"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&WallStone{Type: rt})
+			p.lock.Unlock()
+		}
 		for m := range metalTypeInfo {
 			if m == 0 {
 				continue
@@ -50,6 +55,11 @@ func init() {
 			p.GiveItem(&Ore{Type: mt})
 			p.lock.Unlock()
 		}
+		adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" WALL"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&WallMetal{Type: mt})
+			p.lock.Unlock()
+		}
 	}
 	for t := range woodTypeInfo {
 		wt := WoodType(t)
@@ -63,6 +73,11 @@ func init() {
 			p.GiveItem(&Logs{Type: wt})
 			p.lock.Unlock()
 		}
+		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" WALL"] = func(p *Player) {
+			p.lock.Lock()
+			p.GiveItem(&WallWood{Type: wt})
+			p.lock.Unlock()
+		}
 	}
 	adminCommands["SPAWN PLANT"] = func(p *Player) {
 		p.lock.Lock()
@@ -72,11 +87,6 @@ func init() {
 	adminCommands["SPAWN HERO"] = func(p *Player) {
 		p.lock.Lock()
 		p.GiveItem(&Hero{Name_: GenerateName(rand.New(rand.NewSource(rand.Int63())), NameHero)})
-		p.lock.Unlock()
-	}
-	adminCommands["SPAWN WALL"] = func(p *Player) {
-		p.lock.Lock()
-		p.GiveItem(&Wall{})
 		p.lock.Unlock()
 	}
 }
