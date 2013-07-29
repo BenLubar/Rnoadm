@@ -67,17 +67,18 @@ func (p *Player) Move(dx, dy int) {
 			p.TileY = 0
 		} else if destX < 128 {
 			if destY < 128 {
+				p.ZoneX--
 				p.ZoneY--
 				p.TileX = 255 - zoneOffset[255-64]
 				p.TileY = 255 - 64
 			} else {
 				p.ZoneX--
+				p.ZoneY++
 				p.TileX = 255 - zoneOffset[64]
 				p.TileY = 64
 			}
 		} else {
 			if destY < 128 {
-				p.ZoneX++
 				p.ZoneY--
 				p.TileX = zoneOffset[255-64]
 				p.TileY = 255 - 64
