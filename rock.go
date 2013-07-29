@@ -112,3 +112,7 @@ func (r *Rock) Paint() (rune, Color) {
 func (r *Rock) Blocking() bool {
 	return true
 }
+
+func (r *Rock) InteractOptions() []string {
+	return []string{"mine"}
+}

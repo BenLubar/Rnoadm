@@ -22,3 +22,7 @@ func (f *Flora) Paint() (rune, Color) {
 func (f *Flora) Blocking() bool {
 	return false
 }
+
+func (f *Flora) InteractOptions() []string {
+	return []string{"pick"}
+}

@@ -8,7 +8,7 @@ func (w *Wall) Name() string {
 }
 
 func (w *Wall) Examine() string {
-	return "a wall"
+	return "a wall."
 }
 
 func (w *Wall) Paint() (rune, Color) {
@@ -17,4 +17,8 @@ func (w *Wall) Paint() (rune, Color) {
 
 func (w *Wall) Blocking() bool {
 	return true
+}
+
+func (w *Wall) InteractOptions() []string {
+	return nil
 }

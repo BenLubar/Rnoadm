@@ -28,7 +28,6 @@ type Player struct {
 	Admin     bool
 
 	zone *Zone
-	lock sync.Mutex
 }
 
 func (p *Player) Move(dx, dy int) {
@@ -185,6 +184,13 @@ func (p *Player) RepaintZone() {
 	}()
 }
 
+func (p *Player) Paint() (rune, Color) {
+	if p.Admin {
+		return '♚', "#fa0"
+	}
+	return p.Hero.Paint()
+}
+
 func (p *Player) Think() {
 	p.think(false)
 }
@@ -205,7 +211,10 @@ func (h ZoneEntryHUD) Key(code int) bool {
 
 type Hero struct {
 	Name_ *Name
-	Delay uint
+
+	lock     sync.Mutex
+	Delay    uint
+	Backpack []Object
 }
 
 func (h *Hero) Name() string {
@@ -229,8 +238,19 @@ func (h *Hero) Think() {
 }
 
 func (h *Hero) think(ai bool) {
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
 	if h.Delay > 0 {
 		h.Delay--
 		return
 	}
+}
+
+func (h *Hero) InteractOptions() []string {
+	return nil
+}
+
+func (h *Hero) GiveItem(o Object) {
+	h.Backpack = append(h.Backpack, o)
 }

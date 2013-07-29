@@ -336,11 +336,15 @@ type Object interface {
 	Examine() string
 	Paint() (rune, Color)
 	Blocking() bool
+	InteractOptions() []string
 }
 
 type Thinker interface {
 	Think()
 }
+
+var _ Thinker = (*Player)(nil)
+var _ Thinker = (*Hero)(nil)
 
 func init() {
 	gob.Register(Object(&Hero{}))
