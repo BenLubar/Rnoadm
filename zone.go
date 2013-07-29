@@ -231,7 +231,6 @@ func (z *Zone) Save() error {
 	}()
 
 	dir := seedFilename()
-	os.MkdirAll(dir, 0755)
 
 	f, err := os.Create(filepath.Join(dir, zoneFilename(z.X, z.Y)))
 	if err != nil {

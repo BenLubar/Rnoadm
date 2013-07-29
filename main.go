@@ -13,10 +13,11 @@ import (
 var Seed int64
 
 func main() {
-	flag.Int64Var(&Seed, "seed", time.Now().UnixNano(), "the world seed (default: the number of nanoseconds since midnight UTC on 1970-01-01)")
+	flag.Int64Var(&Seed, "seed", 0, "the world seed")
 
 	flag.Parse()
 
+	os.MkdirAll(seedFilename(), 755)
 	f, err := os.OpenFile(filepath.Join(seedFilename(), "admin.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		panic(err)
@@ -24,7 +25,7 @@ func main() {
 	AdminLog = log.New(f, "[ADMIN] ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	go func() {
-		for _ = range time.Tick(time.Minute) {
+		for _ = range time.Tick(10 * time.Minute) {
 			EachLoadedZone(func(z *Zone) {
 				z.Save()
 			})

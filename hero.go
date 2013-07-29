@@ -123,7 +123,6 @@ func (p *Player) Save() {
 	defer p.lock.Unlock()
 
 	dir := seedFilename()
-	os.MkdirAll(dir, 0755)
 
 	f, err := os.Create(filepath.Join(dir, playerFilename(p.ID)))
 	if err != nil {
