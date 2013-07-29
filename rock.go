@@ -1,23 +1,9 @@
 package main
 
-type RockType uint8
+type RockType uint16
 
 const (
-	Coal RockType = iota
-	Iron
-	Granite
-	Quartz
-	Limestone
-	Sandstone
-	Obsidian
-	Diamond
-	Plastic
-	Empty
-	Vorpal
-	Wabe
-	Molten
-	Carbonite
-	Aetherite
+	Granite RockType = iota
 
 	rockTypeCount
 )
@@ -26,70 +12,34 @@ var rockTypeInfo = [rockTypeCount]struct {
 	Name  string
 	Color Color
 }{
-	Coal: {
-		Name:  "coal",
-		Color: "blue",
-	},
-	Iron: {
-		Name:  "iron",
-		Color: "red",
-	},
 	Granite: {
 		Name:  "granite",
-		Color: "cyan",
+		Color: "#948e85",
 	},
-	Quartz: {
-		Name:  "quartz",
-		Color: "white",
-	},
-	Limestone: {
-		Name:  "limestone",
-		Color: "cyan",
-	},
-	Sandstone: {
-		Name:  "sandstone",
-		Color: "yellow",
-	},
-	Obsidian: {
-		Name:  "obsidian",
-		Color: "blue",
-	},
-	Diamond: {
-		Name:  "diamond",
-		Color: "white",
-	},
-	Plastic: {
-		Name:  "plastic",
-		Color: "magenta",
-	},
-	Empty: {
-		Name:  "empty",
-		Color: "blue",
-	},
-	Vorpal: {
-		Name:  "vorpal",
-		Color: "magenta",
-	},
-	Wabe: {
-		Name:  "wabe",
-		Color: "green",
-	},
-	Molten: {
-		Name:  "molten",
-		Color: "red",
-	},
-	Carbonite: {
-		Name:  "carbonite",
-		Color: "blue",
-	},
-	Aetherite: {
-		Name:  "aetherite",
-		Color: "white",
+}
+
+type MetalType uint16
+
+const (
+	_ MetalType = iota
+	Iron
+
+	metalTypeCount
+)
+
+var metalTypeInfo = [metalTypeCount]struct {
+	Name  string
+	Color Color
+}{
+	Iron: {
+		Name:  "iron",
+		Color: "#79493d",
 	},
 }
 
 type Rock struct {
 	Type RockType
+	Ore  MetalType
 }
 
 func (r *Rock) Name() string {
@@ -97,7 +47,10 @@ func (r *Rock) Name() string {
 }
 
 func (r *Rock) Examine() string {
-	return "a rock containing " + rockTypeInfo[r.Type].Name + " ore."
+	if r.Ore != 0 {
+		return "a " + rockTypeInfo[r.Type].Name + " rock containing " + metalTypeInfo[r.Ore].Name + " ore."
+	}
+	return "a " + rockTypeInfo[r.Type].Name + " rock."
 }
 
 func (r *Rock) Paint() (rune, Color) {
@@ -109,5 +62,5 @@ func (r *Rock) Blocking() bool {
 }
 
 func (r *Rock) InteractOptions() []string {
-	return []string{"mine"}
+	return []string{"mine", "quarry", "prospect"}
 }

@@ -18,10 +18,21 @@ var adminCommands = map[string]func(*Player){
 func init() {
 	for t := range rockTypeInfo {
 		rt := RockType(t)
-		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[t].Name)+" ROCK"] = func(p *Player) {
+		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" ROCK"] = func(p *Player) {
 			p.lock.Lock()
 			p.GiveItem(&Rock{Type: rt})
 			p.lock.Unlock()
+		}
+		for m := range metalTypeInfo {
+			if m == 0 {
+				continue
+			}
+			mt := MetalType(m)
+			adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" ROCK WITH "+strings.ToUpper(metalTypeInfo[mt].Name)+" ORE"] = func(p *Player) {
+				p.lock.Lock()
+				p.GiveItem(&Rock{Type: rt, Ore: mt})
+				p.lock.Unlock()
+			}
 		}
 	}
 	for t := range woodTypeInfo {

@@ -66,7 +66,6 @@ func init() {
 	elements[Air] = element{
 		Name:  "Air",
 		Links: []Element{Smoke, Dust, Mist},
-		Rocks: []RockType{Aetherite},
 	}
 	elements[Earth] = element{
 		Name:  "Earth",
@@ -75,28 +74,24 @@ func init() {
 	elements[Fire] = element{
 		Name:  "Fire",
 		Links: []Element{Smoke, Lava, Steam},
-		Rocks: []RockType{Molten},
 	}
 	elements[Ice] = element{
 		Name:  "Ice",
 		Links: []Element{Water, Mist},
-		Rocks: []RockType{Carbonite},
 	}
 	elements[Nature] = element{
 		Name:  "Nature",
 		Links: []Element{Air, Water, Earth},
-		Rocks: []RockType{Coal, Iron, Granite, Quartz, Limestone, Sandstone},
+		Rocks: []RockType{Granite},
 		Flora: []FloraType{0},
 	}
 	elements[Dust] = element{
 		Name:  "Dust",
 		Links: []Element{Earth, Air},
-		Rocks: []RockType{Sandstone},
 	}
 	elements[Lava] = element{
 		Name:  "Lava",
 		Links: []Element{Earth, Fire},
-		Rocks: []RockType{Molten, Obsidian},
 	}
 	elements[Water] = element{
 		Name:  "Water",
@@ -121,12 +116,10 @@ func init() {
 	elements[Time] = element{
 		Name:  "Time",
 		Links: []Element{Earth, Gravity, Void},
-		Rocks: []RockType{Diamond},
 	}
 	elements[Gravity] = element{
 		Name:  "Gravity",
 		Links: []Element{Earth, Water, Time},
-		Rocks: []RockType{Diamond},
 	}
 	elements[Electric] = element{
 		Name:  "Electric",
@@ -135,17 +128,14 @@ func init() {
 	elements[Light] = element{
 		Name:  "Light",
 		Links: []Element{Air, Water, Electric, Spiritual},
-		Rocks: []RockType{Plastic},
 	}
 	elements[Dark] = element{
 		Name:  "Dark",
 		Links: []Element{Fire, Smoke, Void, Spiritual},
-		Rocks: []RockType{Obsidian},
 	}
 	elements[Void] = element{
 		Name:  "Void",
 		Links: []Element{Dark, Time, Illusion},
-		Rocks: []RockType{Empty},
 	}
 	elements[Spiritual] = element{
 		Name:  "Spiritual",
@@ -154,7 +144,6 @@ func init() {
 	elements[Chaotic] = element{
 		Name: "Chaotic",
 		// Special: Chaotic zones contain all element types.
-		Rocks: []RockType{Vorpal, Wabe},
 	}
 	elements[Illusion] = element{
 		Name:  "Illusion",
