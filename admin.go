@@ -17,6 +17,32 @@ var adminCommands = map[string]func(*Player){
 	"CHANGE EXAMINE": func(p *Player) {
 		p.hud = &AdminChangeExamineHUD{Player: p, Input: []rune(p.Examine())}
 	},
+	"DELETE THE ENTIRE ZONE": func(p *Player) {
+		p.lock.Lock()
+		z := p.zone
+		p.lock.Unlock()
+
+		z.Lock()
+		for i := range z.Tiles {
+			for _, o := range z.Tiles[i].Objects {
+				if _, ok := o.(*Player); !ok {
+					z.Tiles[i].Remove(o)
+				}
+			}
+		}
+		z.Unlock()
+		z.Save()
+		z.Repaint()
+	},
+	"REGENERATE THE ENTIRE ZONE": func(p *Player) {
+		p.lock.Lock()
+		z := p.zone
+		p.lock.Unlock()
+
+		z.Generate()
+		z.Save()
+		z.Repaint()
+	},
 }
 
 func init() {

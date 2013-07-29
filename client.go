@@ -281,19 +281,19 @@ func websocketHandler(conn *websocket.Conn) {
 
 			for x := 0; x < w; x++ {
 				xCoord := x - w/2 + camX
-				if xCoord < 0 || xCoord > 255 {
-					continue
-				}
 				x8 := uint8(xCoord)
 				for y := 0; y < h; y++ {
 					yCoord := y - h/2 + camY
-					if yCoord < 0 || yCoord > 255 {
+					if xCoord < 0 || xCoord > 255 || yCoord < 0 || yCoord > 255 {
+						setcell(x, y, '?', "#111")
 						continue
 					}
 					y8 := uint8(yCoord)
 					if tile := z.Tile(x8, y8); tile != nil {
 						r, fg := tile.Paint(z)
 						setcell(x, y, r, fg)
+					} else {
+						setcell(x, y, '?', "#111")
 					}
 				}
 			}
