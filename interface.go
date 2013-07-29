@@ -299,6 +299,7 @@ func (h *InteractMenuHUD) Key(code int) bool {
 								if o == h.Object {
 									t.Remove(o)
 									z.Unlock()
+									z.Repaint()
 									h.Player.lock.Lock()
 									h.Player.GiveItem(o)
 									if i == h.AdminTake {

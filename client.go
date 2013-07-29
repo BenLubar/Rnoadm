@@ -184,6 +184,7 @@ func websocketHandler(conn *websocket.Conn) {
 	zone.Lock()
 	zone.Tile(tx, ty).Add(player)
 	zone.Unlock()
+	zone.Repaint()
 	defer func() {
 		player.lock.Lock()
 		zone := player.zone
@@ -192,6 +193,7 @@ func websocketHandler(conn *websocket.Conn) {
 		zone.Lock()
 		zone.Tile(tx, ty).Remove(player)
 		zone.Unlock()
+		zone.Repaint()
 		ReleaseZone(zone)
 		player.Save()
 	}()
