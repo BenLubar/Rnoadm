@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/gob"
 	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"sync"
@@ -65,7 +66,10 @@ func (p *Player) Move(dx, dy int) {
 		} else if destY > 255 {
 			p.ZoneY += 2
 			p.TileY = 0
-		} else if destX < 128 {
+		} else {
+			p.lock.Unlock()
+			return
+		} /*if destX < 128 {
 			p.TileX = 255 - p.TileX
 			p.TileY = 128 + p.TileY
 			if p.ZoneY&1 == 0 {
@@ -87,7 +91,7 @@ func (p *Player) Move(dx, dy int) {
 			} else {
 				p.ZoneY++
 			}
-		}
+		}*/
 		z = GrabZone(p.ZoneX, p.ZoneY)
 		p.zone = z
 		p.lock.Unlock()
@@ -203,8 +207,8 @@ func (p *Player) Paint(x, y int, setcell func(int, int, string, string, Color)) 
 	}
 }
 
-func (p *Player) Think() {
-	p.think(p)
+func (p *Player) Think(z *Zone, x, y uint8) {
+	p.think(z, x, y, p)
 }
 
 type ZoneEntryHUD string
@@ -254,11 +258,11 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	setcell(x, y, "", "player_armor_l1", h.ArmorColor)
 }
 
-func (h *Hero) Think() {
-	h.think(nil)
+func (h *Hero) Think(z *Zone, x, y uint8) {
+	h.think(z, x, y, nil)
 }
 
-func (h *Hero) think(p *Player) {
+func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
@@ -278,6 +282,41 @@ func (h *Hero) think(p *Player) {
 	if h.Delay > 0 {
 		h.Delay--
 		return
+	}
+
+	if p != nil {
+		return
+	}
+
+	h.Delay = 5
+	newX, newY := x, y
+	switch rand.Intn(4) {
+	case 0:
+		newX++
+		if newX < x {
+			newX = x
+		}
+	case 1:
+		newX--
+		if newX > x {
+			newX = x
+		}
+	case 2:
+		newY++
+		if newY < y {
+			newY = y
+		}
+	case 3:
+		newY--
+		if newY > y {
+			newY = y
+		}
+	}
+	if !z.Blocked(newX, newY) {
+		if z.Tile(x, y).Remove(h) {
+			z.Tile(newX, newY).Add(h)
+			z.Repaint()
+		}
 	}
 }
 

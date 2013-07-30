@@ -5,6 +5,7 @@ import (
 	"encoding/base32"
 	"encoding/binary"
 	"encoding/gob"
+	"log"
 	"math"
 	"math/rand"
 	"os"
@@ -49,6 +50,7 @@ func GrabZone(x, y int64) *Zone {
 
 	z, err := LoadZone(x, y)
 	if err != nil {
+		log.Printf("ZONE %d %d: %v", x, y, err)
 		z = &Zone{X: x, Y: y}
 		z.Generate()
 	}
@@ -224,6 +226,7 @@ func (z *Zone) Save() error {
 		for j := 0; j < len(z.Tiles[i].Objects); j++ {
 			if p, ok := z.Tiles[i].Objects[j].(*Player); ok {
 				z.Tiles[i].Objects = append(z.Tiles[i].Objects[:j], z.Tiles[i].Objects[j+1:]...)
+				j--
 				players[i] = append(players[i], p)
 				p.Save()
 			}
@@ -286,9 +289,16 @@ func (z *Zone) Think() {
 	defer z.Unlock()
 
 	for i := range z.Tiles {
+		var x, y uint8
+		for j, start := range rowOffset {
+			if start <= i {
+				x = uint8(i-start) + zoneOffset[j]
+				y = uint8(j)
+			}
+		}
 		for _, o := range z.Tiles[i].Objects {
 			if t, ok := o.(Thinker); ok {
-				t.Think()
+				t.Think(z, x, y)
 			}
 		}
 	}
@@ -378,7 +388,7 @@ var _ Item = (*Stone)(nil)
 var _ Item = (*Logs)(nil)
 
 type Thinker interface {
-	Think()
+	Think(*Zone, uint8, uint8)
 }
 
 var _ Thinker = (*Player)(nil)

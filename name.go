@@ -48,7 +48,7 @@ func (n *Name) String() string {
 
 func GenerateName(r *rand.Rand, subtypes ...NameSubtype) *Name {
 	var firstName []byte
-	for i := r.Intn(5) + 1; i > 0; i-- {
+	for i := r.Intn(7) + 2; i > 0; i-- {
 		firstName = append(firstName, syllables[r.Intn(len(syllables))]...)
 	}
 	n := &Name{

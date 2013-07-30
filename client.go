@@ -225,6 +225,9 @@ func websocketHandler(conn *websocket.Conn) {
 	zone := GrabZone(player.ZoneX, player.ZoneY)
 	player.zone = zone
 	tx, ty := player.TileX, player.TileY
+	if zone.Tile(tx, ty) == nil {
+		tx, ty, player.TileX, player.TileY = 127, 127, 127, 127
+	}
 	player.lock.Unlock()
 	zone.Lock()
 	zone.Tile(tx, ty).Add(player)

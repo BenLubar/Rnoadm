@@ -27,7 +27,10 @@ func main() {
 	go func() {
 		for _ = range time.Tick(10 * time.Minute) {
 			EachLoadedZone(func(z *Zone) {
-				z.Save()
+				err := z.Save()
+				if err != nil {
+					log.Printf("ZONE %d %d: %v", z.X, z.Y, err)
+				}
 			})
 		}
 	}()
@@ -51,6 +54,9 @@ func main() {
 	signal.Notify(sigkill, os.Kill)
 	<-sigkill
 	EachLoadedZone(func(z *Zone) {
-		z.Save()
+		err := z.Save()
+		if err != nil {
+			log.Printf("ZONE %d %d: %v", z.X, z.Y, err)
+		}
 	})
 }
