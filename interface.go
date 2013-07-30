@@ -404,18 +404,20 @@ type clickHUDOption struct {
 }
 
 type ClickHUD struct {
-	X, Y    int
-	W, H    int
-	Player  *Player
-	Options []clickHUDOption
-	Blocked bool
+	X, Y         int
+	W, H         int
+	Player       *Player
+	Options      []clickHUDOption
+	Blocked      bool
+	TileX, TileY uint8
 }
 
 func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 	if h.Options == nil {
 		h.Player.lock.Lock()
 		zone := h.Player.zone
-		tile := zone.Tile(h.Player.TileX+uint8(h.X-h.W/2), h.Player.TileY+uint8(h.Y-h.H/2))
+		h.TileX, h.TileY = h.Player.TileX+uint8(h.X-h.W/2), h.Player.TileY+uint8(h.Y-h.H/2)
+		tile := zone.Tile(h.TileX, h.TileY)
 		h.Player.lock.Unlock()
 
 		zone.Lock()
@@ -478,12 +480,48 @@ func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 		setcell(h.X+i, h.Y+row, "", "ui_fill", "#333")
 	}
 	setcell(h.X+8, h.Y+row, "", "ui_largecorner_br", "#333")
+	setcell(h.X+1, h.Y+row, "cancel", "", "#fff")
 }
 
 func (h *ClickHUD) Key(code int, special bool) bool {
+	h.Player.hud = nil
+	h.Player.Repaint()
 	return false
 }
 
 func (h *ClickHUD) Click(x, y int) bool {
-	return false
+	if x < h.X || x > h.X+8 || y < h.Y || y > h.Y+1+len(h.Options) {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return false
+	}
+	y -= h.Y
+	switch y {
+	case 0:
+		if x == h.X {
+			h.Player.hud = nil
+			h.Player.Repaint()
+			return true
+		}
+		h.Player.lock.Lock()
+		px, py := h.Player.TileX, h.Player.TileY
+		zone := h.Player.zone
+		h.Player.lock.Unlock()
+		schedule := MoveSchedule(FindPath(zone, px, py, h.TileX, h.TileY, true))
+		h.Player.lock.Lock()
+		h.Player.schedule = &schedule
+		h.Player.lock.Unlock()
+
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	case 1 + len(h.Options):
+		h.Player.hud = nil
+		h.Player.Repaint()
+	default:
+		h.Player.hud = nil
+		h.Options[y-1].Exec()
+		h.Player.Repaint()
+	}
+	return true
 }

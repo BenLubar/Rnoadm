@@ -276,7 +276,9 @@ func (z *Zone) Save() error {
 				z.Tiles[i].Objects = append(z.Tiles[i].Objects[:j], z.Tiles[i].Objects[j+1:]...)
 				j--
 				players[i] = append(players[i], p)
+				z.Unlock()
 				p.Save()
+				z.Lock()
 			}
 		}
 	}
@@ -334,7 +336,6 @@ func LoadZone(x, y int64) (*Zone, error) {
 
 func (z *Zone) Think() {
 	z.Lock()
-	defer z.Unlock()
 
 	for i := range z.Tiles {
 		var x, y uint8
@@ -346,10 +347,13 @@ func (z *Zone) Think() {
 		}
 		for _, o := range z.Tiles[i].Objects {
 			if t, ok := o.(Thinker); ok {
+				z.Unlock()
 				t.Think(z, x, y)
+				z.Lock()
 			}
 		}
 	}
+
 	select {
 	case <-z.dirty:
 		for i := range z.Tiles {
@@ -361,6 +365,7 @@ func (z *Zone) Think() {
 		}
 	default:
 	}
+	z.Unlock()
 }
 
 func (z *Zone) Repaint() {

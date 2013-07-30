@@ -143,8 +143,9 @@ document.onkeydown = function(e) {
 document.onkeypress = function(e) {
 	send({Key:{Code:e.charCode, Special:false}});
 };
-document.querySelector('canvas').onclick = function(e) {
+document.querySelector('canvas').onclick = document.querySelector('canvas').oncontextmenu = function(e) {
 	send({Click:{X:Math.floor(e.offsetX/tileSize), Y:Math.floor(e.offsetY/tileSize)}});
+	return false;
 };
 </script>
 <button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:87, Special:true}})">NORTH</button>
@@ -331,6 +332,9 @@ func websocketHandler(conn *websocket.Conn) {
 				default:
 					//log.Printf("[%s:%d] %d", addr, playerID, p.Key.Code)
 				}
+				player.Lock()
+				player.schedule = nil
+				player.Unlock()
 			}
 			if p.Click != nil {
 				if player.hud != nil && player.hud.Click(p.Click.X, p.Click.Y) {
@@ -346,6 +350,9 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 					player.Repaint()
 				}
+				player.Lock()
+				player.schedule = nil
+				player.Unlock()
 			}
 		case <-player.repaint:
 			var paint packetPaint

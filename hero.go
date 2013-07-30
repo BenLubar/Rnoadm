@@ -218,6 +218,9 @@ type Hero struct {
 	lock     sync.Mutex
 	Delay    uint
 	Backpack []Object
+
+	schedule      Schedule
+	scheduleDelay uint
 }
 
 func (h *Hero) Name() string {
@@ -267,8 +270,19 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 		}
 	}
 
+	if h.scheduleDelay > 0 {
+		h.scheduleDelay--
+	}
+
 	if h.Delay > 0 {
 		h.Delay--
+		return
+	}
+
+	if h.schedule != nil {
+		if !h.schedule.Act(z, x, y, h, p) {
+			h.schedule = nil
+		}
 		return
 	}
 
@@ -276,36 +290,15 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 		return
 	}
 
-	h.Delay = 5
-	newX, newY := x, y
-	switch rand.Intn(4) {
-	case 0:
-		newX++
-		if newX < x {
-			newX = x
-		}
-	case 1:
-		newX--
-		if newX > x {
-			newX = x
-		}
-	case 2:
-		newY++
-		if newY < y {
-			newY = y
-		}
-	case 3:
-		newY--
-		if newY > y {
-			newY = y
-		}
+	goalX, goalY := uint8(rand.Intn(256)), uint8(rand.Intn(256))
+	z.Lock()
+	blocked := z.Blocked(goalX, goalY)
+	z.Unlock()
+	if !blocked {
+		schedule := MoveSchedule(FindPath(z, x, y, goalX, goalY, true))
+		h.schedule = &schedule
 	}
-	if !z.Blocked(newX, newY) {
-		if z.Tile(x, y).Remove(h) {
-			z.Tile(newX, newY).Add(h)
-			z.Repaint()
-		}
-	}
+	h.Delay = uint(rand.Intn(5) + 1)
 }
 
 func (h *Hero) InteractOptions() []string {
@@ -314,4 +307,34 @@ func (h *Hero) InteractOptions() []string {
 
 func (h *Hero) GiveItem(o Object) {
 	h.Backpack = append(h.Backpack, o)
+}
+
+type Schedule interface {
+	Act(*Zone, uint8, uint8, *Hero, *Player) bool
+}
+
+type MoveSchedule [][2]uint8
+
+func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
+	if len(*s) == 0 {
+		return false
+	}
+	pos := (*s)[0]
+	*s = (*s)[1:]
+	h.Delay = 2
+	h.scheduleDelay = 3
+	obj := Object(h)
+	if p != nil {
+		obj = p
+		p.TileX = pos[0]
+		p.TileY = pos[1]
+	}
+
+	z.Lock()
+	if z.Tile(x, y).Remove(obj) {
+		z.Tile(pos[0], pos[1]).Add(obj)
+	}
+	z.Unlock()
+	z.Repaint()
+	return true
 }
