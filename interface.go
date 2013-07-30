@@ -417,11 +417,13 @@ func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 		h.Player.Lock()
 		zone := h.Player.zone
 		px, py := h.Player.TileX, h.Player.TileY
-		h.TileX, h.TileY = px+uint8(h.X-h.W/2), py+uint8(h.Y-h.H/2)
-		tile := zone.Tile(h.TileX, h.TileY)
+		tx, ty := int(px)+h.X-h.W/2, int(py)+h.Y-h.H/2
+		h.TileX, h.TileY = uint8(tx), uint8(ty)
 		h.Player.Unlock()
 
-		if tile == nil {
+		tile := zone.Tile(h.TileX, h.TileY)
+
+		if tile == nil || int(h.TileX) != tx || int(h.TileY) != ty {
 			h.Player.hud = nil
 			h.Player.Repaint()
 			return
