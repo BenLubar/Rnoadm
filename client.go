@@ -303,6 +303,9 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			if p.Key != nil {
+				player.lock.Lock()
+				player.schedule = nil
+				player.lock.Unlock()
 				if player.hud != nil && player.hud.Key(p.Key.Code, p.Key.Special) {
 					break
 				}
@@ -332,11 +335,11 @@ func websocketHandler(conn *websocket.Conn) {
 				default:
 					//log.Printf("[%s:%d] %d", addr, playerID, p.Key.Code)
 				}
-				player.Lock()
-				player.schedule = nil
-				player.Unlock()
 			}
 			if p.Click != nil {
+				player.lock.Lock()
+				player.schedule = nil
+				player.lock.Unlock()
 				if player.hud != nil && player.hud.Click(p.Click.X, p.Click.Y) {
 					break
 				}
@@ -350,9 +353,6 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 					player.Repaint()
 				}
-				player.Lock()
-				player.schedule = nil
-				player.Unlock()
 			}
 		case <-player.repaint:
 			var paint packetPaint
