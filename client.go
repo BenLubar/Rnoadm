@@ -46,6 +46,7 @@ html {
 <canvas></canvas>
 <br>
 <script>
+var tileSize = 16;
 var authkey = localStorage['rnoadm-auth'] || (localStorage['rnoadm-auth'] = generateAuthKey());
 var canvas;
 var images = {};
@@ -62,22 +63,22 @@ var wsonmessage = ws.onmessage = function(e) {
 	if (msg.Paint) {
 		if (!canvas) {
 			canvas = document.querySelector('canvas');
-			canvas.width = 40*16;
-			canvas.height = 24*16;
+			canvas.width = 60*tileSize;
+			canvas.height = 32*tileSize;
 			canvas = canvas.getContext('2d');
 		}
 
 		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
-		for (var i = 0; i < 24; i++) {
-			for (var j = 40-1; j >= 0; j--) {
+		for (var i = 0; i < 32; i++) {
+			for (var j = 60-1; j >= 0; j--) {
 				for (var k in (msg.Paint[j][i] || [])) {
 					var p = msg.Paint[j][i][k];
 					if (p.R) {
 						canvas.fillStyle = '#000';
-						canvas.fillText(p.R, j*16+4, i*16+13);
+						canvas.fillText(p.R, j*tileSize+tileSize/4, i*tileSize+tileSize*3/4+1);
 						canvas.fillStyle = p.C;
-						canvas.fillText(p.R, j*16+4, i*16+12);
+						canvas.fillText(p.R, j*tileSize+tileSize/4, i*tileSize+tileSize*3/4);
 					}
 					if (p.I) {
 						if (!images[p.I]) {
@@ -115,7 +116,7 @@ var wsonmessage = ws.onmessage = function(e) {
 							buffer.putImageData(data, 0, 0);
 
 						}
-						canvas.drawImage(images_recolor[p.I][p.C], j*16, i*16);
+						canvas.drawImage(images_recolor[p.I][p.C], j*tileSize, i*tileSize+tileSize-images[p.I].height);
 					}
 				}
 			}
@@ -179,7 +180,7 @@ type packetPaintCell struct {
 	R, I, C string `json:",omitempty"`
 }
 type packetPaint struct {
-	Paint [40][24][]packetPaintCell
+	Paint [60][32][]packetPaintCell
 }
 
 func websocketHandler(conn *websocket.Conn) {
@@ -338,8 +339,7 @@ func websocketHandler(conn *websocket.Conn) {
 				}
 			}
 
-			w := len(paint.Paint)
-			h := len(paint.Paint[0])
+			const w, h = 40, 24
 			camX := int(player.TileX)
 			camY := int(player.TileY)
 
@@ -370,6 +370,27 @@ func websocketHandler(conn *websocket.Conn) {
 				player.hud = ZoneEntryHUD(z.Name())
 			}
 			z.Unlock()
+
+			loadedZoneLock.Lock()
+			for coord, info := range ZoneInfo {
+				dx, dy := coord[0]-z.X, coord[1]-z.Y
+				if dx <= -3 || dx > 3 || dy <= -4 || dy > 4 {
+					continue
+				}
+				if dy&1 == 1 {
+					setcell(int(50+dx*6+3), int(10+dy*2), "", "hexagon", info.Element.Color())
+				} else {
+					setcell(int(50+dx*6), int(10+dy*2), "", "hexagon", info.Element.Color())
+				}
+			}
+			loadedZoneLock.Unlock()
+
+			setcell(w+1, 20, "INVENTORY", "", "#aaa")
+			player.lock.Lock()
+			for i, o := range player.Backpack {
+				o.Paint(i%18+w+1, i/18+21, setcell)
+			}
+			player.lock.Unlock()
 
 			player.hud.Paint(setcell)
 			websocket.JSON.Send(conn, &paint)

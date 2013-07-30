@@ -36,12 +36,39 @@ type loadedZone struct {
 	ref  uint
 }
 
+type zoneInfo struct {
+	Name    string
+	Element Element
+}
+
 var loadedZones = make(map[[2]int64]*loadedZone)
 var loadedZoneLock sync.Mutex
+var ZoneInfo map[[2]int64]zoneInfo
 
 func GrabZone(x, y int64) *Zone {
 	loadedZoneLock.Lock()
 	defer loadedZoneLock.Unlock()
+
+	if ZoneInfo == nil {
+		f, err := os.Open(filepath.Join(seedFilename(), "mZONEMETA.gz"))
+		if err != nil {
+			ZoneInfo = make(map[[2]int64]zoneInfo)
+		} else {
+			defer f.Close()
+
+			g, err := gzip.NewReader(f)
+			if err != nil {
+				ZoneInfo = make(map[[2]int64]zoneInfo)
+			} else {
+				defer g.Close()
+
+				err = gob.NewDecoder(g).Decode(&ZoneInfo)
+				if err != nil {
+					ZoneInfo = make(map[[2]int64]zoneInfo)
+				}
+			}
+		}
+	}
 
 	if z, ok := loadedZones[[2]int64{x, y}]; ok {
 		z.ref++
@@ -53,6 +80,27 @@ func GrabZone(x, y int64) *Zone {
 		log.Printf("ZONE %d %d: %v", x, y, err)
 		z = &Zone{X: x, Y: y}
 		z.Generate()
+	}
+
+	ZoneInfo[[2]int64{x, y}] = zoneInfo{
+		Name:    z.Name(),
+		Element: z.Element,
+	}
+	f, err := os.Create(filepath.Join(seedFilename(), "mZONEMETA.gz"))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	g, err := gzip.NewWriterLevel(f, gzip.BestCompression)
+	if err != nil {
+		panic(err)
+	}
+	defer g.Close()
+
+	err = gob.NewEncoder(g).Encode(&ZoneInfo)
+	if err != nil {
+		panic(err)
 	}
 
 	loadedZones[[2]int64{x, y}] = &loadedZone{

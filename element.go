@@ -6,6 +6,7 @@ import (
 
 type element struct {
 	Name  string
+	Color Color
 	Links []Element
 	Rocks []RockType
 	Ores  []MetalType
@@ -81,6 +82,7 @@ func init() {
 	}
 	elements[Nature] = element{
 		Name:  "Nature",
+		Color: "#0a0",
 		Links: []Element{Air, Water, Earth},
 		Rocks: []RockType{Granite, Limestone},
 		Ores:  []MetalType{0, Iron, Copper},
@@ -163,6 +165,10 @@ func (e Element) Linked(r *rand.Rand) Element {
 	}
 	return el[i]
 
+}
+
+func (e Element) Color() Color {
+	return elements[e].Color
 }
 
 func (e Element) Rock(r *rand.Rand) (RockType, bool) {

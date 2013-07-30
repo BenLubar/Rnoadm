@@ -45,61 +45,42 @@ func (p *Player) Move(dx, dy int) {
 	p.lock.Lock()
 	z := p.zone
 	p.lock.Unlock()
+	zoneChange = zoneChange || z.Tile(uint8(destX), uint8(destY)) == nil
 	z.Lock()
-	if !zoneChange {
-		zoneChange = z.Tile(uint8(destX), uint8(destY)) == nil
-	}
 	if !zoneChange && z.Blocked(uint8(destX), uint8(destY)) {
 		z.Unlock()
 		return
 	}
-	z.Tile(p.TileX, p.TileY).Remove(p)
 	z.Unlock()
+
 	if zoneChange {
-		p.RepaintZone()
+		if destY >= 0 && destY <= 255 {
+			// TEMPORARY: no zone changes to the sides due to bugs
+			return
+		}
+		z.Lock()
+		z.Tile(p.TileX, p.TileY).Remove(p)
+		z.Unlock()
+		z.Repaint()
 		ReleaseZone(z)
 		p.lock.Lock()
-		p.Delay = 2
 		if destY < 0 {
 			p.ZoneY -= 2
 			p.TileY = 255
 		} else if destY > 255 {
 			p.ZoneY += 2
 			p.TileY = 0
-		} else {
-			// TEMPORARY
-			p.zone = GrabZone(p.ZoneX, p.ZoneY)
-			p.lock.Unlock()
-			return
-		} /*if destX < 128 {
-			p.TileX = 255 - p.TileX
-			p.TileY = 128 + p.TileY
-			if p.ZoneY&1 == 0 {
-				p.ZoneX--
-			}
-			if destY < 128 {
-				p.ZoneY--
-			} else {
-				p.ZoneY++
-			}
-		} else {
-			p.TileX = 255 - p.TileX
-			p.TileY = 128 + p.TileY
-			if p.ZoneY&1 == 1 {
-				p.ZoneX++
-			}
-			if destY < 128 {
-				p.ZoneY--
-			} else {
-				p.ZoneY++
-			}
-		}*/
+		}
+		p.Delay = 2
 		z = GrabZone(p.ZoneX, p.ZoneY)
 		p.zone = z
 		p.lock.Unlock()
 		p.Save()
 		p.hud = nil
 	} else {
+		z.Lock()
+		z.Tile(p.TileX, p.TileY).Remove(p)
+		z.Unlock()
 		p.lock.Lock()
 		p.TileX = uint8(destX)
 		p.TileY = uint8(destY)
