@@ -455,6 +455,11 @@ func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 			})
 		}
 		zone.Unlock()
+
+		if len(h.Options) == 0 {
+			h.Click(h.X+1, h.Y)
+			return
+		}
 	}
 	for i := 1; i < 8; i++ {
 		setcell(h.X+i, h.Y, "", "ui_fill", "#111")
