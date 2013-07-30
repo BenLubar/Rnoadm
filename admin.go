@@ -16,12 +16,18 @@ var adminCommands = map[string]func(*Player){
 		p.hud = &AdminMenuHUD{Player: p}
 	},
 	"TP": func(p *Player) {
-		p.hud = &AdminTeleportHUD{Player: p}
+		p.hud = &AdminTeleportHUD{Player: p, Summon: false}
+	},
+	"SUMMON": func(p *Player) {
+		p.hud = &AdminTeleportHUD{Player: p, Summon: true}
 	},
 	"TZ": func(p *Player) {
 		p.Lock()
 		p.hud = &AdminTeleportZoneHUD{Player: p, X: p.ZoneX, Y: p.ZoneY}
 		p.Unlock()
+	},
+	"NOCLIP": func(p *Player) {
+		p.hud = &AdminNoclipHUD{Player: p}
 	},
 	"CHANGE EXAMINE": func(p *Player) {
 		p.hud = &AdminChangeExamineHUD{Player: p, Input: []rune(p.Examine())}
@@ -243,6 +249,7 @@ type AdminTeleportHUD struct {
 	Player *Player
 	List   PlayerList
 	Offset int
+	Summon bool
 }
 
 func (h *AdminTeleportHUD) Paint(setcell func(int, int, string, string, Color)) {
@@ -259,7 +266,11 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, string, string, Color)) 
 		onlinePlayersLock.Unlock()
 		sort.Sort(h.List)
 	}
-	setcell(0, 0, "TELEPORT TO PLAYER", "", "#fff")
+	if h.Summon {
+		setcell(0, 0, "SUMMON PLAYER", "", "#fff")
+	} else {
+		setcell(0, 0, "TELEPORT TO PLAYER", "", "#fff")
+	}
 	for i, p := range h.List[h.Offset:] {
 		if i == 8 {
 			break
@@ -297,39 +308,44 @@ func (h *AdminTeleportHUD) Key(code int, special bool) bool {
 	case '1', '2', '3', '4', '5', '6', '7', '8':
 		i := code - '1' + h.Offset
 		if i < len(h.List) {
-			p := h.List[i]
-			p.Lock()
-			zx, zy := p.ZoneX, p.ZoneY
-			tx, ty := p.TileX, p.TileY
-			name := p.Name()
-			p.Unlock()
+			from := h.Player
+			to := h.List[i]
+			action := "TELEPORT"
+			if h.Summon {
+				from, to = to, from
+				action = "SUMMON"
+			}
+			to.Lock()
+			zx, zy := to.ZoneX, to.ZoneY
+			tx, ty := to.TileX, to.TileY
+			name := to.Name()
+			to.Unlock()
 
-			h.Player.Lock()
-			az := h.Player.zone
-			azx, azy := h.Player.ZoneX, h.Player.ZoneY
-			atx, aty := h.Player.TileX, h.Player.TileY
-			aname := h.Player.Name()
-			h.Player.Unlock()
+			from.Lock()
+			az := from.zone
+			azx, azy := from.ZoneX, from.ZoneY
+			atx, aty := from.TileX, from.TileY
+			aname := from.Name()
+			from.Unlock()
 
-			AdminLog.Printf("TELEPORT [%d:%q] (%d:%d, %d:%d) => [%d:%q] (%d:%d, %d:%d)", h.Player.ID, aname, azx, atx, azy, aty, p.ID, name, zx, tx, zy, ty)
+			AdminLog.Printf("%s [%d:%q] (%d:%d, %d:%d) => [%d:%q] (%d:%d, %d:%d)", action, from.ID, aname, azx, atx, azy, aty, to.ID, name, zx, tx, zy, ty)
 
 			az.Lock()
-			az.Tile(atx, aty).Remove(h.Player)
-			az.Repaint()
+			az.Tile(atx, aty).Remove(from)
 			az.Unlock()
+			az.Repaint()
 
 			ReleaseZone(az)
 			z := GrabZone(zx, zy)
 
-			h.Player.Lock()
-			h.Player.zone = z
-			h.Player.ZoneX, h.Player.ZoneY = zx, zy
-			h.Player.TileX, h.Player.TileY = tx, ty
-			h.Player.Unlock()
-			h.Player.Save()
+			from.Lock()
+			from.zone = z
+			from.ZoneX, from.ZoneY = zx, zy
+			from.TileX, from.TileY = tx, ty
+			from.Unlock()
 
 			z.Lock()
-			z.Tile(tx, ty).Add(h.Player)
+			z.Tile(tx, ty).Add(from)
 			z.Repaint()
 			z.Unlock()
 
@@ -376,9 +392,12 @@ func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, string, string, Colo
 	}
 
 	if h.Name == "" {
-		z := GrabZone(h.X, h.Y)
-		h.Name = z.Name()
-		ReleaseZone(z)
+		loadedZoneLock.Lock()
+		h.Name = ZoneInfo[[2]int64{h.X, h.Y}].Name
+		loadedZoneLock.Unlock()
+		if h.Name == "" {
+			h.Name = "???"
+		}
 	}
 
 	setcell(0, 0, "TELEPORT TO ZONE", "", "#00f")
@@ -460,6 +479,80 @@ func (h *AdminTeleportZoneHUD) Key(code int, special bool) bool {
 }
 
 func (h *AdminTeleportZoneHUD) Click(x, y int) bool {
+	return false
+}
+
+type AdminNoclipHUD struct {
+	Player *Player
+}
+
+func (h *AdminNoclipHUD) Paint(setcell func(int, int, string, string, Color)) {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return
+	}
+
+	setcell(0, 0, "NOCLIP", "", "#00f")
+}
+
+func (h *AdminNoclipHUD) Key(code int, special bool) bool {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	if !special {
+		return false
+	}
+	move := func(dx, dy int) {
+		h.Player.Lock()
+		zone := h.Player.zone
+		fx, fy := h.Player.TileX, h.Player.TileY
+		tx, ty := fx+uint8(dx), fy+uint8(dy)
+		h.Player.Unlock()
+		if int(tx) != int(fx)+dx || int(ty) != int(fy)+dy {
+			return
+		}
+		to := zone.Tile(tx, ty)
+		if to == nil {
+			return
+		}
+
+		zone.Lock()
+		if zone.Tile(fx, fy).Remove(h.Player) {
+			to.Add(h.Player)
+		}
+		zone.Unlock()
+		zone.Repaint()
+
+		h.Player.Lock()
+		h.Player.TileX, h.Player.TileY = tx, ty
+		h.Player.Unlock()
+	}
+	switch code {
+	case 38: // up
+		move(0, -1)
+		return true
+	case 37: // left
+		move(-1, 0)
+		return true
+	case 40: // down
+		move(0, 1)
+		return true
+	case 39: // right
+		move(1, 0)
+		return true
+
+	case 13, 27: // enter, esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	return false
+}
+
+func (h *AdminNoclipHUD) Click(x, y int) bool {
 	return false
 }
 

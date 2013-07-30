@@ -39,6 +39,7 @@ type loadedZone struct {
 type zoneInfo struct {
 	Name    string
 	Element Element
+	Biome   Biome
 }
 
 var loadedZones = make(map[[2]int64]*loadedZone)
@@ -85,6 +86,7 @@ func GrabZone(x, y int64) *Zone {
 	ZoneInfo[[2]int64{x, y}] = zoneInfo{
 		Name:    z.Name(),
 		Element: z.Element,
+		Biome:   z.Biome,
 	}
 	f, err := os.Create(filepath.Join(seedFilename(), "mZONEMETA.gz"))
 	if err != nil {
@@ -161,6 +163,7 @@ type Zone struct {
 	Seed    RandomSource
 	X, Y    int64
 	Element Element
+	Biome   Biome
 	Tiles   [zoneTiles]Tile
 	Name_   *Name
 	dirty   chan struct{}
@@ -190,6 +193,15 @@ func (z *Zone) Rand() *rand.Rand {
 	return rand.New(&z.Seed)
 }
 
+type Biome uint8
+
+const (
+	Plains Biome = iota
+	Forest
+	Hills
+	Lake
+)
+
 func (z *Zone) Generate() {
 	z.Lock()
 	defer z.Unlock()
@@ -199,68 +211,8 @@ func (z *Zone) Generate() {
 	z.Seed.Seed(Seed ^ z.X ^ int64(uint64(z.Y)<<32|uint64(z.Y)>>32))
 	r := z.Rand()
 	z.Element = Nature
-	z.Name_ = GenerateName(r, NameZone, NamePlains)
-	for i := r.Intn(100); i > 0; i-- {
-		x := r.Float64()*192 + 32
-		y := r.Float64()*192 + 32
-		rock, ok := z.Element.Rock(r)
-		if !ok {
-			break
-		}
-
-		for j := 0; j < 40; j++ {
-			radius := r.Float64() * 4
-			theta := r.Float64() * 2 * math.Pi
-			tile := z.Tile(uint8(x+radius*math.Cos(theta)), uint8(y+radius*math.Sin(theta)))
-
-			if !tile.Blocked() {
-				ore, _ := z.Element.Ore(r)
-				if ore != 0 && j%10 == 0 {
-					tile.Add(&Rock{
-						Type: rock,
-						Ore:  ore,
-						Big:  true,
-					})
-				} else {
-					tile.Add(&Rock{
-						Type: rock,
-						Ore:  ore,
-					})
-				}
-			}
-		}
-	}
-	for i := r.Intn(100); i > 0; i-- {
-		x := r.Float64()*192 + 32
-		y := r.Float64()*192 + 32
-		wood, ok := z.Element.Wood(r)
-		if !ok {
-			break
-		}
-
-		for j := 0; j < 40; j++ {
-			radius := r.Float64() * 4
-			theta := r.Float64() * 2 * math.Pi
-			tile := z.Tile(uint8(x+radius*math.Cos(theta)), uint8(y+radius*math.Sin(theta)))
-
-			if !tile.Blocked() {
-				tile.Add(&Tree{
-					Type: wood,
-				})
-			}
-		}
-	}
-	for i := range z.Tiles {
-		if !z.Tiles[i].Blocked() && r.Intn(4) == 0 {
-			flora, ok := z.Element.Flora(r)
-			if !ok {
-				break
-			}
-			z.Tiles[i].Add(&Flora{
-				Type: flora,
-			})
-		}
-	}
+	z.Biome = Forest
+	z.generateForest(r)
 }
 
 func (z *Zone) Save() error {
@@ -459,4 +411,5 @@ func init() {
 	gob.Register(Object(&WallStone{}))
 	gob.Register(Object(&WallMetal{}))
 	gob.Register(Object(&WallWood{}))
+	gob.Register(Object(&Liquid{}))
 }

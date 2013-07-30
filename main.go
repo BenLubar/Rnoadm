@@ -51,7 +51,7 @@ func main() {
 	}()
 
 	sigkill := make(chan os.Signal, 1)
-	signal.Notify(sigkill, os.Kill)
+	signal.Notify(sigkill, os.Kill, os.Interrupt)
 	<-sigkill
 	EachLoadedZone(func(z *Zone) {
 		err := z.Save()
