@@ -43,6 +43,8 @@ html {
 </style>
 </head>
 <body>
+<canvas></canvas>
+<br>
 <script>
 var authkey = localStorage['rnoadm-auth'] || (localStorage['rnoadm-auth'] = generateAuthKey());
 var canvas;
@@ -59,10 +61,9 @@ var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
 	if (msg.Paint) {
 		if (!canvas) {
-			canvas = document.createElement('canvas');
+			canvas = document.querySelector('canvas');
 			canvas.width = 40*16;
 			canvas.height = 24*16;
-			document.body.appendChild(canvas);
 			canvas = canvas.getContext('2d');
 		}
 
@@ -135,13 +136,30 @@ function send(packet) {
 document.onkeydown = function(e) {
 	send({Key:{Code:e.keyCode, Special:true}});
 	if (e.keyCode == 8) {
-		e.preventDefault()
+		e.preventDefault();
 	}
 };
 document.onkeypress = function(e) {
 	send({Key:{Code:e.charCode, Special:false}});
 };
 </script>
+<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:87, Special:true}})">NORTH</button>
+<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:83, Special:true}})">SOUTH</button>
+<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:65, Special:true}})">WEST</button>
+<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:68, Special:true}})">EAST</button>
+<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:73, Special:true}})">INVENTORY</button>
+<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:69, Special:true}})">INTERACT</button>
+<br>
+<button onclick="send({Key:{Code:49, Special:true}})">1</button>
+<button onclick="send({Key:{Code:50, Special:true}})">2</button>
+<button onclick="send({Key:{Code:51, Special:true}})">3</button>
+<button onclick="send({Key:{Code:52, Special:true}})">4</button>
+<button onclick="send({Key:{Code:53, Special:true}})">5</button>
+<button onclick="send({Key:{Code:54, Special:true}})">6</button>
+<button onclick="send({Key:{Code:55, Special:true}})">7</button>
+<button onclick="send({Key:{Code:56, Special:true}})">8</button>
+<button onclick="send({Key:{Code:57, Special:true}})">9</button>
+<button onclick="send({Key:{Code:48, Special:true}})">0</button>
 </body>
 </html>`))
 }
