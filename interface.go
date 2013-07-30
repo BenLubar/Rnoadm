@@ -421,6 +421,12 @@ func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 		tile := zone.Tile(h.TileX, h.TileY)
 		h.Player.Unlock()
 
+		if tile == nil {
+			h.Player.hud = nil
+			h.Player.Repaint()
+			return
+		}
+
 		zone.Lock()
 		h.Blocked = tile.Blocked()
 		h.Options = []clickHUDOption{}
