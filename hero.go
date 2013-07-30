@@ -67,6 +67,8 @@ func (p *Player) Move(dx, dy int) {
 			p.ZoneY += 2
 			p.TileY = 0
 		} else {
+			// TEMPORARY
+			p.zone = GrabZone(p.ZoneX, p.ZoneY)
 			p.lock.Unlock()
 			return
 		} /*if destX < 128 {
