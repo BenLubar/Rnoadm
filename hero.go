@@ -22,6 +22,7 @@ type Player struct {
 	hud interface {
 		Paint(func(int, int, string, string, Color))
 		Key(int, bool) bool
+		Click(int, int) bool
 	}
 	repaint chan struct{}
 
@@ -201,6 +202,10 @@ func (h ZoneEntryHUD) Paint(setcell func(int, int, string, string, Color)) {
 }
 
 func (h ZoneEntryHUD) Key(code int, special bool) bool {
+	return false
+}
+
+func (h ZoneEntryHUD) Click(x, y int) bool {
 	return false
 }
 

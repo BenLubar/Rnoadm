@@ -143,6 +143,9 @@ document.onkeydown = function(e) {
 document.onkeypress = function(e) {
 	send({Key:{Code:e.charCode, Special:false}});
 };
+document.querySelector('canvas').onclick = function(e) {
+	send({Click:{X:Math.floor(e.offsetX/tileSize), Y:Math.floor(e.offsetY/tileSize)}});
+};
 </script>
 <button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:87, Special:true}})">NORTH</button>
 <button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:83, Special:true}})">SOUTH</button>
@@ -169,11 +172,14 @@ type packetIn struct {
 	Auth *struct {
 		Key string
 	}
-	ForceRepaint bool
-	Key          *struct {
+	Key *struct {
 		Code    int
 		Special bool
 	}
+	Click *struct {
+		X, Y int
+	}
+	ForceRepaint bool
 }
 
 type packetPaintCell struct {
@@ -283,6 +289,7 @@ func websocketHandler(conn *websocket.Conn) {
 		}
 	}()
 
+	const w, h = 40, 24
 	for {
 		select {
 		case p, ok := <-packets:
@@ -325,6 +332,21 @@ func websocketHandler(conn *websocket.Conn) {
 					//log.Printf("[%s:%d] %d", addr, playerID, p.Key.Code)
 				}
 			}
+			if p.Click != nil {
+				if player.hud != nil && player.hud.Click(p.Click.X, p.Click.Y) {
+					break
+				}
+				if p.Click.X >= 0 && p.Click.X < w && p.Click.Y >= 0 && p.Click.Y < h {
+					player.hud = &ClickHUD{
+						X:      p.Click.X,
+						Y:      p.Click.Y,
+						W:      w,
+						H:      h,
+						Player: player,
+					}
+					player.Repaint()
+				}
+			}
 		case <-player.repaint:
 			var paint packetPaint
 			setcell := func(x, y int, ch string, sprite string, color Color) {
@@ -339,7 +361,6 @@ func websocketHandler(conn *websocket.Conn) {
 				}
 			}
 
-			const w, h = 40, 24
 			camX := int(player.TileX)
 			camY := int(player.TileY)
 
@@ -378,9 +399,39 @@ func websocketHandler(conn *websocket.Conn) {
 					continue
 				}
 				if dy&1 == 1 {
-					setcell(int(50+dx*6+3), int(10+dy*2), "", "hexagon", info.Element.Color())
+					setcell(int(50+dx*6+3), int(10+dy*2-3), "", "ui_smallcorner_tl", info.Element.Color())
+					setcell(int(50+dx*6+6), int(10+dy*2-3), "", "ui_smallcorner_tr", info.Element.Color())
+					setcell(int(50+dx*6+4), int(10+dy*2-3), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+5), int(10+dy*2-3), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+3), int(10+dy*2-2), "", "ui_largecorner_tl", info.Element.Color())
+					setcell(int(50+dx*6+6), int(10+dy*2-2), "", "ui_largecorner_tr", info.Element.Color())
+					setcell(int(50+dx*6+4), int(10+dy*2-2), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+5), int(10+dy*2-2), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+3), int(10+dy*2-1), "", "ui_largecorner_bl", info.Element.Color())
+					setcell(int(50+dx*6+6), int(10+dy*2-1), "", "ui_largecorner_br", info.Element.Color())
+					setcell(int(50+dx*6+4), int(10+dy*2-1), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+5), int(10+dy*2-1), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+3), int(10+dy*2), "", "ui_smallcorner_bl", info.Element.Color())
+					setcell(int(50+dx*6+6), int(10+dy*2), "", "ui_smallcorner_br", info.Element.Color())
+					setcell(int(50+dx*6+4), int(10+dy*2), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+5), int(10+dy*2), "", "ui_fill", info.Element.Color())
 				} else {
-					setcell(int(50+dx*6), int(10+dy*2), "", "hexagon", info.Element.Color())
+					setcell(int(50+dx*6), int(10+dy*2-3), "", "ui_smallcorner_tl", info.Element.Color())
+					setcell(int(50+dx*6+3), int(10+dy*2-3), "", "ui_smallcorner_tr", info.Element.Color())
+					setcell(int(50+dx*6+1), int(10+dy*2-3), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+2), int(10+dy*2-3), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6), int(10+dy*2-2), "", "ui_largecorner_tl", info.Element.Color())
+					setcell(int(50+dx*6+3), int(10+dy*2-2), "", "ui_largecorner_tr", info.Element.Color())
+					setcell(int(50+dx*6+1), int(10+dy*2-2), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+2), int(10+dy*2-2), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6), int(10+dy*2-1), "", "ui_largecorner_bl", info.Element.Color())
+					setcell(int(50+dx*6+3), int(10+dy*2-1), "", "ui_largecorner_br", info.Element.Color())
+					setcell(int(50+dx*6+1), int(10+dy*2-1), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+2), int(10+dy*2-1), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6), int(10+dy*2), "", "ui_smallcorner_bl", info.Element.Color())
+					setcell(int(50+dx*6+3), int(10+dy*2), "", "ui_smallcorner_br", info.Element.Color())
+					setcell(int(50+dx*6+1), int(10+dy*2), "", "ui_fill", info.Element.Color())
+					setcell(int(50+dx*6+2), int(10+dy*2), "", "ui_fill", info.Element.Color())
 				}
 			}
 			loadedZoneLock.Unlock()

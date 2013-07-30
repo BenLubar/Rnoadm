@@ -220,6 +220,10 @@ func (h *AdminHUD) Key(code int, special bool) bool {
 	return true
 }
 
+func (h *AdminHUD) Click(x, y int) bool {
+	return false
+}
+
 type PlayerList []*Player
 
 func (l PlayerList) Len() int {
@@ -351,6 +355,10 @@ func (h *AdminTeleportHUD) Key(code int, special bool) bool {
 	return false
 }
 
+func (h *AdminTeleportHUD) Click(x, y int) bool {
+	return false
+}
+
 type AdminChangeExamineHUD struct {
 	Player *Player
 	Input  []rune
@@ -411,6 +419,10 @@ func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
 	return true
 }
 
+func (h *AdminChangeExamineHUD) Click(x, y int) bool {
+	return false
+}
+
 type AdminChangeColorHUD struct {
 	Player *Player
 	Input  []rune
@@ -468,6 +480,10 @@ func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
 		return true
 	}
 	return true
+}
+
+func (h *AdminChangeColorHUD) Click(x, y int) bool {
+	return false
 }
 
 type AdminMenuHUD struct {
@@ -548,5 +564,9 @@ func (h *AdminMenuHUD) Key(code int, special bool) bool {
 		h.Player.Repaint()
 		return true
 	}
+	return false
+}
+
+func (h *AdminMenuHUD) Click(x, y int) bool {
 	return false
 }

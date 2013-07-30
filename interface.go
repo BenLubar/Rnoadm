@@ -28,6 +28,10 @@ func (h *ExamineHUD) Key(code int, special bool) bool {
 	return false
 }
 
+func (h *ExamineHUD) Click(x, y int) bool {
+	return false
+}
+
 type InteractHUD struct {
 	Player       *Player
 	TileX, TileY uint8
@@ -123,6 +127,10 @@ func (h *InteractHUD) Key(code int, special bool) bool {
 		h.Player.Repaint()
 		return true
 	}
+	return false
+}
+
+func (h *InteractHUD) Click(x, y int) bool {
 	return false
 }
 
@@ -307,6 +315,10 @@ func (h *InteractMenuHUD) Key(code int, special bool) bool {
 	return false
 }
 
+func (h *InteractMenuHUD) Click(x, y int) bool {
+	return false
+}
+
 type InventoryHUD struct {
 	Player *Player
 	Offset int
@@ -378,5 +390,100 @@ func (h *InventoryHUD) Key(code int, special bool) bool {
 		h.Player.Repaint()
 		return true
 	}
+	return false
+}
+
+func (h *InventoryHUD) Click(x, y int) bool {
+	return false
+}
+
+type clickHUDOption struct {
+	Object Object
+	Text   string
+	Exec   func()
+}
+
+type ClickHUD struct {
+	X, Y    int
+	W, H    int
+	Player  *Player
+	Options []clickHUDOption
+	Blocked bool
+}
+
+func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
+	if h.Options == nil {
+		h.Player.lock.Lock()
+		zone := h.Player.zone
+		tile := zone.Tile(h.Player.TileX+uint8(h.X-h.W/2), h.Player.TileY+uint8(h.Y-h.H/2))
+		h.Player.lock.Unlock()
+
+		zone.Lock()
+		h.Blocked = tile.Blocked()
+		h.Options = []clickHUDOption{}
+		for _, o := range tile.Objects {
+			for _, i := range o.InteractOptions() {
+				h.Options = append(h.Options, clickHUDOption{
+					Object: o,
+					Text:   i + " " + o.Name(),
+					Exec:   func() {}, // TODO
+				})
+			}
+			if _, ok := o.(Item); ok {
+				h.Options = append(h.Options, clickHUDOption{
+					Object: o,
+					Text:   "take " + o.Name(),
+					Exec: func() {
+						// TODO
+					},
+				})
+			}
+			h.Options = append(h.Options, clickHUDOption{
+				Object: o,
+				Text:   "examine " + o.Name(),
+				Exec: func(o Object) func() {
+					return func() {
+						h.Player.hud = &ExamineHUD{
+							Player:  h.Player,
+							Name:    o.Name(),
+							Examine: o.Examine(),
+						}
+					}
+				}(o),
+			})
+		}
+		zone.Unlock()
+	}
+	for i := 1; i < 8; i++ {
+		setcell(h.X+i, h.Y, "", "ui_fill", "#111")
+	}
+	setcell(h.X+8, h.Y, "", "ui_largecorner_tr", "#111")
+
+	if !h.Blocked {
+		setcell(h.X+1, h.Y, "walk here", "", "#fff")
+	}
+
+	row := 1
+	for _, option := range h.Options {
+		for i := 0; i <= 8; i++ {
+			setcell(h.X+i, h.Y+row, "", "ui_fill", "#333")
+		}
+		option.Object.Paint(h.X, h.Y+row, setcell)
+		setcell(h.X+1, h.Y+row, option.Text, "", "#fff")
+		row++
+	}
+
+	setcell(h.X, h.Y+row, "", "ui_largecorner_bl", "#333")
+	for i := 1; i < 8; i++ {
+		setcell(h.X+i, h.Y+row, "", "ui_fill", "#333")
+	}
+	setcell(h.X+8, h.Y+row, "", "ui_largecorner_br", "#333")
+}
+
+func (h *ClickHUD) Key(code int, special bool) bool {
+	return false
+}
+
+func (h *ClickHUD) Click(x, y int) bool {
 	return false
 }
