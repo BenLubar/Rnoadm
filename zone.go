@@ -333,7 +333,7 @@ func (z *Zone) Name() string {
 
 type Tile struct {
 	Objects []Object
-	Ground  string
+	Sprite  int
 }
 
 func (t *Tile) Add(o Object) {
@@ -364,12 +364,19 @@ func (t *Tile) Blocked() bool {
 
 type Color string
 
+var grassSprites = []string{
+	"",
+	"grass_1",
+	"grass_2",
+	"grass_3",
+	"grass_4",
+}
+
 func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, string, string, Color)) {
-	if t.Ground == "" {
-		const ground = " ,.'-`"
-		t.Ground = string(rune(ground[rand.Intn(len(ground))]))
+	if t.Sprite == 0 {
+		t.Sprite = rand.Intn(len(grassSprites)-1)+1
 	}
-	setcell(i, j, t.Ground, "ground_grass_l0", "#268f1e")
+	setcell(i, j, "", grassSprites[t.Sprite], "#268f1e")
 	for _, o := range t.Objects {
 		o.Paint(i, j, setcell)
 	}

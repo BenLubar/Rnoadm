@@ -44,7 +44,6 @@ html {
 </head>
 <body>
 <canvas></canvas>
-<br>
 <script>
 var tileSize = 16;
 var authkey = localStorage['rnoadm-auth'] || (localStorage['rnoadm-auth'] = generateAuthKey());
@@ -107,10 +106,15 @@ var wsonmessage = ws.onmessage = function(e) {
 							buffer.clearRect(0, 0, 1, 1);
 							buffer.drawImage(images[p.I], 0, 0);
 							data = buffer.getImageData(0, 0, buffer.canvas.width, buffer.canvas.height);
+							var fade = function(x, y) {
+								if (x >= 128)
+									return 255 - fade(255-x, 255-y);
+								return x*y/127;
+							};
 							for (var l = 0; l < data.data.length; l += 4) {
-								data.data[l+0] = data.data[l+0]*r/255;
-								data.data[l+1] = data.data[l+1]*g/255;
-								data.data[l+2] = data.data[l+2]*b/255;
+								data.data[l+0] = fade(data.data[l+0], r);
+								data.data[l+1] = fade(data.data[l+1], g);
+								data.data[l+2] = fade(data.data[l+2], b);
 								data.data[l+3] = data.data[l+3]*a/255;
 							}
 							buffer.putImageData(data, 0, 0);
@@ -148,23 +152,6 @@ document.querySelector('canvas').onclick = document.querySelector('canvas').onco
 	return false;
 };
 </script>
-<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:87, Special:true}})">NORTH</button>
-<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:83, Special:true}})">SOUTH</button>
-<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:65, Special:true}})">WEST</button>
-<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:68, Special:true}})">EAST</button>
-<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:73, Special:true}})">INVENTORY</button>
-<button onclick="send({Key:{Code:27, Special:true}});send({Key:{Code:69, Special:true}})">INTERACT</button>
-<br>
-<button onclick="send({Key:{Code:49, Special:true}})">1</button>
-<button onclick="send({Key:{Code:50, Special:true}})">2</button>
-<button onclick="send({Key:{Code:51, Special:true}})">3</button>
-<button onclick="send({Key:{Code:52, Special:true}})">4</button>
-<button onclick="send({Key:{Code:53, Special:true}})">5</button>
-<button onclick="send({Key:{Code:54, Special:true}})">6</button>
-<button onclick="send({Key:{Code:55, Special:true}})">7</button>
-<button onclick="send({Key:{Code:56, Special:true}})">8</button>
-<button onclick="send({Key:{Code:57, Special:true}})">9</button>
-<button onclick="send({Key:{Code:48, Special:true}})">0</button>
 </body>
 </html>`))
 }
