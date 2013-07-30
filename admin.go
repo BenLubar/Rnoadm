@@ -4,6 +4,7 @@ import (
 	"log"
 	"math/rand"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -17,8 +18,10 @@ var adminCommands = map[string]func(*Player){
 	"TP": func(p *Player) {
 		p.hud = &AdminTeleportHUD{Player: p}
 	},
-	"TELEPORT": func(p *Player) {
-		p.hud = &AdminTeleportHUD{Player: p}
+	"TZ": func(p *Player) {
+		p.Lock()
+		p.hud = &AdminTeleportZoneHUD{Player: p, X: p.ZoneX, Y: p.ZoneY}
+		p.Unlock()
 	},
 	"CHANGE EXAMINE": func(p *Player) {
 		p.hud = &AdminChangeExamineHUD{Player: p, Input: []rune(p.Examine())}
@@ -356,6 +359,107 @@ func (h *AdminTeleportHUD) Key(code int, special bool) bool {
 }
 
 func (h *AdminTeleportHUD) Click(x, y int) bool {
+	return false
+}
+
+type AdminTeleportZoneHUD struct {
+	Player *Player
+	X, Y   int64
+	Name   string
+}
+
+func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, string, string, Color)) {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return
+	}
+
+	if h.Name == "" {
+		z := GrabZone(h.X, h.Y)
+		h.Name = z.Name()
+		ReleaseZone(z)
+	}
+
+	setcell(0, 0, "TELEPORT TO ZONE", "", "#00f")
+	setcell(0, 1, "X", "", "#00f")
+	setcell(2, 1, strconv.FormatInt(h.X, 10), "", "#0ff")
+	setcell(0, 2, "Y", "", "#00f")
+	setcell(2, 2, strconv.FormatInt(h.Y, 10), "", "#0ff")
+	setcell(2, 3, h.Name, "", "#0ff")
+}
+
+func (h *AdminTeleportZoneHUD) Key(code int, special bool) bool {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	if !special {
+		return false
+	}
+	switch code {
+	case 38: // up
+		h.Y--
+		h.Name = ""
+		h.Player.Repaint()
+		return true
+	case 37: // left
+		h.X--
+		h.Name = ""
+		h.Player.Repaint()
+		return true
+	case 40: // down
+		h.Y++
+		h.Name = ""
+		h.Player.Repaint()
+		return true
+	case 39: // right
+		h.X++
+		h.Name = ""
+		h.Player.Repaint()
+		return true
+
+	case 13: // enter
+		h.Player.Lock()
+		tx, ty := h.Player.TileX, h.Player.TileY
+		from := h.Player.zone
+		AdminLog.Printf("TPZONE [%d:%q] (%d:%d, %d:%d) => (%d, %d)", h.Player.ID, h.Player.Name(), h.Player.ZoneX, tx, h.Player.ZoneY, ty, h.X, h.Y)
+		h.Player.Unlock()
+
+		from.Lock()
+		if !from.Tile(tx, ty).Remove(h.Player) {
+			from.Unlock()
+			h.Player.hud = nil
+			h.Player.Repaint()
+			return true
+		}
+		from.Unlock()
+		ReleaseZone(from)
+
+		to := GrabZone(h.X, h.Y)
+		to.Lock()
+		to.Tile(tx, ty).Add(h.Player)
+		to.Unlock()
+
+		h.Player.Lock()
+		h.Player.ZoneX, h.Player.ZoneY = h.X, h.Y
+		h.Player.zone = to
+		h.Player.Unlock()
+
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+
+	case 27: // esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	return false
+}
+
+func (h *AdminTeleportZoneHUD) Click(x, y int) bool {
 	return false
 }
 

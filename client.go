@@ -402,7 +402,7 @@ func websocketHandler(conn *websocket.Conn) {
 			loadedZoneLock.Lock()
 			for coord, info := range ZoneInfo {
 				dx, dy := coord[0]-z.X, coord[1]-z.Y
-				if dx <= -3 || dx > 3 || dy <= -4 || dy > 4 {
+				if dx <= -2 || dx > 2 || dy <= -3 || dy > 3 {
 					continue
 				}
 				if dy&1 == 1 {
