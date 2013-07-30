@@ -48,8 +48,8 @@ var woodTypeInfo = [woodTypeCount]struct {
 	},
 	Birch: {
 		Name:      "birch",
-		Color:     "#f5ead5",
-		LeafColor: "#89eaac",
+		Color:     "#d0ddd0",
+		LeafColor: "#39ca7c",
 		Strength:  12,
 	},
 }
