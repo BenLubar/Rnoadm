@@ -247,23 +247,23 @@ func websocketHandler(conn *websocket.Conn) {
 	player.LastLogin = time.Now().UTC()
 
 	player.Repaint()
-	player.lock.Lock()
+	player.Lock()
 	zone := GrabZone(player.ZoneX, player.ZoneY)
 	player.zone = zone
 	tx, ty := player.TileX, player.TileY
 	if zone.Tile(tx, ty) == nil {
 		tx, ty, player.TileX, player.TileY = 127, 127, 127, 127
 	}
-	player.lock.Unlock()
+	player.Unlock()
 	zone.Lock()
 	zone.Tile(tx, ty).Add(player)
 	zone.Unlock()
 	zone.Repaint()
 	defer func() {
-		player.lock.Lock()
+		player.Lock()
 		zone := player.zone
 		tx, ty := player.TileX, player.TileY
-		player.lock.Unlock()
+		player.Unlock()
 		zone.Lock()
 		zone.Tile(tx, ty).Remove(player)
 		zone.Unlock()
@@ -303,9 +303,9 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			if p.Key != nil {
-				player.lock.Lock()
+				player.Lock()
 				player.schedule = nil
-				player.lock.Unlock()
+				player.Unlock()
 				if player.hud != nil && player.hud.Key(p.Key.Code, p.Key.Special) {
 					break
 				}
@@ -337,9 +337,9 @@ func websocketHandler(conn *websocket.Conn) {
 				}
 			}
 			if p.Click != nil {
-				player.lock.Lock()
+				player.Lock()
 				player.schedule = nil
-				player.lock.Unlock()
+				player.Unlock()
 				if player.hud != nil && player.hud.Click(p.Click.X, p.Click.Y) {
 					break
 				}
@@ -371,9 +371,9 @@ func websocketHandler(conn *websocket.Conn) {
 			camX := int(player.TileX)
 			camY := int(player.TileY)
 
-			player.lock.Lock()
+			player.Lock()
 			z := player.zone
-			player.lock.Unlock()
+			player.Unlock()
 			z.Lock()
 
 			for x := 0; x < w; x++ {
@@ -444,11 +444,11 @@ func websocketHandler(conn *websocket.Conn) {
 			loadedZoneLock.Unlock()
 
 			setcell(w+1, 20, "INVENTORY", "", "#aaa")
-			player.lock.Lock()
+			player.Lock()
 			for i, o := range player.Backpack {
 				o.Paint(i%18+w+1, i/18+21, setcell)
 			}
-			player.lock.Unlock()
+			player.Unlock()
 
 			player.hud.Paint(setcell)
 			websocket.JSON.Send(conn, &paint)

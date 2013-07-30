@@ -43,9 +43,9 @@ func (p *Player) Move(dx, dy int) {
 
 	zoneChange := destX < 0 || destY < 0 || destX > 255 || destY > 255
 
-	p.lock.Lock()
+	p.Lock()
 	z := p.zone
-	p.lock.Unlock()
+	p.Unlock()
 	zoneChange = zoneChange || z.Tile(uint8(destX), uint8(destY)) == nil
 	z.Lock()
 	if !zoneChange && z.Blocked(uint8(destX), uint8(destY)) {
@@ -64,7 +64,7 @@ func (p *Player) Move(dx, dy int) {
 		z.Unlock()
 		z.Repaint()
 		ReleaseZone(z)
-		p.lock.Lock()
+		p.Lock()
 		if destY < 0 {
 			p.ZoneY -= 2
 			p.TileY = 255
@@ -75,23 +75,23 @@ func (p *Player) Move(dx, dy int) {
 		p.Delay = 2
 		z = GrabZone(p.ZoneX, p.ZoneY)
 		p.zone = z
-		p.lock.Unlock()
+		p.Unlock()
 		p.Save()
 		p.hud = nil
 	} else {
 		z.Lock()
 		z.Tile(p.TileX, p.TileY).Remove(p)
 		z.Unlock()
-		p.lock.Lock()
+		p.Lock()
 		p.TileX = uint8(destX)
 		p.TileY = uint8(destY)
 		p.Delay = 2
-		p.lock.Unlock()
+		p.Unlock()
 	}
 	z.Lock()
 	z.Tile(p.TileX, p.TileY).Add(p)
 	z.Unlock()
-	p.RepaintZone()
+	z.Repaint()
 }
 
 func playerFilename(id uint64) string {
@@ -107,8 +107,8 @@ func playerFilename(id uint64) string {
 }
 
 func (p *Player) Save() {
-	p.lock.Lock()
-	defer p.lock.Unlock()
+	p.Lock()
+	defer p.Unlock()
 
 	dir := seedFilename()
 
@@ -164,18 +164,10 @@ func (p *Player) Repaint() {
 	}
 }
 
-func (p *Player) RepaintZone() {
-	go func() {
-		p.lock.Lock()
-		p.zone.Repaint()
-		p.lock.Unlock()
-	}()
-}
-
 func (p *Player) Examine() string {
 	if p.Admin {
-		p.lock.Lock()
-		defer p.lock.Unlock()
+		p.Lock()
+		defer p.Unlock()
 		if p.Examine_ != "" {
 			return p.Examine_
 		}
@@ -223,6 +215,14 @@ type Hero struct {
 	scheduleDelay uint
 }
 
+func (h *Hero) Lock() {
+	h.lock.Lock()
+}
+
+func (h *Hero) Unlock() {
+	h.lock.Unlock()
+}
+
 func (h *Hero) Name() string {
 	return h.Name_.String()
 }
@@ -236,8 +236,8 @@ func (h *Hero) Blocking() bool {
 }
 
 func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	h.lock.Lock()
-	defer h.lock.Unlock()
+	h.Lock()
+	defer h.Unlock()
 
 	if h.BaseColor == "" {
 		h.BaseColor = "#fff"
@@ -254,8 +254,7 @@ func (h *Hero) Think(z *Zone, x, y uint8) {
 }
 
 func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
-	h.lock.Lock()
-	defer h.lock.Unlock()
+	h.Lock()
 
 	if p == nil || !p.Admin {
 		for i := 0; i < len(h.Backpack); i++ {
@@ -270,21 +269,32 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 		}
 	}
 
-	if h.scheduleDelay > 0 {
-		h.scheduleDelay--
-	}
-
 	if h.Delay > 0 {
+		if h.scheduleDelay > 0 {
+			h.scheduleDelay--
+		}
 		h.Delay--
+		h.Unlock()
 		return
 	}
 
-	if h.schedule != nil {
-		if !h.schedule.Act(z, x, y, h, p) {
+	if h.scheduleDelay > 0 {
+		h.scheduleDelay--
+		h.Unlock()
+		return
+	}
+
+	if schedule := h.schedule; schedule != nil {
+		h.Unlock()
+		if !schedule.Act(z, x, y, h, p) {
+			h.Lock()
 			h.schedule = nil
+			h.Unlock()
 		}
 		return
 	}
+
+	h.Unlock()
 
 	if p != nil {
 		return
@@ -294,11 +304,14 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	z.Lock()
 	blocked := z.Blocked(goalX, goalY)
 	z.Unlock()
+
+	h.Lock()
 	if !blocked {
 		schedule := MoveSchedule(FindPath(z, x, y, goalX, goalY, true))
 		h.schedule = &schedule
 	}
 	h.Delay = uint(rand.Intn(5) + 1)
+	h.Unlock()
 }
 
 func (h *Hero) InteractOptions() []string {
@@ -313,6 +326,21 @@ type Schedule interface {
 	Act(*Zone, uint8, uint8, *Hero, *Player) bool
 }
 
+type ScheduleSchedule []Schedule
+
+func (s *ScheduleSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
+	if len(*s) == 0 {
+		return false
+	}
+
+	if (*s)[0].Act(z, x, y, h, p) {
+		return true
+	}
+
+	*s = (*s)[1:]
+	return len(*s) != 0
+}
+
 type MoveSchedule [][2]uint8
 
 func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
@@ -321,6 +349,8 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 	}
 	pos := (*s)[0]
 	*s = (*s)[1:]
+
+	h.Lock()
 	h.Delay = 2
 	h.scheduleDelay = 3
 	obj := Object(h)
@@ -329,6 +359,7 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 		p.TileX = pos[0]
 		p.TileY = pos[1]
 	}
+	h.Unlock()
 
 	z.Lock()
 	if z.Tile(x, y).Remove(obj) {
@@ -337,4 +368,23 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 	z.Unlock()
 	z.Repaint()
 	return true
+}
+
+type TakeSchedule struct {
+	Item Object
+}
+
+func (s *TakeSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
+	tile := z.Tile(x, y)
+	z.Lock()
+	removed := tile.Remove(s.Item)
+	z.Unlock()
+
+	if removed {
+		h.Lock()
+		h.GiveItem(s.Item)
+		h.Unlock()
+		z.Repaint()
+	}
+	return false
 }

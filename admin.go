@@ -24,14 +24,14 @@ var adminCommands = map[string]func(*Player){
 		p.hud = &AdminChangeExamineHUD{Player: p, Input: []rune(p.Examine())}
 	},
 	"CHANGE SKIN COLOR": func(p *Player) {
-		p.lock.Lock()
+		p.Lock()
 		p.hud = &AdminChangeColorHUD{Player: p, Input: []rune(string(p.BaseColor))}
-		p.lock.Unlock()
+		p.Unlock()
 	},
 	"DELETE THE ENTIRE ZONE": func(p *Player) {
-		p.lock.Lock()
+		p.Lock()
 		z := p.zone
-		p.lock.Unlock()
+		p.Unlock()
 
 		z.Lock()
 		for i := range z.Tiles {
@@ -51,9 +51,9 @@ var adminCommands = map[string]func(*Player){
 		z.Repaint()
 	},
 	"REGENERATE THE ENTIRE ZONE": func(p *Player) {
-		p.lock.Lock()
+		p.Lock()
 		z := p.zone
-		p.lock.Unlock()
+		p.Unlock()
 
 		z.Lock()
 		for i := range z.Tiles {
@@ -79,19 +79,19 @@ func init() {
 	for t := range rockTypeInfo {
 		rt := RockType(t)
 		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" ROCK"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&Rock{Type: rt})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" STONE"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&Stone{Type: rt})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" WALL"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&WallStone{Type: rt})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 		for m := range metalTypeInfo {
 			if m == 0 {
@@ -99,14 +99,14 @@ func init() {
 			}
 			mt := MetalType(m)
 			adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" ROCK WITH "+strings.ToUpper(metalTypeInfo[mt].Name)+" ORE"] = func(p *Player) {
-				p.lock.Lock()
+				p.Lock()
 				p.GiveItem(&Rock{Type: rt, Ore: mt})
-				p.lock.Unlock()
+				p.Unlock()
 			}
 			adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" ROCK WITH RICH "+strings.ToUpper(metalTypeInfo[mt].Name)+" ORE"] = func(p *Player) {
-				p.lock.Lock()
+				p.Lock()
 				p.GiveItem(&Rock{Type: rt, Ore: mt, Big: true})
-				p.lock.Unlock()
+				p.Unlock()
 			}
 		}
 	}
@@ -116,46 +116,46 @@ func init() {
 		}
 		mt := MetalType(t)
 		adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" ORE"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&Ore{Type: mt})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 		adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" WALL"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&WallMetal{Type: mt})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 	}
 	for t := range woodTypeInfo {
 		wt := WoodType(t)
 		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" TREE"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&Tree{Type: wt})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" LOGS"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&Logs{Type: wt})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" WALL"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&WallWood{Type: wt})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 	}
 	for t := range floraTypeInfo {
 		ft := FloraType(t)
 		adminCommands["SPAWN "+strings.ToUpper(floraTypeInfo[ft].Name)+" PLANT"] = func(p *Player) {
-			p.lock.Lock()
+			p.Lock()
 			p.GiveItem(&Flora{Type: ft})
-			p.lock.Unlock()
+			p.Unlock()
 		}
 	}
 	adminCommands["SPAWN HERO"] = func(p *Player) {
-		p.lock.Lock()
+		p.Lock()
 		p.GiveItem(&Hero{Name_: GenerateName(rand.New(rand.NewSource(rand.Int63())), NameHero)})
-		p.lock.Unlock()
+		p.Unlock()
 	}
 }
 
@@ -202,9 +202,9 @@ func (h *AdminHUD) Key(code int, special bool) bool {
 		return true
 	case 13: // enter
 		if f, ok := adminCommands[string(h.Input)]; ok {
-			h.Player.lock.Lock()
+			h.Player.Lock()
 			AdminLog.Printf("COMMAND:%q [%d:%q] (%d:%d, %d:%d)", string(h.Input), h.Player.ID, h.Player.Name(), h.Player.ZoneX, h.Player.TileX, h.Player.ZoneY, h.Player.TileY)
-			h.Player.lock.Unlock()
+			h.Player.Unlock()
 
 			h.Player.hud = nil
 			f(h.Player)
@@ -267,9 +267,9 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, string, string, Color)) 
 			setcell(17-k, i+1, string(rune("0123456789ABCDEF"[id&15])), "", "#44f")
 			id >>= 4
 		}
-		p.lock.Lock()
+		p.Lock()
 		setcell(19, i+1, p.Name(), "", "#00f")
-		p.lock.Unlock()
+		p.Unlock()
 	}
 	if h.Offset > 0 {
 		setcell(0, 9, "9", "", "#fff")
@@ -295,18 +295,18 @@ func (h *AdminTeleportHUD) Key(code int, special bool) bool {
 		i := code - '1' + h.Offset
 		if i < len(h.List) {
 			p := h.List[i]
-			p.lock.Lock()
+			p.Lock()
 			zx, zy := p.ZoneX, p.ZoneY
 			tx, ty := p.TileX, p.TileY
 			name := p.Name()
-			p.lock.Unlock()
+			p.Unlock()
 
-			h.Player.lock.Lock()
+			h.Player.Lock()
 			az := h.Player.zone
 			azx, azy := h.Player.ZoneX, h.Player.ZoneY
 			atx, aty := h.Player.TileX, h.Player.TileY
 			aname := h.Player.Name()
-			h.Player.lock.Unlock()
+			h.Player.Unlock()
 
 			AdminLog.Printf("TELEPORT [%d:%q] (%d:%d, %d:%d) => [%d:%q] (%d:%d, %d:%d)", h.Player.ID, aname, azx, atx, azy, aty, p.ID, name, zx, tx, zy, ty)
 
@@ -318,11 +318,11 @@ func (h *AdminTeleportHUD) Key(code int, special bool) bool {
 			ReleaseZone(az)
 			z := GrabZone(zx, zy)
 
-			h.Player.lock.Lock()
+			h.Player.Lock()
 			h.Player.zone = z
 			h.Player.ZoneX, h.Player.ZoneY = zx, zy
 			h.Player.TileX, h.Player.TileY = tx, ty
-			h.Player.lock.Unlock()
+			h.Player.Unlock()
 			h.Player.Save()
 
 			z.Lock()
@@ -370,9 +370,9 @@ func (h *AdminChangeExamineHUD) Paint(setcell func(int, int, string, string, Col
 		return
 	}
 
-	h.Player.lock.Lock()
+	h.Player.Lock()
 	setcell(0, 0, strings.ToUpper(h.Player.Name()), "", "#fff")
-	h.Player.lock.Unlock()
+	h.Player.Unlock()
 
 	setcell(0, 1, ">", "", "#00f")
 	setcell(2, 1, string(h.Input), "", "#00f")
@@ -403,10 +403,10 @@ func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
 		}
 		return true
 	case 13: // enter
-		h.Player.lock.Lock()
+		h.Player.Lock()
 		AdminLog.Printf("CHANGEEXAMINE:%q [%d:%q] (%d:%d, %d:%d)", string(h.Input), h.Player.ID, h.Player.Name(), h.Player.ZoneX, h.Player.TileX, h.Player.ZoneY, h.Player.TileY)
 		h.Player.Examine_ = string(h.Input)
-		h.Player.lock.Unlock()
+		h.Player.Unlock()
 
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -434,9 +434,9 @@ func (h *AdminChangeColorHUD) Paint(setcell func(int, int, string, string, Color
 		return
 	}
 
-	h.Player.lock.Lock()
+	h.Player.Lock()
 	setcell(0, 0, "SKIN COLOR", "", "#fff")
-	h.Player.lock.Unlock()
+	h.Player.Unlock()
 
 	setcell(0, 1, ">", "", "#00f")
 	setcell(2, 1, string(h.Input), "", "#fff")
@@ -467,9 +467,9 @@ func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
 		}
 		return true
 	case 13: // enter
-		h.Player.lock.Lock()
+		h.Player.Lock()
 		h.Player.BaseColor = Color(h.Input)
-		h.Player.lock.Unlock()
+		h.Player.Unlock()
 
 		h.Player.hud = nil
 		h.Player.Repaint()

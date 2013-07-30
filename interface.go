@@ -40,9 +40,9 @@ type InteractHUD struct {
 }
 
 func (h *InteractHUD) Paint(setcell func(int, int, string, string, Color)) {
-	h.Player.lock.Lock()
+	h.Player.Lock()
 	tx, ty := h.Player.TileX, h.Player.TileY
-	h.Player.lock.Unlock()
+	h.Player.Unlock()
 
 	if tx != h.TileX || ty != h.TileY || h.Objects == nil {
 		h.TileX, h.TileY = tx, ty
@@ -62,9 +62,9 @@ func (h *InteractHUD) Paint(setcell func(int, int, string, string, Color)) {
 		if maxY == 0 {
 			maxY = 255
 		}
-		h.Player.lock.Lock()
+		h.Player.Lock()
 		z := h.Player.zone
-		h.Player.lock.Unlock()
+		h.Player.Unlock()
 		z.Lock()
 		var objects []Object
 		for x := minX; x >= minX && x <= maxX; x++ {
@@ -209,38 +209,38 @@ func (h *InteractMenuHUD) Key(code int, special bool) bool {
 				}
 				h.Player.Repaint()
 			} else if i == h.Drop {
-				h.Player.lock.Lock()
+				h.Player.Lock()
 				if h.Slot < len(h.Player.Backpack) && h.Player.Backpack[h.Slot] == h.Object {
 					zone := h.Player.zone
 					tx, ty := h.Player.TileX, h.Player.TileY
 					h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
-					h.Player.lock.Unlock()
+					h.Player.Unlock()
 
 					zone.Lock()
 					zone.Tile(tx, ty).Add(h.Object)
 					zone.Unlock()
 					zone.Repaint()
 				} else {
-					h.Player.lock.Unlock()
+					h.Player.Unlock()
 				}
 				h.Player.hud = nil
 				h.Player.Repaint()
 			} else if i == h.Take || i == h.AdminTake {
 				if h.Inventory {
-					h.Player.lock.Lock()
+					h.Player.Lock()
 					if h.Slot < len(h.Player.Backpack) && h.Player.Backpack[h.Slot] == h.Object {
 						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
 					}
-					h.Player.lock.Unlock()
+					h.Player.Unlock()
 					h.Player.hud = nil
 					h.Player.Repaint()
 					return true
 				}
 
-				h.Player.lock.Lock()
+				h.Player.Lock()
 				z := h.Player.zone
 				tx, ty := h.Player.TileX, h.Player.TileY
-				h.Player.lock.Unlock()
+				h.Player.Unlock()
 
 				minX := tx - 1
 				if minX > tx {
@@ -270,12 +270,12 @@ func (h *InteractMenuHUD) Key(code int, special bool) bool {
 									t.Remove(o)
 									z.Unlock()
 									z.Repaint()
-									h.Player.lock.Lock()
+									h.Player.Lock()
 									h.Player.GiveItem(o)
 									if i == h.AdminTake {
 										AdminLog.Printf("TAKE [%d:%q] (%d:%d %d:%d) %q %q", h.Player.ID, h.Player.Name(), h.Player.ZoneX, x, h.Player.ZoneY, y, o.Name(), o.Examine())
 									}
-									h.Player.lock.Unlock()
+									h.Player.Unlock()
 									found = true
 									break
 								}
@@ -325,8 +325,8 @@ type InventoryHUD struct {
 }
 
 func (h *InventoryHUD) Paint(setcell func(int, int, string, string, Color)) {
-	h.Player.lock.Lock()
-	defer h.Player.lock.Unlock()
+	h.Player.Lock()
+	defer h.Player.Unlock()
 
 	if h.Offset > len(h.Player.Backpack) {
 		h.Offset = 0
@@ -356,8 +356,8 @@ func (h *InventoryHUD) Key(code int, special bool) bool {
 		return false
 	}
 
-	h.Player.lock.Lock()
-	defer h.Player.lock.Unlock()
+	h.Player.Lock()
+	defer h.Player.Unlock()
 
 	switch code {
 	case '1', '2', '3', '4', '5', '6', '7', '8':
@@ -414,11 +414,12 @@ type ClickHUD struct {
 
 func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 	if h.Options == nil {
-		h.Player.lock.Lock()
+		h.Player.Lock()
 		zone := h.Player.zone
-		h.TileX, h.TileY = h.Player.TileX+uint8(h.X-h.W/2), h.Player.TileY+uint8(h.Y-h.H/2)
+		px, py := h.Player.TileX, h.Player.TileY
+		h.TileX, h.TileY = px+uint8(h.X-h.W/2), py+uint8(h.Y-h.H/2)
 		tile := zone.Tile(h.TileX, h.TileY)
-		h.Player.lock.Unlock()
+		h.Player.Unlock()
 
 		zone.Lock()
 		h.Blocked = tile.Blocked()
@@ -431,12 +432,21 @@ func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 					Exec:   func() {}, // TODO
 				})
 			}
-			if _, ok := o.(Item); ok {
+			if item, ok := o.(Item); ok {
 				h.Options = append(h.Options, clickHUDOption{
 					Object: o,
 					Text:   "take " + o.Name(),
 					Exec: func() {
-						// TODO
+						var schedule Schedule = &TakeSchedule{
+							Item: item.(Object),
+						}
+						if px != h.TileX || py != h.TileY {
+							moveSchedule := MoveSchedule(FindPath(zone, px, py, h.TileX, h.TileY, true))
+							schedule = &ScheduleSchedule{&moveSchedule, schedule}
+						}
+						h.Player.Lock()
+						h.Player.schedule = schedule
+						h.Player.Unlock()
 					},
 				})
 			}
@@ -508,14 +518,14 @@ func (h *ClickHUD) Click(x, y int) bool {
 			h.Player.Repaint()
 			return true
 		}
-		h.Player.lock.Lock()
+		h.Player.Lock()
 		px, py := h.Player.TileX, h.Player.TileY
 		zone := h.Player.zone
-		h.Player.lock.Unlock()
+		h.Player.Unlock()
 		schedule := MoveSchedule(FindPath(zone, px, py, h.TileX, h.TileY, true))
-		h.Player.lock.Lock()
+		h.Player.Lock()
 		h.Player.schedule = &schedule
-		h.Player.lock.Unlock()
+		h.Player.Unlock()
 
 		h.Player.hud = nil
 		h.Player.Repaint()
