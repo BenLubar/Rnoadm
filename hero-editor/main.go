@@ -3,81 +3,81 @@ package main
 import (
 	"compress/gzip"
 	"encoding/gob"
-	"encoding/json"
 	"flag"
+	"fmt"
 	"os"
 )
 
 var Seed int64
 
-func decode() {
-	g, err := gzip.NewReader(os.Stdin)
+func read() *Player {
+	f, err := os.Open(*file)
 	if err != nil {
 		panic(err)
 	}
-	var player Player
-	err = gob.NewDecoder(g).Decode(&player)
-	if err != nil {
-		g.Close()
-		panic(err)
-	}
-	err = g.Close()
-	if err != nil {
-		panic(err)
-	}
+	defer f.Close()
 
-	json.NewEncoder(os.Stdout).Encode(player)
-}
-
-func encode() {
-	var player Player
-	err := json.NewDecoder(os.Stdin).Decode(&player)
-	if err != nil {
-		panic(err)
-	}
-	g, err := gzip.NewWriterLevel(os.Stdout, gzip.BestCompression)
+	g, err := gzip.NewReader(f)
 	if err != nil {
 		panic(err)
 	}
 	defer g.Close()
+
+	var player Player
+	err = gob.NewDecoder(g).Decode(&player)
+	if err != nil {
+		panic(err)
+	}
+
+	return &player
+}
+
+func write(player *Player) {
+	f, err := os.Create(*file)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	g, err := gzip.NewWriterLevel(f, gzip.BestCompression)
+	if err != nil {
+		panic(err)
+	}
+	defer g.Close()
+
 	err = gob.NewEncoder(g).Encode(&player)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func print() {
-	g, err := gzip.NewReader(os.Stdin)
-	if err != nil {
-		panic(err)
-	}
-	var player Player
-	err = gob.NewDecoder(g).Decode(&player)
-	if err != nil {
-		g.Close()
-		panic(err)
-	}
-	err = g.Close()
-	if err != nil {
-		panic(err)
-	}
+func toggleadmin() {
+	player := read()
+	player.Admin = !player.Admin
+	write(player)
+}
 
-	println(player.Name())
+func print() {
+	player := read()
+
+	fmt.Println("Name:", player.Name())
+	fmt.Println("Admin:", player.Admin)
 }
 
 var (
-	flagEncode = flag.Bool("e", false, "encode mode")
-	flagDecode = flag.Bool("d", false, "decode mode")
-	flagPrint  = flag.Bool("p", false, "print mode")
+	file      = flag.String("file", "", "file to edit [required]")
+	flagAdmin = flag.Bool("a", false, "toggle player admin status")
+	flagPrint = flag.Bool("p", false, "print info")
 )
 
 func main() {
 	flag.Parse()
-	count := 0
-	if *flagEncode {
-		count++
+	if *file == "" {
+		flag.Usage()
+		os.Exit(1)
 	}
-	if *flagDecode {
+	count := 0
+	if *flagAdmin {
 		count++
 	}
 	if *flagPrint {
@@ -87,11 +87,8 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	if *flagEncode {
-		encode()
-	}
-	if *flagDecode {
-		decode()
+	if *flagAdmin {
+		toggleadmin()
 	}
 	if *flagPrint {
 		print()
