@@ -15,7 +15,7 @@ var names = [nameSubtypeCount][]string{
 	NameUtil: {
 		"",
 		"e",
-		"er",
+		"r",
 		"son",
 	},
 	NameMaleHuman: {
