@@ -403,7 +403,7 @@ func websocketHandler(conn *websocket.Conn) {
 
 			setcell(w+1, 2, "INVENTORY", "", "#aaa")
 			for i, o := range player.Backpack {
-				o.Paint(i%14+w+1, i/14+3, setcell)
+				o.Paint(i%10+w+1, i/10+3, setcell)
 			}
 			player.Unlock()
 

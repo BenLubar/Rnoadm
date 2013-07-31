@@ -406,6 +406,9 @@ var _ Item = (*Ore)(nil)
 var _ Item = (*Stone)(nil)
 var _ Item = (*Logs)(nil)
 var _ Item = (*Hat)(nil)
+var _ Item = (*Shirt)(nil)
+var _ Item = (*Pants)(nil)
+var _ Item = (*Shoes)(nil)
 
 type Thinker interface {
 	Think(*Zone, uint8, uint8)
@@ -429,4 +432,7 @@ func init() {
 	gob.Register(Object(&Liquid{}))
 
 	gob.Register(Object(&Hat{}))
+	gob.Register(Object(&Shirt{}))
+	gob.Register(Object(&Pants{}))
+	gob.Register(Object(&Shoes{}))
 }
