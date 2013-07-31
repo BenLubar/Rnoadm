@@ -6,6 +6,7 @@ const (
 	LeafPlant FloraType = iota
 	FlowerPlant
 	BulbPlant
+	MagmaFlowerPlant
 
 	floraTypeCount
 )
@@ -31,14 +32,18 @@ var floraTypeInfo = [floraTypeCount]struct {
 		LeafColor:            "#6f0",
 		StemColor:            "#6f0",
 		FlowerColor:          "#af6",
-		CompassPetalColor:    "#0ec",
 		SuspiciousPetalColor: "#0ec",
-		BoringPetalColor:     "#0ec",
 	},
 	BulbPlant: {
 		Name:      "bulb",
 		LeafColor: "#0fc",
 		BulbColor: "#f0f",
+	},
+	MagmaFlowerPlant: {
+		Name:      "magma flower",
+		LeafColor: "#311",
+		StemColor: "#f00",
+		BulbColor: "#522",
 	},
 }
 
@@ -58,11 +63,11 @@ func (f *Flora) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	if color := floraTypeInfo[f.Type].LeafColor; color != "" {
 		setcell(x, y, "", "item_plant_leaves", color)
 	}
-	if color := floraTypeInfo[f.Type].BulbColor; color != "" {
-		setcell(x, y, "", "item_plant_bulb", color)
-	}
 	if color := floraTypeInfo[f.Type].StemColor; color != "" {
 		setcell(x, y, "", "item_plant_stem", color)
+	}
+	if color := floraTypeInfo[f.Type].BulbColor; color != "" {
+		setcell(x, y, "", "item_plant_bulb", color)
 	}
 	if color := floraTypeInfo[f.Type].BoringPetalColor; color != "" {
 		setcell(x, y, "", "item_plant_flower_boring", color)
@@ -84,4 +89,10 @@ func (f *Flora) Blocking() bool {
 
 func (f *Flora) InteractOptions() []string {
 	return []string{"pick"}
+}
+
+func (f *Flora) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // pick
+	}
 }

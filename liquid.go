@@ -22,3 +22,6 @@ func (l *Liquid) Paint(x, y int, setcell func(int, int, string, string, Color)) 
 func (l *Liquid) InteractOptions() []string {
 	return nil
 }
+
+func (l *Liquid) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+}

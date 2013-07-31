@@ -126,7 +126,14 @@ func (r *Rock) Blocking() bool {
 }
 
 func (r *Rock) InteractOptions() []string {
-	return []string{"mine", "quarry", "prospect"}
+	return []string{"mine", "quarry"}
+}
+
+func (r *Rock) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // mine
+	case 1: // quarry
+	}
 }
 
 type Stone struct {
@@ -151,6 +158,9 @@ func (s *Stone) Blocking() bool {
 
 func (s *Stone) InteractOptions() []string {
 	return nil
+}
+
+func (s *Stone) Interact(x int, y int, player *Player, zone *Zone, opt int) {
 }
 
 func (s *Stone) IsItem() {}
@@ -183,6 +193,9 @@ func (o *Ore) InteractOptions() []string {
 	return nil
 }
 
+func (o *Ore) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+}
+
 func (o *Ore) IsItem() {}
 
 func (o *Ore) AdminOnly() bool {
@@ -190,7 +203,7 @@ func (o *Ore) AdminOnly() bool {
 }
 
 type Pickaxe struct {
-	Head MetalType
+	Head   MetalType
 	Handle WoodType
 }
 
@@ -213,6 +226,9 @@ func (p *Pickaxe) Blocking() bool {
 
 func (p *Pickaxe) InteractOptions() []string {
 	return nil
+}
+
+func (p *Pickaxe) Interact(x int, y int, player *Player, zone *Zone, opt int) {
 }
 
 func (p *Pickaxe) IsItem() {}

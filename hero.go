@@ -373,6 +373,9 @@ func (h *Hero) InteractOptions() []string {
 	return nil
 }
 
+func (h *Hero) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+}
+
 func (h *Hero) GiveItem(o Object) {
 	h.Backpack = append(h.Backpack, o)
 }

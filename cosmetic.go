@@ -282,6 +282,18 @@ func (s *Shoes) InteractOptions() []string {
 	return nil
 }
 
+func (h *Hat) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+}
+
+func (s *Shirt) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+}
+
+func (p *Pants) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+}
+
+func (s *Shoes) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+}
+
 func (h *Hat) IsItem() {}
 
 func (s *Shirt) IsItem() {}

@@ -510,11 +510,15 @@ func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 		h.Blocked = tile.Blocked()
 		h.Options = []clickHUDOption{}
 		for _, o := range tile.Objects {
-			for _, i := range o.InteractOptions() {
+			for i, s := range o.InteractOptions() {
 				h.Options = append(h.Options, clickHUDOption{
 					Object: o,
-					Text:   i + " " + o.Name(),
-					Exec:   func() {}, // TODO
+					Text:   s + " " + o.Name(),
+					Exec: func(o Object, i int) func() {
+						return func() {
+							o.Interact(h.TileX, h.TileY, h.Player, zone, i)
+						}
+					}(o, i),
 				})
 			}
 			if item, ok := o.(Item); ok {

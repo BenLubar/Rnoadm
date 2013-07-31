@@ -12,6 +12,8 @@ const (
 	DeadTree
 	Maple
 	Birch
+	Willow
+	Juniper
 
 	woodTypeCount
 )
@@ -36,21 +38,33 @@ var woodTypeInfo = [woodTypeCount]struct {
 		Strength:  1 << 62,
 	},
 	DeadTree: {
-		Name:     "dead",
-		Color:    "#975",
+		Name:     "rotting",
+		Color:    "#5f5143",
 		Strength: 5,
 	},
 	Maple: {
 		Name:      "maple",
 		Color:     "#ffb963",
 		LeafColor: "#aa5217",
-		Strength:  15,
+		Strength:  18,
 	},
 	Birch: {
 		Name:      "birch",
 		Color:     "#d0ddd0",
-		LeafColor: "#39ca7c",
+		LeafColor: "#29995c",
 		Strength:  12,
+	},
+	Willow: {
+		Name:      "willow",
+		Color:     "#9e9067",
+		LeafColor: "#4e6b2c",
+		Strength:  15,
+	},
+	Juniper: {
+		Name:      "juniper",
+		Color:     "#c2b19a",
+		LeafColor: "#3e4506",
+		Strength:  14,
 	},
 }
 
@@ -91,6 +105,12 @@ func (t *Tree) InteractOptions() []string {
 	return []string{"chop down"}
 }
 
+func (t *Tree) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // chop down
+	}
+}
+
 type Logs struct {
 	Type WoodType
 }
@@ -113,6 +133,9 @@ func (l *Logs) Blocking() bool {
 
 func (l *Logs) InteractOptions() []string {
 	return nil
+}
+
+func (l *Logs) Interact(x int, y int, player *Player, zone *Zone, opt int) {
 }
 
 func (l *Logs) IsItem() {}
@@ -145,6 +168,9 @@ func (h *Hatchet) Blocking() bool {
 
 func (h *Hatchet) InteractOptions() []string {
 	return nil
+}
+
+func (h *Hatchet) Interact(x int, y int, player *Player, zone *Zone, opt int) {
 }
 
 func (h *Hatchet) IsItem() {}

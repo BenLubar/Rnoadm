@@ -296,12 +296,12 @@ func init() {
 		}
 		for w := range woodTypeInfo {
 			wt := WoodType(w)
-			adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" AND " +strings.ToUpper(woodTypeInfo[wt].Name)+" PICKAXE"] = func(p *Player) {
+			adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" AND "+strings.ToUpper(woodTypeInfo[wt].Name)+" PICKAXE"] = func(p *Player) {
 				p.Lock()
 				p.GiveItem(&Pickaxe{Head: mt, Handle: wt})
 				p.Unlock()
 			}
-			adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" AND " +strings.ToUpper(woodTypeInfo[wt].Name)+" HATCHET"] = func(p *Player) {
+			adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" AND "+strings.ToUpper(woodTypeInfo[wt].Name)+" HATCHET"] = func(p *Player) {
 				p.Lock()
 				p.GiveItem(&Hatchet{Head: mt, Handle: wt})
 				p.Unlock()
