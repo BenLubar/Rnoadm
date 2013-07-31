@@ -45,7 +45,7 @@ html {
 <body>
 <canvas></canvas>
 <script>
-var tileSize = 16;
+var tileSize = 32;
 var authkey = localStorage['rnoadm-auth'] || (localStorage['rnoadm-auth'] = generateAuthKey());
 var canvas;
 var images = {};
@@ -62,15 +62,15 @@ var wsonmessage = ws.onmessage = function(e) {
 	if (msg.Paint) {
 		if (!canvas) {
 			canvas = document.querySelector('canvas');
-			canvas.width = 60*tileSize;
-			canvas.height = 32*tileSize;
+			canvas.width = 32*tileSize;
+			canvas.height = 16*tileSize;
 			canvas = canvas.getContext('2d');
 		}
 
 		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
-		for (var i = 0; i < 32; i++) {
-			for (var j = 60-1; j >= 0; j--) {
+		for (var i = 0; i < 16; i++) {
+			for (var j = 32-1; j >= 0; j--) {
 				for (var k in (msg.Paint[j][i] || [])) {
 					var p = msg.Paint[j][i][k];
 					if (p.R) {
@@ -120,7 +120,7 @@ var wsonmessage = ws.onmessage = function(e) {
 							buffer.putImageData(data, 0, 0);
 
 						}
-						canvas.drawImage(images_recolor[p.I][p.C], j*tileSize, i*tileSize+tileSize-images[p.I].height);
+						canvas.drawImage(images_recolor[p.I][p.C], j*tileSize, i*tileSize+tileSize-Math.max(tileSize, images[p.I].height), Math.max(tileSize, images[p.I].width), Math.max(tileSize, images[p.I].height));
 					}
 				}
 			}
@@ -174,7 +174,7 @@ type packetPaintCell struct {
 	R, I, C string `json:",omitempty"`
 }
 type packetPaint struct {
-	Paint [60][32][]packetPaintCell
+	Paint [40][16][]packetPaintCell
 }
 
 func websocketHandler(conn *websocket.Conn) {
@@ -277,7 +277,7 @@ func websocketHandler(conn *websocket.Conn) {
 		}
 	}()
 
-	const w, h = 40, 24
+	const w, h = 20, 12
 	for {
 		select {
 		case p, ok := <-packets:
@@ -386,57 +386,24 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 			z.Unlock()
 
-			loadedZoneLock.Lock()
-			for coord, info := range ZoneInfo {
-				dx, dy := coord[0]-z.X, coord[1]-z.Y
-				cell := func(x, y int64, sprite string) {
-					if x <= -10 || x > 10 || y <= -10 || y > 10 {
-						return
-					}
-					setcell(int(50+x), int(10+y), "", sprite, info.Element.Color())
-				}
-				if dy&1 == 1 {
-					cell(dx*6+3, dy*2-3, "ui_smallcorner_tl")
-					cell(dx*6+6, dy*2-3, "ui_smallcorner_tr")
-					cell(dx*6+4, dy*2-3, "ui_fill")
-					cell(dx*6+5, dy*2-3, "ui_fill")
-					cell(dx*6+3, dy*2-2, "ui_largecorner_tl")
-					cell(dx*6+6, dy*2-2, "ui_largecorner_tr")
-					cell(dx*6+4, dy*2-2, "ui_fill")
-					cell(dx*6+5, dy*2-2, "ui_fill")
-					cell(dx*6+3, dy*2-1, "ui_largecorner_bl")
-					cell(dx*6+6, dy*2-1, "ui_largecorner_br")
-					cell(dx*6+4, dy*2-1, "ui_fill")
-					cell(dx*6+5, dy*2-1, "ui_fill")
-					cell(dx*6+3, dy*2, "ui_smallcorner_bl")
-					cell(dx*6+6, dy*2, "ui_smallcorner_br")
-					cell(dx*6+4, dy*2, "ui_fill")
-					cell(dx*6+5, dy*2, "ui_fill")
-				} else {
-					cell(dx*6, dy*2-3, "ui_smallcorner_tl")
-					cell(dx*6+3, dy*2-3, "ui_smallcorner_tr")
-					cell(dx*6+1, dy*2-3, "ui_fill")
-					cell(dx*6+2, dy*2-3, "ui_fill")
-					cell(dx*6, dy*2-2, "ui_largecorner_tl")
-					cell(dx*6+3, dy*2-2, "ui_largecorner_tr")
-					cell(dx*6+1, dy*2-2, "ui_fill")
-					cell(dx*6+2, dy*2-2, "ui_fill")
-					cell(dx*6, dy*2-1, "ui_largecorner_bl")
-					cell(dx*6+3, dy*2-1, "ui_largecorner_br")
-					cell(dx*6+1, dy*2-1, "ui_fill")
-					cell(dx*6+2, dy*2-1, "ui_fill")
-					cell(dx*6, dy*2, "ui_smallcorner_bl")
-					cell(dx*6+3, dy*2, "ui_smallcorner_br")
-					cell(dx*6+1, dy*2, "ui_fill")
-					cell(dx*6+2, dy*2, "ui_fill")
-				}
-			}
-			loadedZoneLock.Unlock()
-
-			setcell(w+1, 20, "INVENTORY", "", "#aaa")
 			player.Lock()
+			setcell(w+1, 0, "WEARING", "", "#aaa")
+			if player.Head != nil {
+				player.Head.Paint(w+1, 1, setcell)
+			}
+			if player.Top != nil {
+				player.Top.Paint(w+2, 1, setcell)
+			}
+			if player.Legs != nil {
+				player.Legs.Paint(w+3, 1, setcell)
+			}
+			if player.Feet != nil {
+				player.Feet.Paint(w+4, 1, setcell)
+			}
+
+			setcell(w+1, 2, "INVENTORY", "", "#aaa")
 			for i, o := range player.Backpack {
-				o.Paint(i%18+w+1, i/18+21, setcell)
+				o.Paint(i%14+w+1, i/14+3, setcell)
 			}
 			player.Unlock()
 

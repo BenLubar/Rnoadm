@@ -56,3 +56,68 @@ func (z *Zone) generateForest(r *rand.Rand) {
 		}
 	}
 }
+
+func (z *Zone) generatePlains(r *rand.Rand) {
+	z.Name_ = GenerateName(r, NameZone, NamePlains)
+	for i := r.Intn(100); i > 0; i-- {
+		x := r.Float64()*192 + 32
+		y := r.Float64()*192 + 32
+		rock, ok := z.Element.Rock(r)
+		if !ok {
+			break
+		}
+
+		for j := 0; j < 40; j++ {
+			radius := r.Float64() * 4
+			theta := r.Float64() * 2 * math.Pi
+			tile := z.Tile(uint8(x+radius*math.Cos(theta)), uint8(y+radius*math.Sin(theta)))
+
+			if !tile.Blocked() {
+				ore, _ := z.Element.Ore(r)
+				if ore != 0 && j%10 == 0 {
+					tile.Add(&Rock{
+						Type: rock,
+						Ore:  ore,
+						Big:  true,
+					})
+				} else {
+					tile.Add(&Rock{
+						Type: rock,
+						Ore:  ore,
+					})
+				}
+			}
+		}
+	}
+	for i := r.Intn(100); i > 0; i-- {
+		x := r.Float64()*192 + 32
+		y := r.Float64()*192 + 32
+		wood, ok := z.Element.Wood(r)
+		if !ok {
+			break
+		}
+
+		for j := 0; j < 40; j++ {
+			radius := r.Float64() * 4
+			theta := r.Float64() * 2 * math.Pi
+			tile := z.Tile(uint8(x+radius*math.Cos(theta)), uint8(y+radius*math.Sin(theta)))
+
+			if !tile.Blocked() {
+				tile.Add(&Tree{
+					Type: wood,
+				})
+			}
+		}
+	}
+	for i := range z.Tiles {
+		if !z.Tiles[i].Blocked() && r.Intn(4) == 0 {
+			flora, ok := z.Element.Flora(r)
+			if !ok {
+				break
+			}
+			z.Tiles[i].Add(&Flora{
+				Type: flora,
+			})
+		}
+	}
+}

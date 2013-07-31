@@ -34,8 +34,168 @@ var adminCommands = map[string]func(*Player){
 	},
 	"CHANGE SKIN COLOR": func(p *Player) {
 		p.Lock()
-		p.hud = &AdminChangeColorHUD{Player: p, Input: []rune(string(p.BaseColor))}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.BaseColor, Input: []rune(string(p.BaseColor))}
 		p.Unlock()
+	},
+	"CHANGE HAT BASE COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Head == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Head.CustomColor[0], Input: []rune(string(p.Head.CustomColor[0]))}
+	},
+	"CHANGE HAT FIRST COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Head == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Head.CustomColor[1], Input: []rune(string(p.Head.CustomColor[1]))}
+	},
+	"CHANGE HAT SECOND COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Head == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Head.CustomColor[2], Input: []rune(string(p.Head.CustomColor[2]))}
+	},
+	"CHANGE HAT THIRD COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Head == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Head.CustomColor[3], Input: []rune(string(p.Head.CustomColor[3]))}
+	},
+	"CHANGE HAT FOURTH COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Head == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Head.CustomColor[4], Input: []rune(string(p.Head.CustomColor[4]))}
+	},
+	"CHANGE SHIRT BASE COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Top == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Top.CustomColor[0], Input: []rune(string(p.Top.CustomColor[0]))}
+	},
+	"CHANGE SHIRT FIRST COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Top == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Top.CustomColor[1], Input: []rune(string(p.Top.CustomColor[1]))}
+	},
+	"CHANGE SHIRT SECOND COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Top == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Top.CustomColor[2], Input: []rune(string(p.Top.CustomColor[2]))}
+	},
+	"CHANGE SHIRT THIRD COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Top == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Top.CustomColor[3], Input: []rune(string(p.Top.CustomColor[3]))}
+	},
+	"CHANGE SHIRT FOURTH COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Top == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Top.CustomColor[4], Input: []rune(string(p.Top.CustomColor[4]))}
+	},
+	"CHANGE PANTS BASE COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Legs == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Legs.CustomColor[0], Input: []rune(string(p.Legs.CustomColor[0]))}
+	},
+	"CHANGE PANTS FIRST COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Legs == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Legs.CustomColor[1], Input: []rune(string(p.Legs.CustomColor[1]))}
+	},
+	"CHANGE PANTS SECOND COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Legs == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Legs.CustomColor[2], Input: []rune(string(p.Legs.CustomColor[2]))}
+	},
+	"CHANGE PANTS THIRD COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Legs == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Legs.CustomColor[3], Input: []rune(string(p.Legs.CustomColor[3]))}
+	},
+	"CHANGE PANTS FOURTH COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Legs == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Legs.CustomColor[4], Input: []rune(string(p.Legs.CustomColor[4]))}
+	},
+	"CHANGE SHOES BASE COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Feet == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Feet.CustomColor[0], Input: []rune(string(p.Feet.CustomColor[0]))}
+	},
+	"CHANGE SHOES FIRST COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Feet == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Feet.CustomColor[1], Input: []rune(string(p.Feet.CustomColor[1]))}
+	},
+	"CHANGE SHOES SECOND COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Feet == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Feet.CustomColor[2], Input: []rune(string(p.Feet.CustomColor[2]))}
+	},
+	"CHANGE SHOES THIRD COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Feet == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Feet.CustomColor[3], Input: []rune(string(p.Feet.CustomColor[3]))}
+	},
+	"CHANGE SHOES FOURTH COLOR": func(p *Player) {
+		p.Lock()
+		defer p.Unlock()
+		if p.Feet == nil {
+			return
+		}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.Feet.CustomColor[4], Input: []rune(string(p.Feet.CustomColor[4]))}
 	},
 	"DELETE THE ENTIRE ZONE": func(p *Player) {
 		p.Lock()
@@ -158,6 +318,38 @@ func init() {
 		adminCommands["SPAWN "+strings.ToUpper(floraTypeInfo[ft].Name)+" PLANT"] = func(p *Player) {
 			p.Lock()
 			p.GiveItem(&Flora{Type: ft})
+			p.Unlock()
+		}
+	}
+	for t := range hatTypeInfo {
+		ht := HatType(t)
+		adminCommands["SPAWN "+strings.ToUpper(hatTypeInfo[ht].Name)] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&Hat{Type: ht})
+			p.Unlock()
+		}
+	}
+	for t := range shirtTypeInfo {
+		st := ShirtType(t)
+		adminCommands["SPAWN "+strings.ToUpper(shirtTypeInfo[st].Name)] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&Shirt{Type: st})
+			p.Unlock()
+		}
+	}
+	for t := range pantsTypeInfo {
+		pt := PantsType(t)
+		adminCommands["SPAWN "+strings.ToUpper(pantsTypeInfo[pt].Name)] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&Pants{Type: pt})
+			p.Unlock()
+		}
+	}
+	for t := range shoeTypeInfo {
+		st := ShoeType(t)
+		adminCommands["SPAWN "+strings.ToUpper(shoeTypeInfo[st].Name)] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&Shoes{Type: st})
 			p.Unlock()
 		}
 	}
@@ -602,7 +794,7 @@ func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
 	case 13: // enter
 		h.Player.Lock()
 		AdminLog.Printf("CHANGEEXAMINE:%q [%d:%q] (%d:%d, %d:%d)", string(h.Input), h.Player.ID, h.Player.Name(), h.Player.ZoneX, h.Player.TileX, h.Player.ZoneY, h.Player.TileY)
-		h.Player.Examine_ = string(h.Input)
+		h.Player.Examine_ = strings.TrimSpace(strings.ToLower(string(h.Input)))
 		h.Player.Unlock()
 
 		h.Player.hud = nil
@@ -622,6 +814,7 @@ func (h *AdminChangeExamineHUD) Click(x, y int) bool {
 
 type AdminChangeColorHUD struct {
 	Player *Player
+	Var    *Color
 	Input  []rune
 }
 
@@ -632,11 +825,11 @@ func (h *AdminChangeColorHUD) Paint(setcell func(int, int, string, string, Color
 	}
 
 	h.Player.Lock()
-	setcell(0, 0, "SKIN COLOR", "", "#fff")
+	setcell(0, 0, "CHANGE COLOR", "", "#00f")
 	h.Player.Unlock()
 
 	setcell(0, 1, ">", "", "#00f")
-	setcell(2, 1, string(h.Input), "", "#fff")
+	setcell(2, 1, string(h.Input), "", "#0ff")
 }
 
 func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
@@ -665,7 +858,7 @@ func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
 		return true
 	case 13: // enter
 		h.Player.Lock()
-		h.Player.BaseColor = Color(h.Input)
+		*h.Var = Color(strings.TrimSpace(string(h.Input)))
 		h.Player.Unlock()
 
 		h.Player.hud = nil

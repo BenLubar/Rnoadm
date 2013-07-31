@@ -112,11 +112,11 @@ func (r *Rock) Examine() string {
 }
 
 func (r *Rock) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "rock_base_l0", rockTypeInfo[r.Type].Color)
+	setcell(x, y, "", "rock_base", rockTypeInfo[r.Type].Color)
 	if r.Ore != 0 {
-		setcell(x, y, "", "rock_tinychunks_l1", metalTypeInfo[r.Ore].Color)
+		setcell(x, y, "", "rock_ore_small", metalTypeInfo[r.Ore].Color)
 		if r.Big {
-			setcell(x, y, "", "rock_hugechunks_l2", metalTypeInfo[r.Ore].Color)
+			setcell(x, y, "", "rock_ore_big", metalTypeInfo[r.Ore].Color)
 		}
 	}
 }

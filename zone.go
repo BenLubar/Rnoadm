@@ -200,6 +200,8 @@ const (
 	Forest
 	Hills
 	Lake
+
+	biomeCount = Forest + 1 // TODO: implement other biomes
 )
 
 func (z *Zone) Generate() {
@@ -211,8 +213,13 @@ func (z *Zone) Generate() {
 	z.Seed.Seed(Seed ^ z.X ^ int64(uint64(z.Y)<<32|uint64(z.Y)>>32))
 	r := z.Rand()
 	z.Element = Nature
-	z.Biome = Forest
-	z.generateForest(r)
+	z.Biome = Biome(r.Intn(int(biomeCount)))
+	switch z.Biome {
+	case Plains:
+		z.generatePlains(r)
+	case Forest:
+		z.generateForest(r)
+	}
 }
 
 func (z *Zone) Save() error {
@@ -374,7 +381,7 @@ var grassSprites = []string{
 
 func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, string, string, Color)) {
 	if t.Sprite == 0 {
-		t.Sprite = rand.Intn(len(grassSprites)-1)+1
+		t.Sprite = rand.Intn(len(grassSprites)-1) + 1
 	}
 	setcell(i, j, "", grassSprites[t.Sprite], "#268f1e")
 	for _, o := range t.Objects {
@@ -398,6 +405,7 @@ type Item interface {
 var _ Item = (*Ore)(nil)
 var _ Item = (*Stone)(nil)
 var _ Item = (*Logs)(nil)
+var _ Item = (*Hat)(nil)
 
 type Thinker interface {
 	Think(*Zone, uint8, uint8)
@@ -419,4 +427,6 @@ func init() {
 	gob.Register(Object(&WallMetal{}))
 	gob.Register(Object(&WallWood{}))
 	gob.Register(Object(&Liquid{}))
+
+	gob.Register(Object(&Hat{}))
 }

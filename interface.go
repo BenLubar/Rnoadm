@@ -140,6 +140,7 @@ type InteractMenuHUD struct {
 	Options []string
 	Offset  int
 
+	Wear      int
 	Take      int
 	Drop      int
 	Examine   int
@@ -152,6 +153,23 @@ type InteractMenuHUD struct {
 func (h *InteractMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
 	if h.Options == nil {
 		h.Options = append(h.Options, h.Object.InteractOptions()...)
+		h.Wear = -1
+		if _, ok := h.Object.(*Hat); h.Inventory && ok {
+			h.Wear = len(h.Options)
+			h.Options = append(h.Options, "wear")
+		}
+		if _, ok := h.Object.(*Shirt); h.Inventory && ok {
+			h.Wear = len(h.Options)
+			h.Options = append(h.Options, "wear")
+		}
+		if _, ok := h.Object.(*Pants); h.Inventory && ok {
+			h.Wear = len(h.Options)
+			h.Options = append(h.Options, "wear")
+		}
+		if _, ok := h.Object.(*Shoes); h.Inventory && ok {
+			h.Wear = len(h.Options)
+			h.Options = append(h.Options, "wear")
+		}
 		h.Take = -1
 		if _, ok := h.Object.(Item); !h.Inventory && ok {
 			h.Take = len(h.Options)
@@ -223,6 +241,43 @@ func (h *InteractMenuHUD) Key(code int, special bool) bool {
 				} else {
 					h.Player.Unlock()
 				}
+				h.Player.hud = nil
+				h.Player.Repaint()
+			} else if i == h.Wear {
+				h.Player.Lock()
+				switch o := h.Object.(type) {
+				case *Hat:
+					if h.Player.Head != nil {
+						h.Player.Backpack[h.Slot] = h.Player.Head
+					} else {
+						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
+					}
+					h.Player.Head = o
+				case *Shirt:
+					if h.Player.Top != nil {
+						h.Player.Backpack[h.Slot] = h.Player.Top
+					} else {
+						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
+					}
+					h.Player.Top = o
+				case *Pants:
+					if h.Player.Legs != nil {
+						h.Player.Backpack[h.Slot] = h.Player.Legs
+					} else {
+						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
+					}
+					h.Player.Legs = o
+				case *Shoes:
+					if h.Player.Feet != nil {
+						h.Player.Backpack[h.Slot] = h.Player.Feet
+					} else {
+						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
+					}
+					h.Player.Feet = o
+				}
+
+				h.Player.zone.Repaint()
+				h.Player.Unlock()
 				h.Player.hud = nil
 				h.Player.Repaint()
 			} else if i == h.Take || i == h.AdminTake {

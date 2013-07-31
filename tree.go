@@ -77,9 +77,9 @@ func (t *Tree) Examine() string {
 }
 
 func (t *Tree) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "tree_trunk_l0", woodTypeInfo[t.Type].Color)
+	setcell(x, y, "", "tree_trunk", woodTypeInfo[t.Type].Color)
 	if color := woodTypeInfo[t.Type].LeafColor; color != "" {
-		setcell(x, y, "", "tree_leaves_l1", color)
+		setcell(x, y, "", "tree_leaves", color)
 	}
 }
 

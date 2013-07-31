@@ -178,9 +178,6 @@ func (p *Player) Examine() string {
 
 func (p *Player) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	p.Hero.Paint(x, y, setcell)
-	if p.Admin {
-		setcell(x, y, "", "player_adminheadband_l2", "#f00")
-	}
 }
 
 func (p *Player) Think(z *Zone, x, y uint8) {
@@ -204,12 +201,16 @@ func (h ZoneEntryHUD) Click(x, y int) bool {
 type Hero struct {
 	Name_ *Name
 
-	BaseColor  Color
-	ArmorColor Color
+	BaseColor Color
 
-	lock     sync.Mutex
-	Delay    uint
+	lock  sync.Mutex
+	Delay uint
+
 	Backpack []Object
+	Head     *Hat
+	Top      *Shirt
+	Legs     *Pants
+	Feet     *Shoes
 
 	schedule      Schedule
 	scheduleDelay uint
@@ -242,11 +243,25 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	if h.BaseColor == "" {
 		h.BaseColor = "#fff"
 	}
-	if h.ArmorColor == "" {
-		h.ArmorColor = "#fff"
+	setcell(x, y, "", "player_body", h.BaseColor)
+	if h.Feet != nil {
+		h.Feet.Paint(x, y, setcell)
+	} else {
+		setcell(x, y, "", "player_shoes", "#fff")
 	}
-	setcell(x, y, "", "player_base_l0", h.BaseColor)
-	setcell(x, y, "", "player_armor_l1", h.ArmorColor)
+	if h.Legs != nil {
+		h.Legs.Paint(x, y, setcell)
+	} else {
+		setcell(x, y, "", "player_pants", "#fff")
+	}
+	if h.Top != nil {
+		h.Top.Paint(x, y, setcell)
+	} else {
+		setcell(x, y, "", "player_shirt", "#fff")
+	}
+	if h.Head != nil {
+		h.Head.Paint(x, y, setcell)
+	}
 }
 
 func (h *Hero) Think(z *Zone, x, y uint8) {
@@ -266,6 +281,30 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 				h.Backpack = append(h.Backpack[:i], h.Backpack[i+1:]...)
 				i--
 			}
+		}
+		if o := h.Head; o != nil && o.AdminOnly() {
+			if p != nil {
+				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+			}
+			h.Head = nil
+		}
+		if o := h.Top; o != nil && o.AdminOnly() {
+			if p != nil {
+				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+			}
+			h.Top = nil
+		}
+		if o := h.Legs; o != nil && o.AdminOnly() {
+			if p != nil {
+				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+			}
+			h.Legs = nil
+		}
+		if o := h.Feet; o != nil && o.AdminOnly() {
+			if p != nil {
+				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+			}
+			h.Feet = nil
 		}
 	}
 
