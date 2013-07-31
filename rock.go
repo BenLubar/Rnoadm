@@ -264,6 +264,9 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 	if !s.Delayed {
 		s.Delayed = true
 		h.scheduleDelay = 10
+		if p != nil {
+			p.SendMessage("you attempt to mine the " + s.R.Name() + ".")
+		}
 		return true
 	}
 	if (s.X-x)*(s.X-x)+(s.Y-y)*(s.Y-y) > 1 {
@@ -312,7 +315,7 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 		case pickaxeScore < rockScore/5:
 			p.SendMessage("your " + pickaxe.Name() + " doesn't even make a dent in the " + s.R.Name() + ".")
 		case pickaxeScore < rockScore*2/3:
-			p.SendMessage("your " + pickaxe.Name() + " makes a dent in the " + s.R.Name() + ", but nothing interesting happens.")
+			p.SendMessage("your " + pickaxe.Name() + " slightly dents the " + s.R.Name() + ", but nothing interesting happens.")
 		case pickaxeScore < rockScore:
 			p.SendMessage("your " + pickaxe.Name() + " almost smashes the " + s.R.Name() + " to bits. you carefully replace the rock and prepare for another attempt.")
 		case pickaxeScore < rockScore*3/4:

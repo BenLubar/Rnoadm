@@ -197,6 +197,9 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 	if !s.Delayed {
 		s.Delayed = true
 		h.scheduleDelay = 10
+		if p != nil {
+			p.SendMessage("you attempt to cut the " + s.T.Name() + " down.")
+		}
 		return true
 	}
 	if (s.X-x)*(s.X-x)+(s.Y-y)*(s.Y-y) > 1 {
@@ -232,7 +235,7 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 		case hatchetScore < treeScore/5:
 			p.SendMessage("your " + hatchet.Name() + " doesn't even make a dent in the " + s.T.Name() + ".")
 		case hatchetScore < treeScore*2/3:
-			p.SendMessage("your " + hatchet.Name() + " makes a dent in the " + s.T.Name() + ", but nothing interesting happens.")
+			p.SendMessage("your " + hatchet.Name() + " slightly dents the " + s.T.Name() + ", but nothing interesting happens.")
 		case hatchetScore < treeScore:
 			p.SendMessage("your " + hatchet.Name() + " almost chops the " + s.T.Name() + " to the ground. you carefully replace the tree and prepare for another attempt.")
 		case hatchetScore < treeScore*3/4:
