@@ -79,7 +79,7 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		Layer1: "hat_spanish_war_mask_top",
 		Base Color: #f00,
 		
-		AdminOnly: True,
+		AdminOnly: true,
 	},
 }
 
