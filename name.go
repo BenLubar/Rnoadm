@@ -97,6 +97,8 @@ const (
 	NameHills
 	NameLake
 	NameHero
+	NameMaleHuman
+	NameFemaleHuman
 
 	nameSubtypeCount
 )
@@ -180,15 +182,21 @@ var names = [nameSubtypeCount][]string{
 		"feeble",
 		"feared",
 		"man",
-		"woman",
+		"king",
 		"child",
 		"son",
-		"daughter",
+		"queen",
 		"good",
 		"bad",
 		"weak",
 		"shy",
 		"blade",
 		"master",
+	},
+	NameMaleHuman: {
+		"",
+	},
+	NameFemaleHuman: {
+		"",
 	},
 }
