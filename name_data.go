@@ -16,13 +16,20 @@ const (
 	nameSubtypeCount
 )
 
+const (
+	nameutilEmpty = iota
+	nameutilE
+	nameutilR
+	nameutilSon
+)
+
 // add only to the end of each list.
 var names = [nameSubtypeCount][]string{
 	NameUtil: {
-		"",
-		"e",
-		"r",
-		"son",
+		nameutilEmpty: "",
+		nameutilE:     "e",
+		nameutilR:     "r",
+		nameutilSon:   "son",
 	},
 	NameMaleHuman: {
 		"Aaron",

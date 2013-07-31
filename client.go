@@ -233,6 +233,11 @@ func websocketHandler(conn *websocket.Conn) {
 	}
 	player.LastLogin = time.Now().UTC()
 
+	if player.HeroName == nil {
+		player.HeroName = GenerateHumanName(rand.New(rand.NewSource(int64(playerID))), player.Gender)
+		player.Save()
+	}
+
 	var messageBuffer [4]string
 	messages := make(chan string)
 	player.messages = messages

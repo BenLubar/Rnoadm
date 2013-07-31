@@ -160,14 +160,13 @@ func zoneFilename(x, y int64) string {
 }
 
 type Zone struct {
-	Seed     RandomSource
-	X, Y     int64
-	Element  Element
-	Biome    Biome
-	Tiles    [zoneTiles]Tile
-	ZoneName *Name
-	dirty    chan struct{}
-	mtx      sync.Mutex
+	Seed    RandomSource
+	X, Y    int64
+	Element Element
+	Biome   Biome
+	Tiles   [zoneTiles]Tile
+	dirty   chan struct{}
+	mtx     sync.Mutex
 }
 
 func (z *Zone) Lock() {
@@ -335,7 +334,7 @@ func (z *Zone) Repaint() {
 }
 
 func (z *Zone) Name() string {
-	return z.ZoneName.String()
+	return "unknown zone"
 }
 
 type Tile struct {

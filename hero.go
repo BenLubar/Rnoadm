@@ -234,7 +234,7 @@ const (
 )
 
 type Hero struct {
-	HeroName *Name
+	*HeroName
 
 	CustomColor Color
 
@@ -265,10 +265,6 @@ func (h *Hero) Lock() {
 
 func (h *Hero) Unlock() {
 	h.lock.Unlock()
-}
-
-func (h *Hero) Name() string {
-	return h.HeroName.String()
 }
 
 func (h *Hero) Examine() string {

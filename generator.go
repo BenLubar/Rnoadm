@@ -14,8 +14,6 @@ func fuzzyDistance(dx, dy uint8, radius int, r *rand.Rand) bool {
 }
 
 func (z *Zone) generateForest(r *rand.Rand) {
-	z.ZoneName = &Name{Nickname: "TODO"}
-
 	var nodes struct {
 		main [5]struct {
 			x, y uint8
@@ -58,8 +56,6 @@ func (z *Zone) generateForest(r *rand.Rand) {
 }
 
 func (z *Zone) generatePlains(r *rand.Rand) {
-	z.ZoneName = &Name{Nickname: "TODO"}
-
 	for i := r.Intn(100); i > 0; i-- {
 		x := r.Float64()*192 + 32
 		y := r.Float64()*192 + 32

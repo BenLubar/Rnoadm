@@ -75,10 +75,10 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		Examine: "many Pedros have worn this mask before you.",
 
 		Base:      "hat_spanish_war_mask_bottom",
-		BaseColor: "#00f",
+		BaseColor: "#900",
 
 		Layer1:      "hat_spanish_war_mask_top",
-		Layer1Color: "#f00",
+		Layer1Color: "#007",
 
 		AdminOnly: true,
 	},
