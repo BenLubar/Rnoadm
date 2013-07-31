@@ -28,6 +28,7 @@ const (
 	ChickenHat HatType = iota
 	BearRidingAUnicycle
 	UnusualStrangeVintageHoundDog
+	SpanishWarMask
 
 	hatTypeCount
 )
@@ -70,15 +71,15 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		AdminOnly: true,
 	},
 	SpanishWarMask: {
-		Name:	"spanish war mask",
+		Name:    "spanish war mask",
 		Examine: "many Pedros have worn this mask before you.",
-		
-		Base: "hat_spanish_war_mask_bottom",
-		BaseColor: #00f,
-		
-		Layer1: "hat_spanish_war_mask_top",
-		Base Color: #f00,
-		
+
+		Base:      "hat_spanish_war_mask_bottom",
+		BaseColor: "#00f",
+
+		Layer1:      "hat_spanish_war_mask_top",
+		Layer1Color: "#f00",
+
 		AdminOnly: true,
 	},
 }
