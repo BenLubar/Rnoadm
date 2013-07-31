@@ -91,7 +91,7 @@ func (f *Flora) InteractOptions() []string {
 	return []string{"pick"}
 }
 
-func (f *Flora) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (f *Flora) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // pick
 	}

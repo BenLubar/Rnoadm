@@ -65,6 +65,7 @@ var wsonmessage = ws.onmessage = function(e) {
 			canvas.width = 32*tileSize;
 			canvas.height = 16*tileSize;
 			canvas = canvas.getContext('2d');
+			canvas.font = '18px sans-serif';
 		}
 
 		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
@@ -233,6 +234,10 @@ func websocketHandler(conn *websocket.Conn) {
 	}
 	player.LastLogin = time.Now().UTC()
 
+	var messageBuffer [4]string
+	messages := make(chan string)
+	player.messages = messages
+
 	player.Repaint()
 	player.Lock()
 	zone := GrabZone(player.ZoneX, player.ZoneY)
@@ -341,6 +346,7 @@ func websocketHandler(conn *websocket.Conn) {
 					player.Repaint()
 				}
 			}
+
 		case <-player.repaint:
 			var paint packetPaint
 			setcell := func(x, y int, ch string, sprite string, color Color) {
@@ -386,6 +392,10 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 			z.Unlock()
 
+			for i, message := range messageBuffer {
+				setcell(0, h+i, message, "", "#fff")
+			}
+
 			player.Lock()
 			setcell(w+1, 0, "WEARING", "", "#aaa")
 			if player.Head != nil {
@@ -417,6 +427,10 @@ func websocketHandler(conn *websocket.Conn) {
 
 			player.hud.Paint(setcell)
 			websocket.JSON.Send(conn, &paint)
+
+		case message := <-messages:
+			copy(messageBuffer[:], messageBuffer[1:])
+			messageBuffer[len(messageBuffer)-1] = message
 		}
 	}
 }

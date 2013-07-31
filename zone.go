@@ -395,7 +395,7 @@ type Object interface {
 	Paint(int, int, func(int, int, string, string, Color))
 	Blocking() bool
 	InteractOptions() []string
-	Interact(int, int, *Player, *Zone, int)
+	Interact(uint8, uint8, *Player, *Zone, int)
 }
 
 type Item interface {

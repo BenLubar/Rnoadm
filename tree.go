@@ -105,9 +105,17 @@ func (t *Tree) InteractOptions() []string {
 	return []string{"chop down"}
 }
 
-func (t *Tree) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (t *Tree) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // chop down
+		player.Lock()
+		var schedule Schedule = &ChopTreeSchedule{X: x, Y: y, T: t}
+		if tx, ty := player.TileX, player.TileY; (tx-x)*(tx-x)+(ty-y)*(ty-y) > 1 {
+			moveSchedule := MoveSchedule(FindPath(zone, tx, ty, x, y, false))
+			schedule = &ScheduleSchedule{&moveSchedule, schedule}
+		}
+		player.schedule = schedule
+		player.Unlock()
 	}
 }
 
@@ -135,7 +143,7 @@ func (l *Logs) InteractOptions() []string {
 	return nil
 }
 
-func (l *Logs) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (l *Logs) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (l *Logs) IsItem() {}
@@ -170,11 +178,81 @@ func (h *Hatchet) InteractOptions() []string {
 	return nil
 }
 
-func (h *Hatchet) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (h *Hatchet) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (h *Hatchet) IsItem() {}
 
 func (h *Hatchet) AdminOnly() bool {
 	return metalTypeInfo[h.Head].Strength >= 1<<60 || woodTypeInfo[h.Handle].Strength >= 1<<60
+}
+
+type ChopTreeSchedule struct {
+	Delayed bool
+	X, Y    uint8
+	T       *Tree
+}
+
+func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bool {
+	if !s.Delayed {
+		s.Delayed = true
+		h.scheduleDelay = 10
+		return true
+	}
+	if (s.X-x)*(s.X-x)+(s.Y-y)*(s.Y-y) > 1 {
+		return false
+	}
+
+	h.Lock()
+	h.Delay++
+	hatchet := h.Toolbelt.Hatchet
+	h.Unlock()
+	if hatchet == nil {
+		return false
+	}
+
+	hatchetMax := metalTypeInfo[hatchet.Head].Strength + woodTypeInfo[hatchet.Handle].Strength
+	hatchetMin := metalTypeInfo[hatchet.Head].sqrtStr + woodTypeInfo[hatchet.Handle].sqrtStr
+
+	treeMax := woodTypeInfo[s.T.Type].Strength
+	treeMin := woodTypeInfo[s.T.Type].sqrtStr
+
+	z.Lock()
+	r := z.Rand()
+	hatchetScore := uint64(r.Int63n(int64(hatchetMax-hatchetMin+1))) + hatchetMin
+	treeScore := uint64(r.Int63n(int64(treeMax-treeMin+1))) + treeMin
+	if p != nil {
+		switch {
+		case hatchetScore < treeScore/5:
+			p.SendMessage("your " + hatchet.Name() + " doesn't even make a dent in the " + s.T.Name() + ".")
+		case hatchetScore < treeScore*2/3:
+			p.SendMessage("your " + hatchet.Name() + " makes a dent in the " + s.T.Name() + ", but nothing interesting happens.")
+		case hatchetScore < treeScore:
+			p.SendMessage("your " + hatchet.Name() + " almost chops the " + s.T.Name() + " to the ground. you carefully replace the tree and prepare for another attempt.")
+		case hatchetScore < treeScore*3/4:
+			p.SendMessage("your " + hatchet.Name() + " just barely makes it through the " + s.T.Name() + ".")
+		case hatchetScore < treeScore*2:
+			p.SendMessage("your " + hatchet.Name() + " fells the " + s.T.Name() + " with little difficulty.")
+		case hatchetScore > treeScore*1000:
+			p.SendMessage("your " + hatchet.Name() + " slices through the " + s.T.Name() + " like a chainsaw through butter.")
+		default:
+			p.SendMessage("your " + hatchet.Name() + " slices through the " + s.T.Name() + " like a knife through butter.")
+		}
+	}
+	if treeScore <= hatchetScore {
+		if z.Tile(s.X, s.Y).Remove(s.T) {
+			z.Unlock()
+			z.Repaint()
+			h.Lock()
+			h.GiveItem(&Logs{Type: s.T.Type})
+			h.Unlock()
+			if p != nil {
+				p.Repaint()
+			}
+			return false
+		}
+	}
+	z.Unlock()
+
+	return false
 }

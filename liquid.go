@@ -23,5 +23,5 @@ func (l *Liquid) InteractOptions() []string {
 	return nil
 }
 
-func (l *Liquid) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (l *Liquid) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }

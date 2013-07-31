@@ -31,7 +31,17 @@ type Player struct {
 	Admin     bool
 	Examine_  string
 
+	messages chan<- string
+
 	zone *Zone
+}
+
+func (p *Player) SendMessage(message string) {
+	select {
+	case p.messages <- message:
+		p.Repaint()
+	case <-time.After(time.Second):
+	}
 }
 
 func (p *Player) Move(dx, dy int) {
@@ -373,7 +383,7 @@ func (h *Hero) InteractOptions() []string {
 	return nil
 }
 
-func (h *Hero) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (h *Hero) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (h *Hero) GiveItem(o Object) {

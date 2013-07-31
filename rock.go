@@ -129,7 +129,7 @@ func (r *Rock) InteractOptions() []string {
 	return []string{"mine", "quarry"}
 }
 
-func (r *Rock) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (r *Rock) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // mine
 	case 1: // quarry
@@ -160,7 +160,7 @@ func (s *Stone) InteractOptions() []string {
 	return nil
 }
 
-func (s *Stone) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (s *Stone) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (s *Stone) IsItem() {}
@@ -193,7 +193,7 @@ func (o *Ore) InteractOptions() []string {
 	return nil
 }
 
-func (o *Ore) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (o *Ore) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (o *Ore) IsItem() {}
@@ -228,7 +228,7 @@ func (p *Pickaxe) InteractOptions() []string {
 	return nil
 }
 
-func (p *Pickaxe) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (p *Pickaxe) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (p *Pickaxe) IsItem() {}

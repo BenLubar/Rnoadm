@@ -24,7 +24,7 @@ func (w *WallStone) InteractOptions() []string {
 	return nil
 }
 
-func (w *WallStone) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (w *WallStone) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 type WallMetal struct {
@@ -51,7 +51,7 @@ func (w *WallMetal) InteractOptions() []string {
 	return nil
 }
 
-func (w *WallMetal) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (w *WallMetal) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 type WallWood struct {
@@ -78,5 +78,5 @@ func (w *WallWood) InteractOptions() []string {
 	return nil
 }
 
-func (w *WallWood) Interact(x int, y int, player *Player, zone *Zone, opt int) {
+func (w *WallWood) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
