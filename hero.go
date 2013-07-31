@@ -208,10 +208,39 @@ func (h ZoneEntryHUD) Click(x, y int) bool {
 	return false
 }
 
+type Gender uint8
+
+const (
+	Male Gender = iota
+	Female
+
+	genderCount
+)
+
+type Race uint16
+
+const (
+	Human Race = iota
+
+	raceCount
+)
+
+type Occupation uint16
+
+const (
+	Civilian Occupation = iota
+
+	occupationCount
+)
+
 type Hero struct {
 	Name_ *Name
 
 	BaseColor Color
+
+	Gender     Gender
+	Race       Race
+	Occupation Occupation
 
 	lock  sync.Mutex
 	Delay uint
