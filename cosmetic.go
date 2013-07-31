@@ -69,6 +69,18 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 
 		AdminOnly: true,
 	},
+	SpanishWarMask: {
+		Name:	"spanish war mask",
+		Examine: "many Pedros have worn this mask before you.",
+		
+		Base: "hat_spanish_war_mask_bottom",
+		BaseColor: #00f,
+		
+		Layer1: "hat_spanish_war_mask_top",
+		Base Color: #f00,
+		
+		AdminOnly: True,
+	},
 }
 
 type ShirtType uint16
