@@ -236,7 +236,7 @@ const (
 type Hero struct {
 	Name_ *Name
 
-	BaseColor Color
+	CustomColor Color
 
 	Gender     Gender
 	Race       Race
@@ -283,27 +283,32 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	h.Lock()
 	defer h.Unlock()
 
-	if h.BaseColor == "" {
-		h.BaseColor = "#fff"
+	color := h.CustomColor
+	if color == "" {
+		color = "#fec"
 	}
-	setcell(x, y, "", "player_body", h.BaseColor)
+	setcell(x, y, "", "player_body", color)
 	if h.Feet != nil {
-		h.Feet.Paint(x, y, setcell)
-	} else {
-		setcell(x, y, "", "player_shoes", "#fff")
+		h.Feet.PaintWorn(x, y, setcell)
 	}
 	if h.Legs != nil {
-		h.Legs.Paint(x, y, setcell)
+		h.Legs.PaintWorn(x, y, setcell)
 	} else {
-		setcell(x, y, "", "player_pants", "#fff")
+		setcell(x, y, "", "player_pants", "#873")
 	}
 	if h.Top != nil {
-		h.Top.Paint(x, y, setcell)
+		h.Top.PaintWorn(x, y, setcell)
 	} else {
-		setcell(x, y, "", "player_shirt", "#fff")
+		setcell(x, y, "", "player_shirt", "#754")
 	}
 	if h.Head != nil {
 		h.Head.Paint(x, y, setcell)
+	}
+	if h.Toolbelt.Pickaxe != nil {
+		h.Toolbelt.Pickaxe.PaintWorn(x, y, setcell)
+	}
+	if h.Toolbelt.Hatchet != nil {
+		h.Toolbelt.Hatchet.PaintWorn(x, y, setcell)
 	}
 }
 

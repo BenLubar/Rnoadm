@@ -236,6 +236,11 @@ func (p *Pickaxe) Paint(x, y int, setcell func(int, int, string, string, Color))
 	setcell(x, y, "", "item_tool_pickaxe", metalTypeInfo[p.Head].Color)
 }
 
+func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "", "tiny_pick_stick", woodTypeInfo[p.Handle].Color)
+	setcell(x, y, "", "tiny_pick_head", metalTypeInfo[p.Head].Color)
+}
+
 func (p *Pickaxe) Blocking() bool {
 	return false
 }

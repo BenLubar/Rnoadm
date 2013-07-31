@@ -266,6 +266,30 @@ func (s *Shoes) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	paintCosmetic(x, y, info, custom, setcell)
 }
 
+func (h *Hat) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+	info := hatTypeInfo[h.Type]
+	custom := h.CustomColor
+	paintCosmetic(x, y, info, custom, setcell)
+}
+
+func (s *Shirt) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+	info := shirtTypeInfo[s.Type]
+	custom := s.CustomColor
+	paintCosmetic(x, y, info, custom, setcell)
+}
+
+func (p *Pants) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+	info := pantsTypeInfo[p.Type]
+	custom := p.CustomColor
+	paintCosmetic(x, y, info, custom, setcell)
+}
+
+func (s *Shoes) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+	info := shoeTypeInfo[s.Type]
+	custom := s.CustomColor
+	paintCosmetic(x, y, info, custom, setcell)
+}
+
 func (h *Hat) InteractOptions() []string {
 	return nil
 }

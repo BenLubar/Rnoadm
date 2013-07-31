@@ -170,6 +170,11 @@ func (h *Hatchet) Paint(x, y int, setcell func(int, int, string, string, Color))
 	setcell(x, y, "", "item_tool_hatchet", metalTypeInfo[h.Head].Color)
 }
 
+func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "", "tiny_hatchet_stick", woodTypeInfo[h.Handle].Color)
+	setcell(x, y, "", "tiny_hatchet_head", metalTypeInfo[h.Head].Color)
+}
+
 func (h *Hatchet) Blocking() bool {
 	return false
 }

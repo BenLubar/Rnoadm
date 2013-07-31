@@ -34,7 +34,7 @@ var adminCommands = map[string]func(*Player){
 	},
 	"CHANGE SKIN COLOR": func(p *Player) {
 		p.Lock()
-		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.BaseColor, Input: []rune(string(p.BaseColor))}
+		p.hud = &AdminChangeColorHUD{Player: p, Var: &p.CustomColor, Input: []rune(string(p.CustomColor))}
 		p.Unlock()
 	},
 	"CHANGE HAT BASE COLOR": func(p *Player) {
