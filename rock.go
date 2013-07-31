@@ -33,7 +33,7 @@ var rockTypeInfo = [rockTypeCount]struct {
 	Limestone: {
 		Name:     "limestone",
 		Color:    "#bebd8f",
-		Strength: 45,
+		Strength: 50,
 	},
 }
 
@@ -67,7 +67,7 @@ var metalTypeInfo = [metalTypeCount]struct {
 	Iron: {
 		Name:     "iron",
 		Color:    "#79493d",
-		Strength: 100,
+		Strength: 50,
 	},
 	Unobtainium: {
 		Name:     "unobtainium",
@@ -77,7 +77,7 @@ var metalTypeInfo = [metalTypeCount]struct {
 	Copper: {
 		Name:     "copper",
 		Color:    "#af633e",
-		Strength: 65,
+		Strength: 50,
 	},
 }
 
@@ -132,7 +132,23 @@ func (r *Rock) InteractOptions() []string {
 func (r *Rock) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // mine
+		player.Lock()
+		var schedule Schedule = &MineQuarrySchedule{X: x, Y: y, R: r, Mine: true}
+		if tx, ty := player.TileX, player.TileY; (tx-x)*(tx-x)+(ty-y)*(ty-y) > 1 {
+			moveSchedule := MoveSchedule(FindPath(zone, tx, ty, x, y, false))
+			schedule = &ScheduleSchedule{&moveSchedule, schedule}
+		}
+		player.schedule = schedule
+		player.Unlock()
 	case 1: // quarry
+		player.Lock()
+		var schedule Schedule = &MineQuarrySchedule{X: x, Y: y, R: r, Mine: false}
+		if tx, ty := player.TileX, player.TileY; (tx-x)*(tx-x)+(ty-y)*(ty-y) > 1 {
+			moveSchedule := MoveSchedule(FindPath(zone, tx, ty, x, y, false))
+			schedule = &ScheduleSchedule{&moveSchedule, schedule}
+		}
+		player.schedule = schedule
+		player.Unlock()
 	}
 }
 
@@ -235,4 +251,98 @@ func (p *Pickaxe) IsItem() {}
 
 func (p *Pickaxe) AdminOnly() bool {
 	return metalTypeInfo[p.Head].Strength >= 1<<60 || woodTypeInfo[p.Handle].Strength >= 1<<60
+}
+
+type MineQuarrySchedule struct {
+	Delayed bool
+	Mine    bool
+	X, Y    uint8
+	R       *Rock
+}
+
+func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bool {
+	if !s.Delayed {
+		s.Delayed = true
+		h.scheduleDelay = 10
+		return true
+	}
+	if (s.X-x)*(s.X-x)+(s.Y-y)*(s.Y-y) > 1 {
+		if p != nil {
+			p.SendMessage("that is too far away!")
+		}
+		return false
+	}
+
+	if s.Mine && s.R.Ore == 0 {
+		if p != nil {
+			p.SendMessage("there is no ore in this rock.")
+		}
+		return false
+	}
+
+	h.Lock()
+	h.Delay++
+	pickaxe := h.Toolbelt.Pickaxe
+	h.Unlock()
+	if pickaxe == nil {
+		if p != nil {
+			p.SendMessage("you do not have a pickaxe in your toolbelt.")
+		}
+		return false
+	}
+
+	pickaxeMax := metalTypeInfo[pickaxe.Head].Strength + woodTypeInfo[pickaxe.Handle].Strength
+	pickaxeMin := metalTypeInfo[pickaxe.Head].sqrtStr + woodTypeInfo[pickaxe.Handle].sqrtStr
+
+	var rockMax, rockMin uint64
+	if s.Mine {
+		rockMax = metalTypeInfo[s.R.Ore].Strength
+		rockMin = metalTypeInfo[s.R.Ore].sqrtStr
+	} else {
+		rockMax = rockTypeInfo[s.R.Type].Strength
+		rockMin = rockTypeInfo[s.R.Type].sqrtStr
+	}
+
+	z.Lock()
+	r := z.Rand()
+	pickaxeScore := uint64(r.Int63n(int64(pickaxeMax-pickaxeMin+1))) + pickaxeMin
+	rockScore := uint64(r.Int63n(int64(rockMax-rockMin+1))) + rockMin
+	if p != nil {
+		switch {
+		case pickaxeScore < rockScore/5:
+			p.SendMessage("your " + pickaxe.Name() + " doesn't even make a dent in the " + s.R.Name() + ".")
+		case pickaxeScore < rockScore*2/3:
+			p.SendMessage("your " + pickaxe.Name() + " makes a dent in the " + s.R.Name() + ", but nothing interesting happens.")
+		case pickaxeScore < rockScore:
+			p.SendMessage("your " + pickaxe.Name() + " almost smashes the " + s.R.Name() + " to bits. you carefully replace the rock and prepare for another attempt.")
+		case pickaxeScore < rockScore*3/4:
+			p.SendMessage("your " + pickaxe.Name() + " just barely makes it through the " + s.R.Name() + ".")
+		case pickaxeScore < rockScore*2:
+			p.SendMessage("your " + pickaxe.Name() + " smashes the " + s.R.Name() + " with little difficulty.")
+		case pickaxeScore > rockScore*1000:
+			p.SendMessage("your " + pickaxe.Name() + " smashes the " + s.R.Name() + " like an atomic bomb on an egg.")
+		default:
+			p.SendMessage("your " + pickaxe.Name() + " smashes the " + s.R.Name() + " like a hammer on an egg.")
+		}
+	}
+	if rockScore <= pickaxeScore {
+		if z.Tile(s.X, s.Y).Remove(s.R) {
+			z.Unlock()
+			z.Repaint()
+			h.Lock()
+			if s.Mine {
+				h.GiveItem(&Ore{Type: s.R.Ore})
+			} else {
+				h.GiveItem(&Stone{Type: s.R.Type})
+			}
+			h.Unlock()
+			if p != nil {
+				p.Repaint()
+			}
+			return false
+		}
+	}
+	z.Unlock()
+
+	return false
 }

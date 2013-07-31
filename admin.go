@@ -386,7 +386,7 @@ func (h *AdminHUD) Paint(setcell func(int, int, string, string, Color)) {
 	}
 
 	setcell(0, 0, ">", "", "#00f")
-	setcell(2, 0, string(h.Input), "", "#00f")
+	setcell(1, 0, string(h.Input), "", "#00f")
 }
 
 func (h *AdminHUD) Key(code int, special bool) bool {
@@ -482,21 +482,23 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, string, string, Color)) 
 		}
 		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
 		id := p.ID
-		for k := 0; k < 16; k++ {
-			setcell(17-k, i+1, string(rune("0123456789ABCDEF"[id&15])), "", "#44f")
+		var idBuf [16]byte
+		for k := range idBuf {
+			idBuf[k] = "0123456789ABCDEF"[id&15]
 			id >>= 4
 		}
+		setcell(1, i+1, string(idBuf[:]), "", "#44f")
 		p.Lock()
-		setcell(19, i+1, p.Name(), "", "#00f")
+		setcell(7, i+1, p.Name(), "", "#00f")
 		p.Unlock()
 	}
 	if h.Offset > 0 {
 		setcell(0, 9, "9", "", "#fff")
-		setcell(2, 9, "previous", "", "#fff")
+		setcell(1, 9, "previous", "", "#fff")
 	}
 	if len(h.List) > h.Offset+8 {
 		setcell(0, 10, "0", "", "#fff")
-		setcell(2, 10, "next", "", "#fff")
+		setcell(1, 10, "next", "", "#fff")
 	}
 }
 
@@ -607,10 +609,10 @@ func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, string, string, Colo
 
 	setcell(0, 0, "TELEPORT TO ZONE", "", "#00f")
 	setcell(0, 1, "X", "", "#00f")
-	setcell(2, 1, strconv.FormatInt(h.X, 10), "", "#0ff")
+	setcell(1, 1, strconv.FormatInt(h.X, 10), "", "#0ff")
 	setcell(0, 2, "Y", "", "#00f")
-	setcell(2, 2, strconv.FormatInt(h.Y, 10), "", "#0ff")
-	setcell(2, 3, h.Name, "", "#0ff")
+	setcell(1, 2, strconv.FormatInt(h.Y, 10), "", "#0ff")
+	setcell(1, 3, h.Name, "", "#0ff")
 }
 
 func (h *AdminTeleportZoneHUD) Key(code int, special bool) bool {
@@ -777,7 +779,7 @@ func (h *AdminChangeExamineHUD) Paint(setcell func(int, int, string, string, Col
 	h.Player.Unlock()
 
 	setcell(0, 1, ">", "", "#00f")
-	setcell(2, 1, string(h.Input), "", "#00f")
+	setcell(1, 1, string(h.Input), "", "#00f")
 }
 
 func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
@@ -842,7 +844,7 @@ func (h *AdminChangeColorHUD) Paint(setcell func(int, int, string, string, Color
 	h.Player.Unlock()
 
 	setcell(0, 1, ">", "", "#00f")
-	setcell(2, 1, string(h.Input), "", "#0ff")
+	setcell(1, 1, string(h.Input), "", "#0ff")
 }
 
 func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
@@ -916,15 +918,15 @@ func (h *AdminMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
 			break
 		}
 		setcell(0, i+1, string(rune(i)+'1'), "", "#0ff")
-		setcell(2, i+1, c, "", "#0ff")
+		setcell(1, i+1, c, "", "#0ff")
 	}
 	if h.Offset > 0 {
 		setcell(0, 9, "9", "", "#fff")
-		setcell(2, 9, "previous", "", "#fff")
+		setcell(1, 9, "previous", "", "#fff")
 	}
 	if len(h.Commands) > h.Offset+8 {
 		setcell(0, 10, "0", "", "#fff")
-		setcell(2, 10, "next", "", "#fff")
+		setcell(1, 10, "next", "", "#fff")
 	}
 }
 

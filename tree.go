@@ -29,7 +29,7 @@ var woodTypeInfo = [woodTypeCount]struct {
 		Name:      "oak",
 		Color:     "#dab583",
 		LeafColor: "#919a2a",
-		Strength:  10,
+		Strength:  50,
 	},
 	Beonetwon: {
 		Name:      "beonetwon",
@@ -40,31 +40,31 @@ var woodTypeInfo = [woodTypeCount]struct {
 	DeadTree: {
 		Name:     "rotting",
 		Color:    "#5f5143",
-		Strength: 5,
+		Strength: 50,
 	},
 	Maple: {
 		Name:      "maple",
 		Color:     "#ffb963",
 		LeafColor: "#aa5217",
-		Strength:  18,
+		Strength:  50,
 	},
 	Birch: {
 		Name:      "birch",
 		Color:     "#d0ddd0",
 		LeafColor: "#29995c",
-		Strength:  12,
+		Strength:  50,
 	},
 	Willow: {
 		Name:      "willow",
 		Color:     "#9e9067",
 		LeafColor: "#4e6b2c",
-		Strength:  15,
+		Strength:  50,
 	},
 	Juniper: {
 		Name:      "juniper",
 		Color:     "#c2b19a",
 		LeafColor: "#3e4506",
-		Strength:  14,
+		Strength:  50,
 	},
 }
 
@@ -200,6 +200,9 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 		return true
 	}
 	if (s.X-x)*(s.X-x)+(s.Y-y)*(s.Y-y) > 1 {
+		if p != nil {
+			p.SendMessage("that is too far away!")
+		}
 		return false
 	}
 
@@ -208,6 +211,9 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 	hatchet := h.Toolbelt.Hatchet
 	h.Unlock()
 	if hatchet == nil {
+		if p != nil {
+			p.SendMessage("you do not have a hatchet on your toolbelt.")
+		}
 		return false
 	}
 
