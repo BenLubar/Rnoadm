@@ -64,10 +64,18 @@ func print() {
 	fmt.Println("Admin:", player.Admin)
 }
 
+func changenickname() {
+	player := read()
+	player.HeroName.Nickname = *data
+	write(player)
+}
+
 var (
-	file      = flag.String("file", "", "file to edit [required]")
-	flagAdmin = flag.Bool("a", false, "toggle player admin status")
-	flagPrint = flag.Bool("p", false, "print info")
+	file         = flag.String("file", "", "file to edit [required]")
+	data         = flag.String("data", "", "data [varies by mode]")
+	flagAdmin    = flag.Bool("a", false, "toggle player admin status")
+	flagPrint    = flag.Bool("p", false, "print info")
+	flagNickname = flag.Bool("nn", false, "modify nickname to -data")
 )
 
 func main() {
@@ -83,6 +91,9 @@ func main() {
 	if *flagPrint {
 		count++
 	}
+	if *flagNickname {
+		count++
+	}
 	if count != 1 {
 		flag.Usage()
 		os.Exit(1)
@@ -92,5 +103,8 @@ func main() {
 	}
 	if *flagPrint {
 		print()
+	}
+	if *flagNickname {
+		changenickname()
 	}
 }
