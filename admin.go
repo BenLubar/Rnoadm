@@ -366,9 +366,9 @@ func init() {
 			p.Unlock()
 		}
 	}
-	adminCommands["SPAWN HERO"] = func(p *Player) {
+	adminCommands["SPAWN HUMAN"] = func(p *Player) {
 		p.Lock()
-		p.GiveItem(&Hero{Name_: GenerateName(rand.New(rand.NewSource(rand.Int63())), NameHero)})
+		p.GiveItem(GenerateHero(Human, rand.New(rand.NewSource(rand.Int63()))))
 		p.Unlock()
 	}
 }

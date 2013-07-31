@@ -234,7 +234,7 @@ const (
 )
 
 type Hero struct {
-	Name_ *Name
+	HeroName *Name
 
 	CustomColor Color
 
@@ -268,7 +268,7 @@ func (h *Hero) Unlock() {
 }
 
 func (h *Hero) Name() string {
-	return h.Name_.String()
+	return h.HeroName.String()
 }
 
 func (h *Hero) Examine() string {
@@ -489,4 +489,16 @@ func (s *TakeSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 		z.Repaint()
 	}
 	return false
+}
+
+func GenerateHero(race Race, r *rand.Rand) *Hero {
+	h := &Hero{
+		Race:   race,
+		Gender: Gender(r.Intn(int(genderCount))),
+	}
+	switch race {
+	case Human:
+		h.HeroName = GenerateHumanName(r, h.Gender)
+	}
+	return h
 }

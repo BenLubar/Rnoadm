@@ -205,13 +205,12 @@ func websocketHandler(conn *websocket.Conn) {
 	}
 	player, err := LoadPlayer(playerID)
 	if err != nil {
+		h := GenerateHero(Human, rand.New(rand.NewSource(int64(playerID))))
 		player = &Player{
-			ID:    playerID,
-			TileX: 127,
-			TileY: 127,
-			Hero: Hero{
-				Name_: GenerateName(rand.New(rand.NewSource(int64(playerID))), NameHero),
-			},
+			ID:      playerID,
+			TileX:   127,
+			TileY:   127,
+			Hero:    *h,
 			repaint: make(chan struct{}, 1),
 			Joined:  time.Now().UTC(),
 		}

@@ -3,110 +3,22 @@ package main
 type NameSubtype uint16
 
 const (
-	NameZone NameSubtype = iota
-	NameForest
-	NamePlains
-	NameHills
-	NameLake
-	NameHero
+	NameUtil NameSubtype = iota
 	NameMaleHuman
 	NameFemaleHuman
 
 	nameSubtypeCount
 )
 
-var syllables = []string{
-	"ba",
-	"be",
-	"bi",
-	"bo",
-	"bu",
-	"ca",
-	"ce",
-	"ci",
-	"co",
-	"cu",
-	"da",
-	"de",
-	"di",
-	"do",
-	"du",
-	"fa",
-	"fe",
-	"fi",
-	"fo",
-	"fu",
-}
-
-// leave the first one of each subtype blank. add only to the end of each list.
+// add only to the end of each list.
 var names = [nameSubtypeCount][]string{
-	NameZone: {
+	NameUtil: {
 		"",
-		"area",
-		"zone",
-		"region",
-		"lair",
-		"territory",
-		"realm",
-	},
-	NameForest: {
-		"",
-		"forest",
-		"glade",
-		"grove",
-		"timberland",
-		"woodland",
-		"weald",
-	},
-	NamePlains: {
-		"",
-		"plains",
-		"steppe",
-		"plateau",
-		"prairie",
-		"meadow",
-		"field",
-		"moors",
-	},
-	NameHills: {
-		"",
-		"hills",
-		"foothills",
-		"bluff",
-		"ridge",
-		"hillocks",
-		"knoll",
-		"mesa",
-		"mound",
-	},
-	NameLake: {
-		"",
-		"lake",
-		"loch",
-		"reservoir",
-		"basin",
-		"sea",
-	},
-	NameHero: {
-		"",
-		"brave",
-		"strong",
-		"feeble",
-		"feared",
-		"man",
-		"king",
-		"child",
+		"e",
+		"er",
 		"son",
-		"queen",
-		"good",
-		"bad",
-		"weak",
-		"shy",
-		"blade",
-		"master",
 	},
 	NameMaleHuman: {
-		"",
 		"Aaron",
 		"Abb",
 		"Abbott",
@@ -1283,7 +1195,6 @@ var names = [nameSubtypeCount][]string{
 		"Zevran",
 	},
 	NameFemaleHuman: {
-		"",
 		"Abagail",
 		"Abbie",
 		"Abby",
