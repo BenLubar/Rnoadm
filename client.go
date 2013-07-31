@@ -401,6 +401,14 @@ func websocketHandler(conn *websocket.Conn) {
 				player.Feet.Paint(w+4, 1, setcell)
 			}
 
+			setcell(w+6, 0, "TOOLBELT", "", "#aaa")
+			if player.Toolbelt.Pickaxe != nil {
+				player.Toolbelt.Pickaxe.Paint(w+6, 1, setcell)
+			}
+			if player.Toolbelt.Hatchet != nil {
+				player.Toolbelt.Hatchet.Paint(w+7, 1, setcell)
+			}
+
 			setcell(w+1, 2, "INVENTORY", "", "#aaa")
 			for i, o := range player.Backpack {
 				o.Paint(i%10+w+1, i/10+3, setcell)

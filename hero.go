@@ -211,6 +211,10 @@ type Hero struct {
 	Top      *Shirt
 	Legs     *Pants
 	Feet     *Shoes
+	Toolbelt struct {
+		*Hatchet
+		*Pickaxe
+	}
 
 	schedule      Schedule
 	scheduleDelay uint
@@ -305,6 +309,18 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
 			}
 			h.Feet = nil
+		}
+		if o := h.Toolbelt.Pickaxe; o != nil && o.AdminOnly() {
+			if p != nil {
+				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+			}
+			h.Toolbelt.Pickaxe = nil
+		}
+		if o := h.Toolbelt.Hatchet; o != nil && o.AdminOnly() {
+			if p != nil {
+				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+			}
+			h.Toolbelt.Hatchet = nil
 		}
 	}
 

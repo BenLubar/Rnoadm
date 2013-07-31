@@ -398,17 +398,10 @@ type Object interface {
 }
 
 type Item interface {
+	Object
 	IsItem()
 	AdminOnly() bool
 }
-
-var _ Item = (*Ore)(nil)
-var _ Item = (*Stone)(nil)
-var _ Item = (*Logs)(nil)
-var _ Item = (*Hat)(nil)
-var _ Item = (*Shirt)(nil)
-var _ Item = (*Pants)(nil)
-var _ Item = (*Shoes)(nil)
 
 type Thinker interface {
 	Think(*Zone, uint8, uint8)
@@ -422,17 +415,19 @@ func init() {
 	// Players are removed from Zones before saving.
 	gob.Register(Object(&Flora{}))
 	gob.Register(Object(&Tree{}))
-	gob.Register(Object(&Logs{}))
 	gob.Register(Object(&Rock{}))
-	gob.Register(Object(&Stone{}))
-	gob.Register(Object(&Ore{}))
 	gob.Register(Object(&WallStone{}))
 	gob.Register(Object(&WallMetal{}))
 	gob.Register(Object(&WallWood{}))
 	gob.Register(Object(&Liquid{}))
 
-	gob.Register(Object(&Hat{}))
-	gob.Register(Object(&Shirt{}))
-	gob.Register(Object(&Pants{}))
-	gob.Register(Object(&Shoes{}))
+	gob.Register(Item(&Logs{}))
+	gob.Register(Item(&Stone{}))
+	gob.Register(Item(&Ore{}))
+	gob.Register(Item(&Hat{}))
+	gob.Register(Item(&Shirt{}))
+	gob.Register(Item(&Pants{}))
+	gob.Register(Item(&Shoes{}))
+	gob.Register(Item(&Pickaxe{}))
+	gob.Register(Item(&Hatchet{}))
 }

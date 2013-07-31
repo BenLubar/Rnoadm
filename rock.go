@@ -28,7 +28,7 @@ var rockTypeInfo = [rockTypeCount]struct {
 	Adminstone: {
 		Name:     "adminstone",
 		Color:    "#1e0036",
-		Strength: 1 << 63,
+		Strength: 1 << 62,
 	},
 	Limestone: {
 		Name:     "limestone",
@@ -39,7 +39,7 @@ var rockTypeInfo = [rockTypeCount]struct {
 
 func init() {
 	for t := range rockTypeInfo {
-		if rockTypeInfo[t].Strength > 1<<63-1 {
+		if rockTypeInfo[t].Strength >= 1<<60 {
 			rockTypeInfo[t].sqrtStr = rockTypeInfo[t].Strength - 1
 		} else {
 			rockTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(rockTypeInfo[t].Strength)))
@@ -72,7 +72,7 @@ var metalTypeInfo = [metalTypeCount]struct {
 	Unobtainium: {
 		Name:     "unobtainium",
 		Color:    "#ff00ff",
-		Strength: 1 << 63,
+		Strength: 1 << 62,
 	},
 	Copper: {
 		Name:     "copper",
@@ -83,7 +83,7 @@ var metalTypeInfo = [metalTypeCount]struct {
 
 func init() {
 	for t := range metalTypeInfo {
-		if metalTypeInfo[t].Strength > 1<<63-1 {
+		if metalTypeInfo[t].Strength >= 1<<60 {
 			metalTypeInfo[t].sqrtStr = metalTypeInfo[t].Strength - 1
 		} else {
 			metalTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(metalTypeInfo[t].Strength)))
@@ -156,7 +156,7 @@ func (s *Stone) InteractOptions() []string {
 func (s *Stone) IsItem() {}
 
 func (s *Stone) AdminOnly() bool {
-	return rockTypeInfo[s.Type].Strength > 1<<63-1
+	return rockTypeInfo[s.Type].Strength >= 1<<60
 }
 
 type Ore struct {
@@ -186,5 +186,37 @@ func (o *Ore) InteractOptions() []string {
 func (o *Ore) IsItem() {}
 
 func (o *Ore) AdminOnly() bool {
-	return metalTypeInfo[o.Type].Strength > 1<<63-1
+	return metalTypeInfo[o.Type].Strength >= 1<<60
+}
+
+type Pickaxe struct {
+	Head MetalType
+	Handle WoodType
+}
+
+func (p *Pickaxe) Name() string {
+	return metalTypeInfo[p.Head].Name + " pickaxe"
+}
+
+func (p *Pickaxe) Examine() string {
+	return "a pickaxe made from " + metalTypeInfo[p.Head].Name + " and " + woodTypeInfo[p.Handle].Name + "."
+}
+
+func (p *Pickaxe) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "", "item_tool_handle", woodTypeInfo[p.Handle].Color)
+	setcell(x, y, "", "item_tool_pickaxe", metalTypeInfo[p.Head].Color)
+}
+
+func (p *Pickaxe) Blocking() bool {
+	return false
+}
+
+func (p *Pickaxe) InteractOptions() []string {
+	return nil
+}
+
+func (p *Pickaxe) IsItem() {}
+
+func (p *Pickaxe) AdminOnly() bool {
+	return metalTypeInfo[p.Head].Strength >= 1<<60 || woodTypeInfo[p.Handle].Strength >= 1<<60
 }

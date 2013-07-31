@@ -31,9 +31,9 @@ var woodTypeInfo = [woodTypeCount]struct {
 	},
 	Beonetwon: {
 		Name:      "beonetwon",
-		Color:     "#b1b2b0",
-		LeafColor: "#c0ffee",
-		Strength:  1 << 63,
+		Color:     "#00b120",
+		LeafColor: "#b120ee",
+		Strength:  1 << 62,
 	},
 	DeadTree: {
 		Name:     "dead",
@@ -56,7 +56,7 @@ var woodTypeInfo = [woodTypeCount]struct {
 
 func init() {
 	for t := range woodTypeInfo {
-		if woodTypeInfo[t].Strength > 1<<63-1 {
+		if woodTypeInfo[t].Strength >= 1<<60 {
 			woodTypeInfo[t].sqrtStr = woodTypeInfo[t].Strength - 1
 		} else {
 			woodTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(woodTypeInfo[t].Strength)))
@@ -118,5 +118,37 @@ func (l *Logs) InteractOptions() []string {
 func (l *Logs) IsItem() {}
 
 func (l *Logs) AdminOnly() bool {
-	return woodTypeInfo[l.Type].Strength > 1<<63-1
+	return woodTypeInfo[l.Type].Strength >= 1<<60
+}
+
+type Hatchet struct {
+	Head   MetalType
+	Handle WoodType
+}
+
+func (h *Hatchet) Name() string {
+	return metalTypeInfo[h.Head].Name + " hatchet"
+}
+
+func (h *Hatchet) Examine() string {
+	return "a hatchet made from " + metalTypeInfo[h.Head].Name + " and " + woodTypeInfo[h.Handle].Name + "."
+}
+
+func (h *Hatchet) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+	setcell(x, y, "", "item_tool_handle", woodTypeInfo[h.Handle].Color)
+	setcell(x, y, "", "item_tool_hatchet", metalTypeInfo[h.Head].Color)
+}
+
+func (h *Hatchet) Blocking() bool {
+	return false
+}
+
+func (h *Hatchet) InteractOptions() []string {
+	return nil
+}
+
+func (h *Hatchet) IsItem() {}
+
+func (h *Hatchet) AdminOnly() bool {
+	return metalTypeInfo[h.Head].Strength >= 1<<60 || woodTypeInfo[h.Handle].Strength >= 1<<60
 }

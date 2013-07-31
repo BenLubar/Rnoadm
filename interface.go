@@ -170,6 +170,14 @@ func (h *InteractMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
 			h.Wear = len(h.Options)
 			h.Options = append(h.Options, "wear")
 		}
+		if _, ok := h.Object.(*Pickaxe); h.Inventory && ok {
+			h.Wear = len(h.Options)
+			h.Options = append(h.Options, "put on toolbelt")
+		}
+		if _, ok := h.Object.(*Hatchet); h.Inventory && ok {
+			h.Wear = len(h.Options)
+			h.Options = append(h.Options, "put on toolbelt")
+		}
 		h.Take = -1
 		if _, ok := h.Object.(Item); !h.Inventory && ok {
 			h.Take = len(h.Options)
@@ -274,6 +282,20 @@ func (h *InteractMenuHUD) Key(code int, special bool) bool {
 						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
 					}
 					h.Player.Feet = o
+				case *Pickaxe:
+					if h.Player.Toolbelt.Pickaxe != nil {
+						h.Player.Backpack[h.Slot] = h.Player.Toolbelt.Pickaxe
+					} else {
+						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
+					}
+					h.Player.Toolbelt.Pickaxe = o
+				case *Hatchet:
+					if h.Player.Toolbelt.Hatchet != nil {
+						h.Player.Backpack[h.Slot] = h.Player.Toolbelt.Hatchet
+					} else {
+						h.Player.Backpack = append(h.Player.Backpack[:h.Slot], h.Player.Backpack[h.Slot+1:]...)
+					}
+					h.Player.Toolbelt.Hatchet = o
 				}
 
 				h.Player.zone.Repaint()
