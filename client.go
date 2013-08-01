@@ -30,7 +30,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			w.Header().Set("Content-Length", strconv.FormatInt(int64(len(b)), 10))
 			w.Header().Set("Cache-Control", "public")
-			w.Header().Set("Expiration", time.Now().AddDate(1, 0, 0).Format(http.TimeFormat))
+			w.Header().Set("Expires", time.Now().AddDate(1, 0, 0).Format(http.TimeFormat))
 			w.Write(b)
 			return
 		}
