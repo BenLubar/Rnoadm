@@ -7,6 +7,8 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -22,6 +24,12 @@ func init() {
 func httpHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		if b, ok := resource.Resource[r.URL.Path[1:]]; ok {
+			if strings.HasSuffix(r.URL.Path, ".png") {
+				w.Header().Set("Content-Type", "image/png")
+			}
+			w.Header().Set("Content-Length", strconv.FormatInt(int64(len(b)), 10))
+			w.Header().Set("Cache-Control", "public")
+			w.Header().Set("Expiration", time.Now().AddDate(1, 0, 0).Format(http.TimeFormat))
 			w.Write(b)
 			return
 		}
@@ -144,9 +152,11 @@ document.onkeydown = function(e) {
 	if (e.keyCode == 8) {
 		e.preventDefault();
 	}
+	return false;
 };
 document.onkeypress = function(e) {
 	send({Key:{Code:e.charCode, Special:false}});
+	return false;
 };
 document.querySelector('canvas').onclick = document.querySelector('canvas').oncontextmenu = function(e) {
 	send({Click:{X:Math.floor(e.offsetX/tileSize), Y:Math.floor(e.offsetY/tileSize)}});

@@ -448,6 +448,10 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 	pos := (*s)[0]
 	*s = (*s)[1:]
 
+	if z.Blocked(pos[0], pos[1]) {
+		return false
+	}
+
 	h.Lock()
 	h.Delay = 2
 	h.scheduleDelay = 3

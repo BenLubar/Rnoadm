@@ -82,7 +82,7 @@ func GenerateHumanName(r *rand.Rand, gender Gender) *HeroName {
 		}
 		n.Last1 = uint16(r.Intn(len(names[n.Last1T])))
 	default:
-		switch r.Intn(2) {
+		switch r.Intn(3) {
 		case 0:
 			n.Last1T = NameSurnameConsonant
 			switch r.Intn(3) {
@@ -100,6 +100,16 @@ func GenerateHumanName(r *rand.Rand, gender Gender) *HeroName {
 				n.Last2T = NameEndConsonant
 			case 1:
 				n.Last2T = NameEndConsonantMaybeE
+			}
+		case 2:
+			n.Last1T = NameFrontSyllableConsonant
+			switch r.Intn(3) {
+			case 0:
+				n.Last2T = NameEndConsonant
+			case 1:
+				n.Last2T = NameEndConsonantMaybeE
+			case 2:
+				n.Last2T = NameEndVowel
 			}
 		}
 		n.Last1 = uint16(r.Intn(len(names[n.Last1T])))
