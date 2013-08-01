@@ -74,7 +74,7 @@ var wsonmessage = ws.onmessage = function(e) {
 			canvas.width = 32*tileSize;
 			canvas.height = 16*tileSize;
 			canvas = canvas.getContext('2d');
-			canvas.font = '18px sans-serif';
+			canvas.font = '11px sans-serif';
 		}
 
 		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
@@ -87,7 +87,7 @@ var wsonmessage = ws.onmessage = function(e) {
 						canvas.fillStyle = '#000';
 						canvas.fillText(p.R, j*tileSize+tileSize/4, i*tileSize+tileSize*3/4+1);
 						canvas.fillStyle = p.C;
-						canvas.fillText(p.R, j*tileSize+tileSize/4, i*tileSize+tileSize*3/4);
+						canvas.fillText(p.R, j*tileSize+tileSize/4+p.X, i*tileSize+tileSize*3/4+p.Y);
 					}
 					if (p.I) {
 						if (!images[p.I]) {
@@ -162,13 +162,19 @@ document.querySelector('canvas').onclick = document.querySelector('canvas').onco
 	return false;
 };
 var mouseX = -1, mouseY = -1;
+var mouseTimeout;
 document.querySelector('canvas').onmouseout = function() {
 	if (mouseX == -1 && mouseY == -1) {
 		return;
 	}
 	mouseX = -1;
 	mouseY = -1;
-	send({MouseMove:{X:mouseX, Y:mouseY}});
+	if (mouseTimeout) {
+		clearTimeout(mouseTimeout);
+		mouseTimeout = null;
+	} else {
+		send({MouseMove:{X:-1, Y:-1}});
+	}
 };
 document.querySelector('canvas').onmousemove = function(e) {
 	var x = Math.floor(e.offsetX/tileSize);
@@ -176,9 +182,14 @@ document.querySelector('canvas').onmousemove = function(e) {
 	if (mouseX == x && mouseY == y) {
 		return;
 	}
+	if (mouseTimeout) {
+		clearTimeout(mouseTimeout);
+	} else {
+		send({MouseMove:{X:-1, Y:-1}});
+	}
 	mouseX = x;
 	mouseY = y;
-	send({MouseMove:{X:mouseX, Y:mouseY}});
+	mouseTimeout = setTimeout(send, 500, {MouseMove:{X:x, Y:y}});
 };
 </script>
 </body>
@@ -272,7 +283,7 @@ func websocketHandler(conn *websocket.Conn) {
 		player.Save()
 	}
 
-	var messageBuffer [4]string
+	var messageBuffer [8]string
 	messages := make(chan string, len(messageBuffer))
 	player.messages = messages
 
@@ -443,9 +454,14 @@ func websocketHandler(conn *websocket.Conn) {
 			z.Unlock()
 
 			for i, message := range messageBuffer {
-				setcell(0, h+i, PaintCell{
+				var y int8
+				if i&1 == 0 {
+					y = -16
+				}
+				setcell(0, h+i/2, PaintCell{
 					Text:  message,
 					Color: "#ccc",
+					Y:     y,
 				})
 			}
 
