@@ -12,6 +12,7 @@ type element struct {
 	Ores  []MetalType
 	Flora []FloraType
 	Trees []WoodType
+	Races []Race
 }
 
 type Element uint8
@@ -88,6 +89,7 @@ func init() {
 		Ores:  []MetalType{0, Iron, Copper},
 		Flora: []FloraType{LeafPlant, FlowerPlant, BulbPlant},
 		Trees: []WoodType{Oak, DeadTree, Maple, Birch},
+		Races: []Race{Human},
 	}
 	elements[Dust] = element{
 		Name:  "Dust",
@@ -201,4 +203,12 @@ func (e Element) Wood(r *rand.Rand) (WoodType, bool) {
 		return 0, false
 	}
 	return trees[r.Intn(len(trees))], true
+}
+
+func (e Element) Race(r *rand.Rand) (Race, bool) {
+	races := elements[e].Races
+	if len(races) == 0 {
+		return 0, false
+	}
+	return races[r.Intn(len(races))], true
 }

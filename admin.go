@@ -400,10 +400,13 @@ func init() {
 			p.Unlock()
 		}
 	}
-	adminCommands["SPAWN HUMAN"] = func(p *Player) {
-		p.Lock()
-		p.GiveItem(GenerateHero(Human, rand.New(rand.NewSource(rand.Int63()))))
-		p.Unlock()
+	for t := range raceInfo {
+		rt := Race(t)
+		adminCommands["SPAWN "+strings.ToUpper(raceInfo[rt].Name)] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(GenerateHero(rt, rand.New(rand.NewSource(rand.Int63()))))
+			p.Unlock()
+		}
 	}
 }
 

@@ -4,6 +4,23 @@ import (
 	"strings"
 )
 
+type ZoneEntryHUD string
+
+func (h ZoneEntryHUD) Paint(setcell func(int, int, string, string, Color)) {
+	for i := 0; i < 20; i++ {
+		setcell(i, 0, "", "ui_fill", "rgba(0,0,0,0.7)")
+	}
+	setcell(0, 0, string(h), "", "#fff")
+}
+
+func (h ZoneEntryHUD) Key(code int, special bool) bool {
+	return false
+}
+
+func (h ZoneEntryHUD) Click(x, y int) bool {
+	return false
+}
+
 type ExamineHUD struct {
 	Player  *Player
 	Name    string

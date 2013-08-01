@@ -161,6 +161,7 @@ func zoneFilename(x, y int64) string {
 }
 
 type Zone struct {
+	*ZoneName
 	Seed    RandomSource
 	X, Y    int64
 	Element Element

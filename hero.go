@@ -13,6 +13,54 @@ import (
 	"time"
 )
 
+type Gender uint8
+
+const (
+	Male Gender = iota
+	Female
+
+	genderCount
+)
+
+var genderData = [genderCount]struct {
+	Name string
+}{
+	Male: {
+		Name: "male",
+	},
+	Female: {
+		Name: "female",
+	},
+}
+
+type Race uint16
+
+const (
+	Human Race = iota
+
+	raceCount
+)
+
+var raceInfo = [raceCount]struct {
+	Name      string
+	Genders   []Gender
+	SkinTones []Color
+}{
+	Human: {
+		Name:      "human",
+		Genders:   []Gender{Male, Female},
+		SkinTones: []Color{"#ffe3cc", "#ffdbbd", "#e6c0a1", "#edd0b7", "#e3c3a8", "#ffcda3", "#e8d1be", "#e6d2c1", "#f7e9dc", "#cfbcab", "#c2a38a", "#c9a281", "#d9a980", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948"},
+	},
+}
+
+type Occupation uint16
+
+const (
+	Civilian Occupation = iota
+
+	occupationCount
+)
+
 type Player struct {
 	ID uint64
 	Hero
@@ -201,48 +249,6 @@ func (p *Player) Think(z *Zone, x, y uint8) {
 	p.think(z, x, y, p)
 }
 
-type ZoneEntryHUD string
-
-func (h ZoneEntryHUD) Paint(setcell func(int, int, string, string, Color)) {
-	for i := 0; i < 20; i++ {
-		setcell(i, 0, "", "ui_fill", "rgba(0,0,0,0.7)")
-	}
-	setcell(0, 0, string(h), "", "#fff")
-}
-
-func (h ZoneEntryHUD) Key(code int, special bool) bool {
-	return false
-}
-
-func (h ZoneEntryHUD) Click(x, y int) bool {
-	return false
-}
-
-type Gender uint8
-
-const (
-	Male Gender = iota
-	Female
-
-	genderCount
-)
-
-type Race uint16
-
-const (
-	Human Race = iota
-
-	raceCount
-)
-
-type Occupation uint16
-
-const (
-	Civilian Occupation = iota
-
-	occupationCount
-)
-
 type Hero struct {
 	*HeroName
 
@@ -287,36 +293,13 @@ func (h *Hero) Blocking() bool {
 	return false
 }
 
-var skinColors = [raceCount][]Color{
-	Human: {
-		"#ffe3cc",
-		"#ffdbbd",
-		"#e6c0a1",
-		"#edd0b7",
-		"#e3c3a8",
-		"#ffcda3",
-		"#e8d1be",
-		"#e6d2c1",
-		"#f7e9dc",
-		"#cfbcab",
-		"#c2a38a",
-		"#c9a281",
-		"#d9a980",
-		"#ba9c82",
-		"#ad8f76",
-		"#a17a5a",
-		"#876d58",
-		"#6e5948",
-	},
-}
-
 func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	h.Lock()
 	defer h.Unlock()
 
 	color := h.CustomColor
 	if color == "" {
-		color = skinColors[h.Race][h.SkinToneIndex]
+		color = raceInfo[h.Race].SkinTones[h.SkinToneIndex]
 	}
 	setcell(x, y, "", "player_body", color)
 	if h.Feet != nil {
@@ -538,13 +521,13 @@ func (s *TakeSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 func GenerateHero(race Race, r *rand.Rand) *Hero {
 	h := &Hero{
 		Race:   race,
-		Gender: Gender(r.Intn(int(genderCount))),
+		Gender: raceInfo[race].Genders[r.Intn(len(raceInfo[race].Genders))],
 	}
 	switch race {
 	case Human:
 		h.HeroName = GenerateHumanName(r, h.Gender)
 	}
-	h.SkinToneIndex = uint8(r.Intn(len(skinColors[h.Race])))
+	h.SkinToneIndex = uint8(r.Intn(len(raceInfo[race].SkinTones)))
 	const pastels = "abcde"
 	const earthy = "34567"
 	palette := pastels
