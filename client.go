@@ -189,7 +189,10 @@ document.querySelector('canvas').onmousemove = function(e) {
 	}
 	mouseX = x;
 	mouseY = y;
-	mouseTimeout = setTimeout(send, 500, {MouseMove:{X:x, Y:y}});
+	mouseTimeout = setTimeout(function() {
+		send({MouseMove:{X:x, Y:y}});
+		mouseTimeout = null;
+	}, 500);
 };
 </script>
 </body>
