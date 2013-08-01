@@ -2647,6 +2647,7 @@ var names = [nameSubtypeCount][]string{
 		"Log",
 		"Lop",
 		"Lov",
+		"Lub",
 		"Mal",
 	},
 	NameEndConsonant: {
@@ -2695,6 +2696,8 @@ var names = [nameSubtypeCount][]string{
 		"an",
 		"and",
 		"ands",
+		"ar",
+		"are,"
 		"as",
 		"e",
 		"en",
