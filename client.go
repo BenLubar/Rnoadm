@@ -378,6 +378,17 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 					player.Repaint()
 				}
+				if p.Click.X > w && p.Click.X <= w+10 && p.Click.Y > 2 {
+					player.hud = &ClickHUD{
+						X:         p.Click.X,
+						Y:         p.Click.Y,
+						W:         w,
+						H:         h,
+						Player:    player,
+						Inventory: true,
+					}
+					player.Repaint()
+				}
 			}
 			if p.MouseMove != nil {
 				mouseX, mouseY = p.MouseMove.X, p.MouseMove.Y

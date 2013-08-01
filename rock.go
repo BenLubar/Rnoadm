@@ -236,7 +236,6 @@ func (o *Ore) ZIndex() int {
 type Pickaxe struct {
 	Head   MetalType
 	Handle WoodType
-	Uninteractable
 }
 
 func (p *Pickaxe) Name() string {
@@ -271,6 +270,19 @@ func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
 
 func (p *Pickaxe) Blocking() bool {
 	return false
+}
+
+func (p *Pickaxe) InteractOptions() []string {
+	return []string{"add to toolbelt"}
+}
+
+func (p *Pickaxe) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // add to toolbelt
+		player.Lock()
+		player.Equip(p, true)
+		player.Unlock()
+	}
 }
 
 func (p *Pickaxe) IsItem() {}

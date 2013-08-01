@@ -141,25 +141,21 @@ var shoeTypeInfo = [shoeTypeCount]cosmeticInfo{
 type Hat struct {
 	Type        HatType
 	CustomColor [5]Color
-	Uninteractable
 }
 
 type Shirt struct {
 	Type        ShirtType
 	CustomColor [5]Color
-	Uninteractable
 }
 
 type Pants struct {
 	Type        PantsType
 	CustomColor [5]Color
-	Uninteractable
 }
 
 type Shoes struct {
 	Type        ShoeType
 	CustomColor [5]Color
-	Uninteractable
 }
 
 func (h *Hat) Name() string {
@@ -307,6 +303,58 @@ func (s *Shoes) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
 	info := shoeTypeInfo[s.Type]
 	custom := s.CustomColor
 	paintCosmetic(x, y, info, custom, setcell, true)
+}
+
+func (h *Hat) InteractOptions() []string {
+	return []string{"wear"}
+}
+
+func (s *Shirt) InteractOptions() []string {
+	return []string{"wear"}
+}
+
+func (p *Pants) InteractOptions() []string {
+	return []string{"wear"}
+}
+
+func (s *Shoes) InteractOptions() []string {
+	return []string{"wear"}
+}
+
+func (h *Hat) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // wear
+		player.Lock()
+		player.Equip(h, true)
+		player.Unlock()
+	}
+}
+
+func (s *Shirt) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // wear
+		player.Lock()
+		player.Equip(s, true)
+		player.Unlock()
+	}
+}
+
+func (p *Pants) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // wear
+		player.Lock()
+		player.Equip(p, true)
+		player.Unlock()
+	}
+}
+
+func (s *Shoes) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // wear
+		player.Lock()
+		player.Equip(s, true)
+		player.Unlock()
+	}
 }
 
 func (h *Hat) IsItem() {}

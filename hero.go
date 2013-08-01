@@ -443,6 +443,62 @@ func (h *Hero) GiveItem(o Object) {
 	h.Backpack = append(h.Backpack, o)
 }
 
+func (h *Hero) Equip(o Object, inventoryOnly bool) {
+	index := -1
+	for i, io := range h.Backpack {
+		if io == o {
+			index = i
+			break
+		}
+	}
+	if inventoryOnly && index == -1 {
+		return
+	}
+	var old Object
+	switch i := o.(type) {
+	case *Hat:
+		if h.Head != nil {
+			old = h.Head
+		}
+		h.Head = i
+	case *Shirt:
+		if h.Top != nil {
+			old = h.Top
+		}
+		h.Top = i
+	case *Pants:
+		if h.Legs != nil {
+			old = h.Legs
+		}
+		h.Legs = i
+	case *Shoes:
+		if h.Feet != nil {
+			old = h.Feet
+		}
+		h.Feet = i
+	case *Pickaxe:
+		if h.Toolbelt.Pickaxe != nil {
+			old = h.Toolbelt.Pickaxe
+		}
+		h.Toolbelt.Pickaxe = i
+	case *Hatchet:
+		if h.Toolbelt.Hatchet != nil {
+			old = h.Toolbelt.Hatchet
+		}
+		h.Toolbelt.Hatchet = i
+	default:
+		return
+	}
+
+	if index == -1 && old != nil {
+		h.GiveItem(old)
+	} else if index != -1 && old == nil {
+		h.Backpack = append(h.Backpack[:index], h.Backpack[index+1:]...)
+	} else if index != -1 && old != nil {
+		h.Backpack[index] = old
+	}
+}
+
 type Schedule interface {
 	Act(*Zone, uint8, uint8, *Hero, *Player) bool
 }

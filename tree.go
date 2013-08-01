@@ -166,7 +166,6 @@ func (l *Logs) ZIndex() int {
 type Hatchet struct {
 	Head   MetalType
 	Handle WoodType
-	Uninteractable
 }
 
 func (h *Hatchet) Name() string {
@@ -201,6 +200,19 @@ func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
 
 func (h *Hatchet) Blocking() bool {
 	return false
+}
+
+func (h *Hatchet) InteractOptions() []string {
+	return []string{"add to toolbelt"}
+}
+
+func (h *Hatchet) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // add to toolbelt
+		player.Lock()
+		player.Equip(h, true)
+		player.Unlock()
+	}
 }
 
 func (h *Hatchet) IsItem() {}
