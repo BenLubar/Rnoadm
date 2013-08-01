@@ -152,11 +152,9 @@ document.onkeydown = function(e) {
 	if (e.keyCode == 8) {
 		e.preventDefault();
 	}
-	return false;
 };
 document.onkeypress = function(e) {
 	send({Key:{Code:e.charCode, Special:false}});
-	return false;
 };
 document.querySelector('canvas').onclick = document.querySelector('canvas').oncontextmenu = function(e) {
 	send({Click:{X:Math.floor(e.offsetX/tileSize), Y:Math.floor(e.offsetY/tileSize)}});

@@ -419,7 +419,12 @@ func init() {
 	gob.Register(Object(&WallStone{}))
 	gob.Register(Object(&WallMetal{}))
 	gob.Register(Object(&WallWood{}))
+	gob.Register(Object(&FloorStone{}))
+	gob.Register(Object(&FloorMetal{}))
+	gob.Register(Object(&FloorWood{}))
 	gob.Register(Object(&Liquid{}))
+	gob.Register(Object(&Bed{}))
+	gob.Register(Object(&Chest{}))
 
 	gob.Register(Item(&Logs{}))
 	gob.Register(Item(&Stone{}))
@@ -431,3 +436,10 @@ func init() {
 	gob.Register(Item(&Pickaxe{}))
 	gob.Register(Item(&Hatchet{}))
 }
+
+type Uninteractable bool
+
+func (*Uninteractable) InteractOptions() []string {
+	return nil
+}
+func (*Uninteractable) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {}

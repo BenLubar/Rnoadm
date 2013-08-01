@@ -1,6 +1,7 @@
 package main
 
 type Liquid struct {
+	Uninteractable
 }
 
 func (l *Liquid) Name() string {
@@ -17,11 +18,4 @@ func (l *Liquid) Blocking() bool {
 
 func (l *Liquid) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	setcell(x, y, "", "ui_fill", "#00f") // TODO
-}
-
-func (l *Liquid) InteractOptions() []string {
-	return nil
-}
-
-func (l *Liquid) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }

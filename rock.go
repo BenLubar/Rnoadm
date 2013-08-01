@@ -154,6 +154,7 @@ func (r *Rock) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 
 type Stone struct {
 	Type RockType
+	Uninteractable
 }
 
 func (s *Stone) Name() string {
@@ -172,13 +173,6 @@ func (s *Stone) Blocking() bool {
 	return false
 }
 
-func (s *Stone) InteractOptions() []string {
-	return nil
-}
-
-func (s *Stone) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
-}
-
 func (s *Stone) IsItem() {}
 
 func (s *Stone) AdminOnly() bool {
@@ -187,6 +181,7 @@ func (s *Stone) AdminOnly() bool {
 
 type Ore struct {
 	Type MetalType
+	Uninteractable
 }
 
 func (o *Ore) Name() string {
@@ -205,13 +200,6 @@ func (o *Ore) Blocking() bool {
 	return false
 }
 
-func (o *Ore) InteractOptions() []string {
-	return nil
-}
-
-func (o *Ore) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
-}
-
 func (o *Ore) IsItem() {}
 
 func (o *Ore) AdminOnly() bool {
@@ -221,6 +209,7 @@ func (o *Ore) AdminOnly() bool {
 type Pickaxe struct {
 	Head   MetalType
 	Handle WoodType
+	Uninteractable
 }
 
 func (p *Pickaxe) Name() string {
@@ -243,13 +232,6 @@ func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, string, string, Col
 
 func (p *Pickaxe) Blocking() bool {
 	return false
-}
-
-func (p *Pickaxe) InteractOptions() []string {
-	return nil
-}
-
-func (p *Pickaxe) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (p *Pickaxe) IsItem() {}

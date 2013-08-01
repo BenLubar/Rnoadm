@@ -121,6 +121,7 @@ func (t *Tree) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 
 type Logs struct {
 	Type WoodType
+	Uninteractable
 }
 
 func (l *Logs) Name() string {
@@ -139,13 +140,6 @@ func (l *Logs) Blocking() bool {
 	return false
 }
 
-func (l *Logs) InteractOptions() []string {
-	return nil
-}
-
-func (l *Logs) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
-}
-
 func (l *Logs) IsItem() {}
 
 func (l *Logs) AdminOnly() bool {
@@ -155,6 +149,7 @@ func (l *Logs) AdminOnly() bool {
 type Hatchet struct {
 	Head   MetalType
 	Handle WoodType
+	Uninteractable
 }
 
 func (h *Hatchet) Name() string {
@@ -177,13 +172,6 @@ func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, string, string, Col
 
 func (h *Hatchet) Blocking() bool {
 	return false
-}
-
-func (h *Hatchet) InteractOptions() []string {
-	return nil
-}
-
-func (h *Hatchet) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (h *Hatchet) IsItem() {}

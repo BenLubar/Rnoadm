@@ -262,6 +262,11 @@ func init() {
 			p.GiveItem(&WallStone{Type: rt})
 			p.Unlock()
 		}
+		adminCommands["SPAWN "+strings.ToUpper(rockTypeInfo[rt].Name)+" FLOOR"] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&FloorStone{Type: rt})
+			p.Unlock()
+		}
 		for m := range metalTypeInfo {
 			if m == 0 {
 				continue
@@ -294,6 +299,11 @@ func init() {
 			p.GiveItem(&WallMetal{Type: mt})
 			p.Unlock()
 		}
+		adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" FLOOR"] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&FloorMetal{Type: mt})
+			p.Unlock()
+		}
 		for w := range woodTypeInfo {
 			wt := WoodType(w)
 			adminCommands["SPAWN "+strings.ToUpper(metalTypeInfo[mt].Name)+" AND "+strings.ToUpper(woodTypeInfo[wt].Name)+" PICKAXE"] = func(p *Player) {
@@ -323,6 +333,21 @@ func init() {
 		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" WALL"] = func(p *Player) {
 			p.Lock()
 			p.GiveItem(&WallWood{Type: wt})
+			p.Unlock()
+		}
+		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" FLOOR"] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&FloorWood{Type: wt})
+			p.Unlock()
+		}
+		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" BED"] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&Bed{Frame: wt})
+			p.Unlock()
+		}
+		adminCommands["SPAWN "+strings.ToUpper(woodTypeInfo[wt].Name)+" CHEST"] = func(p *Player) {
+			p.Lock()
+			p.GiveItem(&Chest{Type: wt})
 			p.Unlock()
 		}
 	}
