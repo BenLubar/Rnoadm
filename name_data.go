@@ -1070,8 +1070,6 @@ var names = [nameSubtypeCount][]string{
 		"Stephen",
 		"Sterling",
 		"Steve",
-		"Steve",
-		"Steven",
 		"Steven",
 		"Stewart",
 		"Stonewall",
