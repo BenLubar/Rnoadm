@@ -30,7 +30,16 @@ var adminCommands = map[string]func(*Player){
 		p.hud = &AdminNoclipHUD{Player: p}
 	},
 	"CHANGE EXAMINE": func(p *Player) {
-		p.hud = &AdminChangeExamineHUD{Player: p, Input: []rune(p.Examine())}
+		p.hud = &AdminChangeTextHUD{Player: p, Var: &p.Examine_, Input: []rune(p.Examine_)}
+	},
+	"CHANGE NICKNAME": func(p *Player) {
+		p.hud = &AdminChangeTextHUD{Player: p, Var: &p.HeroName.Nickname, Input: []rune(p.HeroName.Nickname)}
+	},
+	"CHANGE NAME": func(p *Player) {
+		p.Lock()
+		name := *p.HeroName
+		p.Unlock()
+		p.hud = &AdminChangeNameHUD{Player: p, Name: &name}
 	},
 	"CHANGE SKIN COLOR": func(p *Player) {
 		p.Lock()
@@ -788,12 +797,135 @@ func (h *AdminNoclipHUD) Click(x, y int) bool {
 	return false
 }
 
-type AdminChangeExamineHUD struct {
+type AdminChangeNameHUD struct {
 	Player *Player
+	Name   *HeroName
+	Index  int
+}
+
+func (h *AdminChangeNameHUD) Paint(setcell func(int, int, string, string, Color)) {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		return
+	}
+
+	h.Player.Lock()
+	setcell(0, 0, strings.ToUpper(h.Player.Name()), "", "#fff")
+	h.Player.Unlock()
+
+	setcell(0, 1, h.Name.Name(), "", "#00f")
+	desc, subtype, index := h.index()
+	setcell(0, 2, "< "+desc+" >", "", "#0ff")
+	setcell(0, 3, "subtype [ "+strconv.FormatUint(uint64(*subtype), 10)+" ]", "", "#0ff")
+	setcell(0, 4, "index - "+strconv.FormatUint(uint64(*index), 10)+" +", "", "#0ff")
+}
+
+func (h *AdminChangeNameHUD) index() (string, *NameSubtype, *uint16) {
+	switch h.Index {
+	default:
+		fallthrough
+	case 0:
+		return "First Name", &h.Name.FirstT, &h.Name.First
+	case 1:
+		return "Last Name", &h.Name.Last1T, &h.Name.Last1
+	case 2:
+		return "Last Suffix 1", &h.Name.Last2T, &h.Name.Last2
+	case 3:
+		return "Last Suffix 2", &h.Name.Last3T, &h.Name.Last3
+	}
+}
+
+func (h *AdminChangeNameHUD) Key(code int, special bool) bool {
+	if !h.Player.Admin {
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	if !special {
+		return true
+	}
+	switch code {
+	case 188: // ,
+		if h.Index != 0 {
+			h.Index--
+		} else {
+			h.Index = 3
+		}
+		h.Player.Repaint()
+		return true
+	case 190: // .
+		if h.Index != 3 {
+			h.Index++
+		} else {
+			h.Index = 0
+		}
+		h.Player.Repaint()
+		return true
+	case 219: // [
+		_, subtype, index := h.index()
+		if *subtype != 0 {
+			*subtype--
+		} else {
+			*subtype = NameSubtype(len(names) - 1)
+		}
+		*index = 0
+		h.Player.Repaint()
+		return true
+	case 221: // ]
+		_, subtype, index := h.index()
+		if *subtype != NameSubtype(len(names)-1) {
+			*subtype++
+		} else {
+			*subtype = 0
+		}
+		*index = 0
+		h.Player.Repaint()
+		return true
+	case 189: // -
+		_, subtype, index := h.index()
+		if *index != 0 {
+			*index--
+		} else {
+			*index = uint16(len(names[*subtype]) - 1)
+		}
+		h.Player.Repaint()
+		return true
+	case 187: // +
+		_, subtype, index := h.index()
+		if *index != uint16(len(names[*subtype])-1) {
+			*index++
+		} else {
+			*index = 0
+		}
+		h.Player.Repaint()
+		return true
+	case 13: // enter
+		h.Player.Lock()
+		h.Player.HeroName = h.Name
+		h.Player.Unlock()
+
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	case 27: // esc
+		h.Player.hud = nil
+		h.Player.Repaint()
+		return true
+	}
+	return false
+}
+
+func (h *AdminChangeNameHUD) Click(x, y int) bool {
+	return false
+}
+
+type AdminChangeTextHUD struct {
+	Player *Player
+	Var    *string
 	Input  []rune
 }
 
-func (h *AdminChangeExamineHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminChangeTextHUD) Paint(setcell func(int, int, string, string, Color)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
@@ -807,7 +939,7 @@ func (h *AdminChangeExamineHUD) Paint(setcell func(int, int, string, string, Col
 	setcell(1, 1, string(h.Input), "", "#00f")
 }
 
-func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
+func (h *AdminChangeTextHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -833,8 +965,7 @@ func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
 		return true
 	case 13: // enter
 		h.Player.Lock()
-		AdminLog.Printf("CHANGEEXAMINE:%q [%d:%q] (%d:%d, %d:%d)", string(h.Input), h.Player.ID, h.Player.Name(), h.Player.ZoneX, h.Player.TileX, h.Player.ZoneY, h.Player.TileY)
-		h.Player.Examine_ = strings.TrimSpace(strings.ToLower(string(h.Input)))
+		*h.Var = strings.TrimSpace(string(h.Input))
 		h.Player.Unlock()
 
 		h.Player.hud = nil
@@ -848,7 +979,7 @@ func (h *AdminChangeExamineHUD) Key(code int, special bool) bool {
 	return true
 }
 
-func (h *AdminChangeExamineHUD) Click(x, y int) bool {
+func (h *AdminChangeTextHUD) Click(x, y int) bool {
 	return false
 }
 
@@ -868,7 +999,7 @@ func (h *AdminChangeColorHUD) Paint(setcell func(int, int, string, string, Color
 	setcell(0, 0, "CHANGE COLOR", "", "#00f")
 	h.Player.Unlock()
 
-	setcell(0, 1, ">", "", "#00f")
+	setcell(0, 1, ">", "", Color(h.Input))
 	setcell(1, 1, string(h.Input), "", "#0ff")
 }
 
