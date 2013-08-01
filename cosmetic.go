@@ -210,88 +210,103 @@ func (s *Shoes) Blocking() bool {
 	return false
 }
 
-func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(int, int, string, string, Color)) {
+func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(int, int, PaintCell), worn bool) {
 	color := info.BaseColor
 	if custom[0] != "" {
 		color = custom[0]
 	}
-	setcell(x, y, "", info.Base, color)
+	setcell(x, y, PaintCell{
+		Sprite: info.Base,
+		Color:  color,
+	})
 	if info.Layer1 != "" {
 		color = info.Layer1Color
 		if custom[1] != "" {
 			color = custom[1]
 		}
-		setcell(x, y, "", info.Layer1, color)
+		setcell(x, y, PaintCell{
+			Sprite: info.Layer1,
+			Color:  color,
+		})
 	}
 	if info.Layer2 != "" {
 		color = info.Layer2Color
 		if custom[2] != "" {
 			color = custom[2]
 		}
-		setcell(x, y, "", info.Layer2, color)
+		setcell(x, y, PaintCell{
+			Sprite: info.Layer2,
+			Color:  color,
+		})
 	}
 	if info.Layer3 != "" {
 		color = info.Layer3Color
 		if custom[3] != "" {
 			color = custom[3]
 		}
-		setcell(x, y, "", info.Layer3, color)
+		setcell(x, y, PaintCell{
+			Sprite: info.Layer3,
+			Color:  color,
+		})
 	}
 	if info.Layer4 != "" {
 		color = info.Layer4Color
 		if custom[4] != "" {
 			color = custom[4]
 		}
-		setcell(x, y, "", info.Layer4, color)
+		setcell(x, y, PaintCell{
+			Sprite: info.Layer4,
+			Color:  color,
+		})
 	}
 }
 
-func (h *Hat) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+func (h *Hat) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	info := hatTypeInfo[h.Type]
 	custom := h.CustomColor
-	paintCosmetic(x, y, info, custom, setcell)
+	paintCosmetic(x, y, info, custom, setcell, false)
 }
 
-func (s *Shirt) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+func (s *Shirt) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	info := shirtTypeInfo[s.Type]
 	custom := s.CustomColor
-	paintCosmetic(x, y, info, custom, setcell)
+	paintCosmetic(x, y, info, custom, setcell, false)
 }
 
-func (p *Pants) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+func (p *Pants) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	info := pantsTypeInfo[p.Type]
 	custom := p.CustomColor
-	paintCosmetic(x, y, info, custom, setcell)
+	paintCosmetic(x, y, info, custom, setcell, false)
 }
 
-func (s *Shoes) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+func (s *Shoes) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	info := shoeTypeInfo[s.Type]
 	custom := s.CustomColor
-	paintCosmetic(x, y, info, custom, setcell)
+	paintCosmetic(x, y, info, custom, setcell, false)
 }
 
-func (h *Hat) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+func (h *Hat) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
 	info := hatTypeInfo[h.Type]
 	custom := h.CustomColor
-	paintCosmetic(x, y, info, custom, setcell)
+	paintCosmetic(x, y, info, custom, setcell, true)
 }
 
-func (s *Shirt) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+func (s *Shirt) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
 	info := shirtTypeInfo[s.Type]
 	custom := s.CustomColor
-	paintCosmetic(x, y, info, custom, setcell)
+	paintCosmetic(x, y, info, custom, setcell, true)
 }
 
-func (p *Pants) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+func (p *Pants) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
 	info := pantsTypeInfo[p.Type]
 	custom := p.CustomColor
-	paintCosmetic(x, y, info, custom, setcell)
+	paintCosmetic(x, y, info, custom, setcell, true)
 }
 
-func (s *Shoes) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
+func (s *Shoes) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
 	info := shoeTypeInfo[s.Type]
 	custom := s.CustomColor
-	paintCosmetic(x, y, info, custom, setcell)
+	paintCosmetic(x, y, info, custom, setcell, true)
 }
 
 func (h *Hat) IsItem() {}

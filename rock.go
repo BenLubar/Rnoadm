@@ -111,12 +111,21 @@ func (r *Rock) Examine() string {
 	return "a deposit of " + rockTypeInfo[r.Type].Name + " rock."
 }
 
-func (r *Rock) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "rock_base", rockTypeInfo[r.Type].Color)
+func (r *Rock) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "rock_base",
+		Color:  rockTypeInfo[r.Type].Color,
+	})
 	if r.Ore != 0 {
-		setcell(x, y, "", "rock_ore_small", metalTypeInfo[r.Ore].Color)
+		setcell(x, y, PaintCell{
+			Sprite: "rock_ore_small",
+			Color:  metalTypeInfo[r.Ore].Color,
+		})
 		if r.Big {
-			setcell(x, y, "", "rock_ore_big", metalTypeInfo[r.Ore].Color)
+			setcell(x, y, PaintCell{
+				Sprite: "rock_ore_big",
+				Color:  metalTypeInfo[r.Ore].Color,
+			})
 		}
 	}
 }
@@ -169,8 +178,11 @@ func (s *Stone) Examine() string {
 	return "a " + rockTypeInfo[s.Type].Name + " stone."
 }
 
-func (s *Stone) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "item_stone", rockTypeInfo[s.Type].Color)
+func (s *Stone) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "item_stone",
+		Color:  rockTypeInfo[s.Type].Color,
+	})
 }
 
 func (s *Stone) Blocking() bool {
@@ -200,8 +212,11 @@ func (o *Ore) Examine() string {
 	return "some " + metalTypeInfo[o.Type].Name + " ore."
 }
 
-func (o *Ore) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "item_ore", metalTypeInfo[o.Type].Color)
+func (o *Ore) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "item_ore",
+		Color:  metalTypeInfo[o.Type].Color,
+	})
 }
 
 func (o *Ore) Blocking() bool {
@@ -232,14 +247,26 @@ func (p *Pickaxe) Examine() string {
 	return "a pickaxe made from " + metalTypeInfo[p.Head].Name + " and " + woodTypeInfo[p.Handle].Name + "."
 }
 
-func (p *Pickaxe) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "item_tool_handle", woodTypeInfo[p.Handle].Color)
-	setcell(x, y, "", "item_tool_pickaxe", metalTypeInfo[p.Head].Color)
+func (p *Pickaxe) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "item_tool_handle",
+		Color:  woodTypeInfo[p.Handle].Color,
+	})
+	setcell(x, y, PaintCell{
+		Sprite: "item_tool_pickaxe",
+		Color:  metalTypeInfo[p.Head].Color,
+	})
 }
 
-func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "tiny_pick_stick", woodTypeInfo[p.Handle].Color)
-	setcell(x, y, "", "tiny_pick_head", metalTypeInfo[p.Head].Color)
+func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "tiny_pick_stick",
+		Color:  woodTypeInfo[p.Handle].Color,
+	})
+	setcell(x, y, PaintCell{
+		Sprite: "tiny_pick_head",
+		Color:  metalTypeInfo[p.Head].Color,
+	})
 }
 
 func (p *Pickaxe) Blocking() bool {

@@ -17,8 +17,11 @@ func (b *Bed) Blocking() bool {
 	return false
 }
 
-func (b *Bed) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "BED", "", "#f00")
+func (b *Bed) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Text:  "BED",
+		Color: "#f00",
+	})
 }
 
 func (b *Bed) ZIndex() int {
@@ -42,8 +45,11 @@ func (c *Chest) Blocking() bool {
 	return true
 }
 
-func (c *Chest) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "CHEST", "", "#f00")
+func (c *Chest) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Text:  "CHEST",
+		Color: "#f00",
+	})
 }
 
 func (c *Chest) ZIndex() int {

@@ -90,10 +90,16 @@ func (t *Tree) Examine() string {
 	return "a tall " + woodTypeInfo[t.Type].Name + " tree."
 }
 
-func (t *Tree) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "tree_trunk", woodTypeInfo[t.Type].Color)
+func (t *Tree) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "tree_trunk",
+		Color:  woodTypeInfo[t.Type].Color,
+	})
 	if color := woodTypeInfo[t.Type].LeafColor; color != "" {
-		setcell(x, y, "", "tree_leaves", color)
+		setcell(x, y, PaintCell{
+			Sprite: "tree_leaves",
+			Color:  color,
+		})
 	}
 }
 
@@ -136,8 +142,11 @@ func (l *Logs) Examine() string {
 	return "some " + woodTypeInfo[l.Type].Name + " logs."
 }
 
-func (l *Logs) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "item_logs", woodTypeInfo[l.Type].Color)
+func (l *Logs) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "item_logs",
+		Color:  woodTypeInfo[l.Type].Color,
+	})
 }
 
 func (l *Logs) Blocking() bool {
@@ -168,14 +177,26 @@ func (h *Hatchet) Examine() string {
 	return "a hatchet made from " + metalTypeInfo[h.Head].Name + " and " + woodTypeInfo[h.Handle].Name + "."
 }
 
-func (h *Hatchet) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "item_tool_handle", woodTypeInfo[h.Handle].Color)
-	setcell(x, y, "", "item_tool_hatchet", metalTypeInfo[h.Head].Color)
+func (h *Hatchet) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "item_tool_handle",
+		Color:  woodTypeInfo[h.Handle].Color,
+	})
+	setcell(x, y, PaintCell{
+		Sprite: "item_tool_hatchet",
+		Color:  metalTypeInfo[h.Head].Color,
+	})
 }
 
-func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "tiny_hatchet_stick", woodTypeInfo[h.Handle].Color)
-	setcell(x, y, "", "tiny_hatchet_head", metalTypeInfo[h.Head].Color)
+func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "tiny_hatchet_stick",
+		Color:  woodTypeInfo[h.Handle].Color,
+	})
+	setcell(x, y, PaintCell{
+		Sprite: "tiny_hatchet_head",
+		Color:  metalTypeInfo[h.Head].Color,
+	})
 }
 
 func (h *Hatchet) Blocking() bool {

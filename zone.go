@@ -395,11 +395,14 @@ var grassSprites = []string{
 	"grass_4",
 }
 
-func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, string, string, Color)) {
+func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, PaintCell)) {
 	if t.Sprite == 0 {
 		t.Sprite = rand.Intn(len(grassSprites)-1) + 1
 	}
-	setcell(i, j, "", grassSprites[t.Sprite], "#268f1e")
+	setcell(i, j, PaintCell{
+		Sprite: grassSprites[t.Sprite],
+		Color:  "#268f1e",
+	})
 	for k := len(t.Objects) - 1; k >= 0; k-- {
 		t.Objects[k].Paint(i, j, setcell)
 	}
@@ -408,7 +411,7 @@ func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, string, string, C
 type Object interface {
 	Name() string
 	Examine() string
-	Paint(int, int, func(int, int, string, string, Color))
+	Paint(int, int, func(int, int, PaintCell))
 	Blocking() bool
 	ZIndex() int
 	InteractOptions() []string

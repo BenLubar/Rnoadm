@@ -2697,7 +2697,7 @@ var names = [nameSubtypeCount][]string{
 		"and",
 		"ands",
 		"ar",
-		"are,"
+		"are",
 		"as",
 		"e",
 		"en",

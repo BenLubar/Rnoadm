@@ -130,7 +130,7 @@ var wsonmessage = ws.onmessage = function(e) {
 							buffer.putImageData(data, 0, 0);
 
 						}
-						canvas.drawImage(images_recolor[p.I][p.C], j*tileSize, i*tileSize+tileSize-Math.max(tileSize, images[p.I].height), Math.max(tileSize, images[p.I].width), Math.max(tileSize, images[p.I].height));
+						canvas.drawImage(images_recolor[p.I][p.C], j*tileSize+p.X, i*tileSize+p.Y+tileSize-Math.max(tileSize, images[p.I].height), Math.max(tileSize, images[p.I].width), Math.max(tileSize, images[p.I].height));
 					}
 				}
 			}
@@ -202,11 +202,14 @@ type packetIn struct {
 	ForceRepaint bool
 }
 
-type packetPaintCell struct {
-	R, I, C string `json:",omitempty"`
+type PaintCell struct {
+	Text   string `json:"R,omitempty"`
+	Sprite string `json:"I,omitempty"`
+	Color  Color  `json:"C,omitempty"`
+	X, Y   int8
 }
 type packetPaint struct {
-	Paint [40][16][]packetPaintCell
+	Paint [40][16][]PaintCell
 }
 
 func websocketHandler(conn *websocket.Conn) {
@@ -270,7 +273,7 @@ func websocketHandler(conn *websocket.Conn) {
 	}
 
 	var messageBuffer [4]string
-	messages := make(chan string)
+	messages := make(chan string, len(messageBuffer))
 	player.messages = messages
 
 	player.Repaint()
@@ -349,12 +352,6 @@ func websocketHandler(conn *websocket.Conn) {
 					player.Move(0, 1)
 				case 39, 'D':
 					player.Move(1, 0)
-				case 'E':
-					player.hud = &InteractHUD{Player: player}
-					player.Repaint()
-				case 'I':
-					player.hud = &InventoryHUD{Player: player}
-					player.Repaint()
 				case 192: // `
 					if player.Admin {
 						player.hud = &AdminHUD{Player: player}
@@ -389,14 +386,10 @@ func websocketHandler(conn *websocket.Conn) {
 
 		case <-player.repaint:
 			var paint packetPaint
-			setcell := func(x, y int, ch string, sprite string, color Color) {
+			setcell := func(x, y int, p PaintCell) {
 				if x >= 0 && x < len(paint.Paint) {
 					if y >= 0 && y < len(paint.Paint[x]) {
-						paint.Paint[x][y] = append(paint.Paint[x][y], packetPaintCell{
-							R: ch,
-							I: sprite,
-							C: string(color),
-						})
+						paint.Paint[x][y] = append(paint.Paint[x][y], p)
 					}
 				}
 			}
@@ -415,14 +408,20 @@ func websocketHandler(conn *websocket.Conn) {
 				for y := 0; y < h; y++ {
 					yCoord := y - h/2 + camY
 					if xCoord < 0 || xCoord > 255 || yCoord < 0 || yCoord > 255 {
-						setcell(x, y, "?", "", "#111")
+						setcell(x, y, PaintCell{
+							Text:  "?",
+							Color: "#111",
+						})
 						continue
 					}
 					y8 := uint8(yCoord)
 					if tile := z.Tile(x8, y8); tile != nil {
 						tile.Paint(z, x, y, setcell)
 					} else {
-						setcell(x, y, "?", "", "#111")
+						setcell(x, y, PaintCell{
+							Text:  "?",
+							Color: "#111",
+						})
 					}
 				}
 			}
@@ -433,11 +432,17 @@ func websocketHandler(conn *websocket.Conn) {
 			z.Unlock()
 
 			for i, message := range messageBuffer {
-				setcell(0, h+i, message, "", "#fff")
+				setcell(0, h+i, PaintCell{
+					Text:  message,
+					Color: "#ccc",
+				})
 			}
 
 			player.Lock()
-			setcell(w+1, 0, "WEARING", "", "#aaa")
+			setcell(w+1, 0, PaintCell{
+				Text:  "WEARING",
+				Color: "#aaa",
+			})
 			if player.Head != nil {
 				player.Head.Paint(w+1, 1, setcell)
 			}
@@ -451,7 +456,10 @@ func websocketHandler(conn *websocket.Conn) {
 				player.Feet.Paint(w+4, 1, setcell)
 			}
 
-			setcell(w+6, 0, "TOOLBELT", "", "#aaa")
+			setcell(w+6, 0, PaintCell{
+				Text:  "TOOLBELT",
+				Color: "#aaa",
+			})
 			if player.Toolbelt.Pickaxe != nil {
 				player.Toolbelt.Pickaxe.Paint(w+6, 1, setcell)
 			}
@@ -459,7 +467,10 @@ func websocketHandler(conn *websocket.Conn) {
 				player.Toolbelt.Hatchet.Paint(w+7, 1, setcell)
 			}
 
-			setcell(w+1, 2, "INVENTORY", "", "#aaa")
+			setcell(w+1, 2, PaintCell{
+				Text:  "INVENTORY",
+				Color: "#aaa",
+			})
 			for i, o := range player.Backpack {
 				o.Paint(i%10+w+1, i/10+3, setcell)
 			}
@@ -474,11 +485,20 @@ func websocketHandler(conn *websocket.Conn) {
 					if t := z.Tile(x8, y8); t != nil {
 						z.Lock()
 						if len(t.Objects) > 0 {
-							setcell(mouseX, mouseY, "", "ui_smallcorner_tl", "rgba(0,0,0,0.7)")
+							setcell(mouseX, mouseY, PaintCell{
+								Sprite: "ui_smallcorner_tl",
+								Color:  "rgba(0,0,0,0.7)",
+							})
 							for i := 1; i < 8; i++ {
-								setcell(mouseX+i, mouseY, "", "ui_fill", "rgba(0,0,0,0.7)")
+								setcell(mouseX+i, mouseY, PaintCell{
+									Sprite: "ui_fill",
+									Color:  "rgba(0,0,0,0.7)",
+								})
 							}
-							setcell(mouseX+1, mouseY, t.Objects[0].Name(), "", "#fff")
+							setcell(mouseX+1, mouseY, PaintCell{
+								Text:  t.Objects[0].Name(),
+								Color: "#fff",
+							})
 						}
 						z.Unlock()
 					}

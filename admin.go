@@ -416,14 +416,20 @@ type AdminHUD struct {
 	Key_   bool
 }
 
-func (h *AdminHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
 	}
 
-	setcell(0, 0, ">", "", "#00f")
-	setcell(1, 0, string(h.Input), "", "#00f")
+	setcell(0, 0, PaintCell{
+		Text:  ">",
+		Color: "#00f",
+	})
+	setcell(1, 0, PaintCell{
+		Text:  string(h.Input),
+		Color: "#0ff",
+	})
 }
 
 func (h *AdminHUD) Key(code int, special bool) bool {
@@ -494,7 +500,7 @@ type AdminTeleportHUD struct {
 	Summon bool
 }
 
-func (h *AdminTeleportHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -509,33 +515,60 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, string, string, Color)) 
 		sort.Sort(h.List)
 	}
 	if h.Summon {
-		setcell(0, 0, "SUMMON PLAYER", "", "#fff")
+		setcell(0, 0, PaintCell{
+			Text:  "SUMMON PLAYER",
+			Color: "#fff",
+		})
 	} else {
-		setcell(0, 0, "TELEPORT TO PLAYER", "", "#fff")
+		setcell(0, 0, PaintCell{
+			Text:  "TELEPORT TO PLAYER",
+			Color: "#fff",
+		})
 	}
 	for i, p := range h.List[h.Offset:] {
 		if i == 8 {
 			break
 		}
-		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
+		setcell(0, i+1, PaintCell{
+			Text:  string(rune(i) + '1'),
+			Color: "#fff",
+		})
 		id := p.ID
 		var idBuf [16]byte
 		for k := range idBuf {
 			idBuf[k] = "0123456789ABCDEF"[id&15]
 			id >>= 4
 		}
-		setcell(1, i+1, string(idBuf[:]), "", "#44f")
+		setcell(1, i+1, PaintCell{
+			Text:  string(idBuf[:]),
+			Color: "#44f",
+		})
 		p.Lock()
-		setcell(7, i+1, p.Name(), "", "#00f")
+		setcell(7, i+1, PaintCell{
+			Text:  p.Name(),
+			Color: "#00f",
+		})
 		p.Unlock()
 	}
 	if h.Offset > 0 {
-		setcell(0, 9, "9", "", "#fff")
-		setcell(1, 9, "previous", "", "#fff")
+		setcell(0, 9, PaintCell{
+			Text:  "9",
+			Color: "#fff",
+		})
+		setcell(1, 9, PaintCell{
+			Text:  "previous",
+			Color: "#fff",
+		})
 	}
 	if len(h.List) > h.Offset+8 {
-		setcell(0, 10, "0", "", "#fff")
-		setcell(1, 10, "next", "", "#fff")
+		setcell(0, 10, PaintCell{
+			Text:  "0",
+			Color: "#fff",
+		})
+		setcell(1, 10, PaintCell{
+			Text:  "next",
+			Color: "#fff",
+		})
 	}
 }
 
@@ -628,7 +661,7 @@ type AdminTeleportZoneHUD struct {
 	Name   string
 }
 
-func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -644,12 +677,30 @@ func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, string, string, Colo
 		}
 	}
 
-	setcell(0, 0, "TELEPORT TO ZONE", "", "#00f")
-	setcell(0, 1, "X", "", "#00f")
-	setcell(1, 1, strconv.FormatInt(h.X, 10), "", "#0ff")
-	setcell(0, 2, "Y", "", "#00f")
-	setcell(1, 2, strconv.FormatInt(h.Y, 10), "", "#0ff")
-	setcell(1, 3, h.Name, "", "#0ff")
+	setcell(0, 0, PaintCell{
+		Text:  "TELEPORT TO ZONE",
+		Color: "#00f",
+	})
+	setcell(0, 1, PaintCell{
+		Text:  "X",
+		Color: "#00f",
+	})
+	setcell(1, 1, PaintCell{
+		Text:  strconv.FormatInt(h.X, 10),
+		Color: "#0ff",
+	})
+	setcell(0, 2, PaintCell{
+		Text:  "Y",
+		Color: "#00f",
+	})
+	setcell(1, 2, PaintCell{
+		Text:  strconv.FormatInt(h.Y, 10),
+		Color: "#0ff",
+	})
+	setcell(1, 3, PaintCell{
+		Text:  h.Name,
+		Color: "#0ff",
+	})
 }
 
 func (h *AdminTeleportZoneHUD) Key(code int, special bool) bool {
@@ -730,14 +781,17 @@ type AdminNoclipHUD struct {
 	Player *Player
 }
 
-func (h *AdminNoclipHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminNoclipHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
 		return
 	}
 
-	setcell(0, 0, "NOCLIP", "", "#00f")
+	setcell(0, 0, PaintCell{
+		Text:  "NOCLIP",
+		Color: "#00f",
+	})
 }
 
 func (h *AdminNoclipHUD) Key(code int, special bool) bool {
@@ -806,21 +860,36 @@ type AdminChangeNameHUD struct {
 	Index  int
 }
 
-func (h *AdminChangeNameHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminChangeNameHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
 	}
 
 	h.Player.Lock()
-	setcell(0, 0, strings.ToUpper(h.Player.Name()), "", "#fff")
+	setcell(0, 0, PaintCell{
+		Text:  strings.ToUpper(h.Player.Name()),
+		Color: "#fff",
+	})
 	h.Player.Unlock()
 
-	setcell(0, 1, h.Name.Name(), "", "#00f")
+	setcell(0, 1, PaintCell{
+		Text:  h.Name.Name(),
+		Color: "#00f",
+	})
 	desc, subtype, index := h.index()
-	setcell(0, 2, "< "+desc+" >", "", "#0ff")
-	setcell(0, 3, "subtype [ "+strconv.FormatUint(uint64(*subtype), 10)+" ]", "", "#0ff")
-	setcell(0, 4, "index - "+strconv.FormatUint(uint64(*index), 10)+" +", "", "#0ff")
+	setcell(0, 2, PaintCell{
+		Text:  "< " + desc + " >",
+		Color: "#0ff",
+	})
+	setcell(0, 3, PaintCell{
+		Text:  "subtype [ " + strconv.FormatUint(uint64(*subtype), 10) + " ]",
+		Color: "#0ff",
+	})
+	setcell(0, 4, PaintCell{
+		Text:  "index - " + strconv.FormatUint(uint64(*index), 10) + " +",
+		Color: "#0ff",
+	})
 }
 
 func (h *AdminChangeNameHUD) index() (string, *NameSubtype, *uint16) {
@@ -928,18 +997,27 @@ type AdminChangeTextHUD struct {
 	Input  []rune
 }
 
-func (h *AdminChangeTextHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminChangeTextHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
 	}
 
 	h.Player.Lock()
-	setcell(0, 0, strings.ToUpper(h.Player.Name()), "", "#fff")
+	setcell(0, 0, PaintCell{
+		Text:  strings.ToUpper(h.Player.Name()),
+		Color: "#fff",
+	})
 	h.Player.Unlock()
 
-	setcell(0, 1, ">", "", "#00f")
-	setcell(1, 1, string(h.Input), "", "#00f")
+	setcell(0, 1, PaintCell{
+		Text:  ">",
+		Color: "#00f",
+	})
+	setcell(1, 1, PaintCell{
+		Text:  string(h.Input),
+		Color: "#0ff",
+	})
 }
 
 func (h *AdminChangeTextHUD) Key(code int, special bool) bool {
@@ -992,18 +1070,27 @@ type AdminChangeColorHUD struct {
 	Input  []rune
 }
 
-func (h *AdminChangeColorHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminChangeColorHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
 	}
 
 	h.Player.Lock()
-	setcell(0, 0, "CHANGE COLOR", "", "#00f")
+	setcell(0, 0, PaintCell{
+		Text:  "CHANGE COLOR",
+		Color: "#00f",
+	})
 	h.Player.Unlock()
 
-	setcell(0, 1, ">", "", Color(h.Input))
-	setcell(1, 1, string(h.Input), "", "#0ff")
+	setcell(0, 1, PaintCell{
+		Text:  ">",
+		Color: Color(h.Input),
+	})
+	setcell(1, 1, PaintCell{
+		Text:  string(h.Input),
+		Color: "#0ff",
+	})
 }
 
 func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
@@ -1056,7 +1143,7 @@ type AdminMenuHUD struct {
 	Offset   int
 }
 
-func (h *AdminMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *AdminMenuHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -1071,21 +1158,42 @@ func (h *AdminMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
 		sort.Strings(h.Commands)
 	}
 
-	setcell(0, 0, "ADMIN MENU-O-MATIC", "", "#00f")
+	setcell(0, 0, PaintCell{
+		Text:  "ADMIN MENU-O-MATIC",
+		Color: "#00f",
+	})
 	for i, c := range h.Commands[h.Offset:] {
 		if i == 8 {
 			break
 		}
-		setcell(0, i+1, string(rune(i)+'1'), "", "#0ff")
-		setcell(1, i+1, c, "", "#0ff")
+		setcell(0, i+1, PaintCell{
+			Text:  string(rune(i) + '1'),
+			Color: "#0ff",
+		})
+		setcell(1, i+1, PaintCell{
+			Text:  c,
+			Color: "#0ff",
+		})
 	}
 	if h.Offset > 0 {
-		setcell(0, 9, "9", "", "#fff")
-		setcell(1, 9, "previous", "", "#fff")
+		setcell(0, 9, PaintCell{
+			Text:  "9",
+			Color: "#fff",
+		})
+		setcell(1, 9, PaintCell{
+			Text:  "previous",
+			Color: "#fff",
+		})
 	}
 	if len(h.Commands) > h.Offset+8 {
-		setcell(0, 10, "0", "", "#fff")
-		setcell(1, 10, "next", "", "#fff")
+		setcell(0, 10, PaintCell{
+			Text:  "0",
+			Color: "#fff",
+		})
+		setcell(1, 10, PaintCell{
+			Text:  "next",
+			Color: "#fff",
+		})
 	}
 }
 

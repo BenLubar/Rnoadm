@@ -16,8 +16,11 @@ func (l *Liquid) Blocking() bool {
 	return true
 }
 
-func (l *Liquid) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	setcell(x, y, "", "ui_fill", "#00f") // TODO
+func (l *Liquid) Paint(x, y int, setcell func(int, int, PaintCell)) {
+	setcell(x, y, PaintCell{
+		Sprite: "ui_fill", // TODO
+		Color:  "#44f",
+	})
 }
 
 func (l *Liquid) ZIndex() int {

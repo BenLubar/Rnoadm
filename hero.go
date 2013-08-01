@@ -68,7 +68,7 @@ type Player struct {
 	TileX, TileY uint8
 
 	hud interface {
-		Paint(func(int, int, string, string, Color))
+		Paint(func(int, int, PaintCell))
 		Key(int, bool) bool
 		Click(int, int) bool
 	}
@@ -241,10 +241,6 @@ func (p *Player) Examine() string {
 	return p.Hero.Examine()
 }
 
-func (p *Player) Paint(x, y int, setcell func(int, int, string, string, Color)) {
-	p.Hero.Paint(x, y, setcell)
-}
-
 func (p *Player) Think(z *Zone, x, y uint8) {
 	p.think(z, x, y, p)
 }
@@ -293,7 +289,7 @@ func (h *Hero) Blocking() bool {
 	return false
 }
 
-func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -301,7 +297,10 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	if color == "" {
 		color = raceInfo[h.Race].SkinTones[h.SkinToneIndex]
 	}
-	setcell(x, y, "", "player_body", color)
+	setcell(x, y, PaintCell{
+		Sprite: "player_body",
+		Color:  color,
+	})
 	if h.Feet != nil {
 		h.Feet.PaintWorn(x, y, setcell)
 	}

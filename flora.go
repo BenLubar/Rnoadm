@@ -59,27 +59,47 @@ func (f *Flora) Examine() string {
 	return "a " + floraTypeInfo[f.Type].Name + " plant."
 }
 
-func (f *Flora) Paint(x, y int, setcell func(int, int, string, string, Color)) {
+func (f *Flora) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	if color := floraTypeInfo[f.Type].LeafColor; color != "" {
-		setcell(x, y, "", "item_plant_leaves", color)
+		setcell(x, y, PaintCell{
+			Sprite: "item_plant_leaves",
+			Color:  color,
+		})
 	}
 	if color := floraTypeInfo[f.Type].StemColor; color != "" {
-		setcell(x, y, "", "item_plant_stem", color)
+		setcell(x, y, PaintCell{
+			Sprite: "item_plant_stem",
+			Color:  color})
 	}
 	if color := floraTypeInfo[f.Type].BulbColor; color != "" {
-		setcell(x, y, "", "item_plant_bulb", color)
+		setcell(x, y, PaintCell{
+			Sprite: "item_plant_bulb",
+			Color:  color,
+		})
 	}
 	if color := floraTypeInfo[f.Type].BoringPetalColor; color != "" {
-		setcell(x, y, "", "item_plant_flower_boring", color)
+		setcell(x, y, PaintCell{
+			Sprite: "item_plant_flower_boring",
+			Color:  color,
+		})
 	}
 	if color := floraTypeInfo[f.Type].CompassPetalColor; color != "" {
-		setcell(x, y, "", "item_plant_flower_compass", color)
+		setcell(x, y, PaintCell{
+			Sprite: "item_plant_flower_compass",
+			Color:  color,
+		})
 	}
 	if color := floraTypeInfo[f.Type].SuspiciousPetalColor; color != "" {
-		setcell(x, y, "", "item_plant_flower_suspicious", color)
+		setcell(x, y, PaintCell{
+			Sprite: "item_plant_flower_suspicious",
+			Color:  color,
+		})
 	}
 	if color := floraTypeInfo[f.Type].FlowerColor; color != "" {
-		setcell(x, y, "", "item_plant_flower_center", color)
+		setcell(x, y, PaintCell{
+			Sprite: "item_plant_flower_center",
+			Color:  color,
+		})
 	}
 }
 

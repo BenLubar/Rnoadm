@@ -6,11 +6,17 @@ import (
 
 type ZoneEntryHUD string
 
-func (h ZoneEntryHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h ZoneEntryHUD) Paint(setcell func(int, int, PaintCell)) {
 	for i := 0; i < 20; i++ {
-		setcell(i, 0, "", "ui_fill", "rgba(0,0,0,0.7)")
+		setcell(i, 0, PaintCell{
+			Sprite: "ui_fill",
+			Color:  "rgba(0,0,0,0.7)",
+		})
 	}
-	setcell(0, 0, string(h), "", "#fff")
+	setcell(0, 0, PaintCell{
+		Text:  string(h),
+		Color: "#fff",
+	})
 }
 
 func (h ZoneEntryHUD) Key(code int, special bool) bool {
@@ -18,136 +24,6 @@ func (h ZoneEntryHUD) Key(code int, special bool) bool {
 }
 
 func (h ZoneEntryHUD) Click(x, y int) bool {
-	return false
-}
-
-type ExamineHUD struct {
-	Player  *Player
-	Name    string
-	Examine string
-}
-
-func (h *ExamineHUD) Paint(setcell func(int, int, string, string, Color)) {
-	setcell(0, 0, strings.ToUpper(h.Name), "", "#fff")
-	setcell(0, 1, h.Examine, "", "#fff")
-}
-
-func (h *ExamineHUD) Key(code int, special bool) bool {
-	if !special {
-		return false
-	}
-	switch code {
-	case 27: // esc
-		h.Player.hud = nil
-		h.Player.Repaint()
-		return true
-	}
-	return false
-}
-
-func (h *ExamineHUD) Click(x, y int) bool {
-	return false
-}
-
-type InteractHUD struct {
-	Player       *Player
-	TileX, TileY uint8
-	Objects      []Object
-	Offset       int
-}
-
-func (h *InteractHUD) Paint(setcell func(int, int, string, string, Color)) {
-	h.Player.Lock()
-	tx, ty := h.Player.TileX, h.Player.TileY
-	h.Player.Unlock()
-
-	if tx != h.TileX || ty != h.TileY || h.Objects == nil {
-		h.TileX, h.TileY = tx, ty
-		minX := h.TileX - 1
-		if minX == 255 {
-			minX = 0
-		}
-		maxX := h.TileX + 1
-		if maxX == 0 {
-			maxX = 255
-		}
-		minY := h.TileY - 1
-		if minY == 255 {
-			minY = 0
-		}
-		maxY := h.TileY + 1
-		if maxY == 0 {
-			maxY = 255
-		}
-		h.Player.Lock()
-		z := h.Player.zone
-		h.Player.Unlock()
-		z.Lock()
-		var objects []Object
-		for x := minX; x >= minX && x <= maxX; x++ {
-			for y := minY; y >= minY && y <= maxY; y++ {
-				objects = append(objects, z.Tile(x, y).Objects...)
-			}
-		}
-		z.Unlock()
-		h.Objects = objects
-		h.Offset = 0
-	}
-	setcell(0, 0, "INTERACT", "", "#fff")
-	for i, o := range h.Objects[h.Offset:] {
-		if i == 8 {
-			break
-		}
-		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
-		setcell(2, i+1, o.Name(), "", "#fff")
-	}
-	if h.Offset > 0 {
-		setcell(0, 9, "9", "", "#fff")
-		setcell(2, 9, "previous", "", "#fff")
-	}
-	if len(h.Objects) > h.Offset+8 {
-		setcell(0, 10, "0", "", "#fff")
-		setcell(2, 10, "next", "", "#fff")
-	}
-}
-
-func (h *InteractHUD) Key(code int, special bool) bool {
-	if !special {
-		return false
-	}
-	switch code {
-	case '1', '2', '3', '4', '5', '6', '7', '8':
-		i := code - '1' + h.Offset
-		if i < len(h.Objects) {
-			h.Player.hud = &InteractMenuHUD{
-				Player: h.Player,
-				Object: h.Objects[i],
-			}
-			h.Player.Repaint()
-		}
-		return true
-	case '9':
-		if h.Offset > 0 {
-			h.Offset--
-			h.Player.Repaint()
-		}
-		return true
-	case '0':
-		if h.Offset+8 < len(h.Objects) {
-			h.Offset++
-			h.Player.Repaint()
-		}
-		return true
-
-	case 27: // esc
-		h.Player.hud = nil
-		h.Player.Repaint()
-		return true
-	}
-	return false
-}
-
-func (h *InteractHUD) Click(x, y int) bool {
 	return false
 }
 
@@ -167,7 +43,7 @@ type InteractMenuHUD struct {
 	Slot      int
 }
 
-func (h *InteractMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *InteractMenuHUD) Paint(setcell func(int, int, PaintCell)) {
 	if h.Options == nil {
 		h.Options = append(h.Options, h.Object.InteractOptions()...)
 		h.Wear = -1
@@ -218,21 +94,42 @@ func (h *InteractMenuHUD) Paint(setcell func(int, int, string, string, Color)) {
 		}
 	}
 
-	setcell(0, 0, strings.ToUpper(h.Object.Name()), "", "#fff")
+	setcell(0, 0, PaintCell{
+		Text:  strings.ToUpper(h.Object.Name()),
+		Color: "#fff",
+	})
 	for i, o := range h.Options[h.Offset:] {
 		if i == 8 {
 			break
 		}
-		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
-		setcell(2, i+1, o, "", "#fff")
+		setcell(0, i+1, PaintCell{
+			Text:  string(rune(i) + '1'),
+			Color: "#fff",
+		})
+		setcell(2, i+1, PaintCell{
+			Text:  o,
+			Color: "#fff",
+		})
 	}
 	if h.Offset > 0 {
-		setcell(0, 9, "9", "", "#fff")
-		setcell(2, 9, "previous", "", "#fff")
+		setcell(0, 9, PaintCell{
+			Text:  "9",
+			Color: "#fff",
+		})
+		setcell(2, 9, PaintCell{
+			Text:  "previous",
+			Color: "#fff",
+		})
 	}
 	if len(h.Options) > h.Offset+8 {
-		setcell(0, 10, "0", "", "#fff")
-		setcell(2, 10, "next", "", "#fff")
+		setcell(0, 10, PaintCell{
+			Text:  "0",
+			Color: "#fff",
+		})
+		setcell(2, 10, PaintCell{
+			Text:  "next",
+			Color: "#fff",
+		})
 	}
 }
 
@@ -245,11 +142,8 @@ func (h *InteractMenuHUD) Key(code int, special bool) bool {
 		i := code - '1' + h.Offset
 		if i < len(h.Options) {
 			if i == h.Examine {
-				h.Player.hud = &ExamineHUD{
-					Player:  h.Player,
-					Name:    h.Object.Name(),
-					Examine: h.Object.Examine(),
-				}
+				h.Player.hud = nil
+				h.Player.SendMessage(h.Object.Examine())
 				h.Player.Repaint()
 			} else if i == h.Drop {
 				h.Player.Lock()
@@ -413,84 +307,6 @@ func (h *InteractMenuHUD) Click(x, y int) bool {
 	return false
 }
 
-type InventoryHUD struct {
-	Player *Player
-	Offset int
-}
-
-func (h *InventoryHUD) Paint(setcell func(int, int, string, string, Color)) {
-	h.Player.Lock()
-	defer h.Player.Unlock()
-
-	if h.Offset > len(h.Player.Backpack) {
-		h.Offset = 0
-	}
-
-	setcell(0, 0, "INVENTORY", "", "#fff")
-	for i, o := range h.Player.Backpack[h.Offset:] {
-		if i == 8 {
-			break
-		}
-		setcell(0, i+1, string(rune(i)+'1'), "", "#fff")
-		o.Paint(2, i+1, setcell)
-		setcell(4, i+1, o.Name(), "", "#fff")
-	}
-	if h.Offset > 0 {
-		setcell(0, 9, "9", "", "#fff")
-		setcell(2, 9, "previous", "", "#fff")
-	}
-	if len(h.Player.Backpack) > h.Offset+8 {
-		setcell(0, 10, "0", "", "#fff")
-		setcell(2, 10, "next", "", "#fff")
-	}
-}
-
-func (h *InventoryHUD) Key(code int, special bool) bool {
-	if !special {
-		return false
-	}
-
-	h.Player.Lock()
-	defer h.Player.Unlock()
-
-	switch code {
-	case '1', '2', '3', '4', '5', '6', '7', '8':
-		i := code - '1' + h.Offset
-		if i < len(h.Player.Backpack) {
-			h.Player.hud = &InteractMenuHUD{
-				Player:    h.Player,
-				Object:    h.Player.Backpack[i],
-				Inventory: true,
-				Slot:      i,
-			}
-			h.Player.Repaint()
-		}
-		return true
-	case '9':
-		if h.Offset > 0 {
-			h.Offset--
-			h.Player.Repaint()
-		}
-		return true
-	case '0':
-		if h.Offset+8 < len(h.Player.Backpack) {
-			h.Offset++
-			h.Player.Repaint()
-		}
-		return true
-
-	case 27: // esc
-		h.Player.hud = nil
-		h.Player.Repaint()
-		return true
-	}
-	return false
-}
-
-func (h *InventoryHUD) Click(x, y int) bool {
-	return false
-}
-
 type clickHUDOption struct {
 	Object Object
 	Text   string
@@ -506,7 +322,7 @@ type ClickHUD struct {
 	TileX, TileY uint8
 }
 
-func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
+func (h *ClickHUD) Paint(setcell func(int, int, PaintCell)) {
 	if h.Options == nil {
 		h.Player.Lock()
 		zone := h.Player.zone
@@ -559,16 +375,41 @@ func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 			h.Options = append(h.Options, clickHUDOption{
 				Object: o,
 				Text:   "examine " + o.Name(),
-				Exec: func(o Object) func() {
+				Exec: func(e string) func() {
 					return func() {
-						h.Player.hud = &ExamineHUD{
-							Player:  h.Player,
-							Name:    o.Name(),
-							Examine: o.Examine(),
-						}
+						h.Player.SendMessage(e)
 					}
-				}(o),
+				}(o.Examine()),
 			})
+			if h.Player.Admin {
+				h.Options = append(h.Options, clickHUDOption{
+					Object: o,
+					Text:   "take [ADMIN]",
+					Exec: func(o Object) func() {
+						return func() {
+							if !h.Player.Admin {
+								return
+							}
+
+							h.Player.Lock()
+							zone := h.Player.zone
+							h.Player.Unlock()
+
+							zone.Lock()
+							if !zone.Tile(h.TileX, h.TileY).Remove(o) {
+								zone.Unlock()
+								return
+							}
+							zone.Unlock()
+
+							h.Player.Lock()
+							h.Player.GiveItem(o)
+							AdminLog.Printf("TAKE [%d:%q] (%d:%d %d:%d) %q %q", h.Player.ID, h.Player.Name(), h.Player.ZoneX, h.TileX, h.Player.ZoneY, h.TileY, o.Name(), o.Examine())
+							h.Player.Unlock()
+						}
+					}(o),
+				})
+			}
 		}
 		zone.Unlock()
 
@@ -578,30 +419,57 @@ func (h *ClickHUD) Paint(setcell func(int, int, string, string, Color)) {
 		}
 	}
 	for i := 1; i < 8; i++ {
-		setcell(h.X+i, h.Y, "", "ui_fill", "#111")
+		setcell(h.X+i, h.Y, PaintCell{
+			Sprite: "ui_fill",
+			Color:  "#111",
+		})
 	}
-	setcell(h.X+8, h.Y, "", "ui_largecorner_tr", "#111")
+	setcell(h.X+8, h.Y, PaintCell{
+		Sprite: "ui_largecorner_tr",
+		Color:  "#111",
+	})
 
 	if !h.Blocked {
-		setcell(h.X+1, h.Y, "walk here", "", "#fff")
+		setcell(h.X+1, h.Y, PaintCell{
+			Text:  "walk here",
+			Color: "#fff",
+		})
 	}
 
 	row := 1
 	for _, option := range h.Options {
 		for i := 0; i <= 8; i++ {
-			setcell(h.X+i, h.Y+row, "", "ui_fill", "#333")
+			setcell(h.X+i, h.Y+row, PaintCell{
+				Sprite: "ui_fill",
+				Color:  "#333",
+			})
 		}
 		option.Object.Paint(h.X, h.Y+row, setcell)
-		setcell(h.X+1, h.Y+row, option.Text, "", "#fff")
+		setcell(h.X+1, h.Y+row, PaintCell{
+			Text:  option.Text,
+			Color: "#fff",
+		})
 		row++
 	}
 
-	setcell(h.X, h.Y+row, "", "ui_largecorner_bl", "#333")
+	setcell(h.X, h.Y+row, PaintCell{
+		Sprite: "ui_largecorner_bl",
+		Color:  "#333",
+	})
 	for i := 1; i < 8; i++ {
-		setcell(h.X+i, h.Y+row, "", "ui_fill", "#333")
+		setcell(h.X+i, h.Y+row, PaintCell{
+			Sprite: "ui_fill",
+			Color:  "#333",
+		})
 	}
-	setcell(h.X+8, h.Y+row, "", "ui_largecorner_br", "#333")
-	setcell(h.X+1, h.Y+row, "cancel", "", "#fff")
+	setcell(h.X+8, h.Y+row, PaintCell{
+		Sprite: "ui_largecorner_br",
+		Color:  "#333",
+	})
+	setcell(h.X+1, h.Y+row, PaintCell{
+		Text:  "cancel",
+		Color: "#fff",
+	})
 }
 
 func (h *ClickHUD) Key(code int, special bool) bool {
