@@ -85,9 +85,9 @@ var wsonmessage = ws.onmessage = function(e) {
 					var p = msg.Paint[j][i][k];
 					if (p.R) {
 						canvas.fillStyle = '#000';
-						canvas.fillText(p.R, j*tileSize+tileSize/4, i*tileSize+tileSize*3/4+1);
+						canvas.fillText(p.R, j*tileSize+tileSize/8+p.X, i*tileSize+tileSize*7/8+p.Y+1);
 						canvas.fillStyle = p.C;
-						canvas.fillText(p.R, j*tileSize+tileSize/4+p.X, i*tileSize+tileSize*3/4+p.Y);
+						canvas.fillText(p.R, j*tileSize+tileSize/8+p.X, i*tileSize+tileSize*7/8+p.Y);
 					}
 					if (p.I) {
 						if (!images[p.I]) {
@@ -452,7 +452,7 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			if player.hud == nil {
-				player.hud = ZoneEntryHUD(z.Name())
+				player.hud = ZoneHUD(z.Name())
 			}
 			z.Unlock()
 
@@ -506,7 +506,7 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 			player.Unlock()
 
-			if _, ok := player.hud.(ZoneEntryHUD); ok && mouseX >= 0 && mouseY >= 1 && mouseX < w && mouseY < h {
+			if _, ok := player.hud.(ZoneHUD); ok && mouseX >= 0 && mouseY >= 1 && mouseX < w && mouseY < h {
 				xCoord := mouseX - w/2 + camX
 				x8 := uint8(xCoord)
 				yCoord := mouseY - h/2 + camY
@@ -516,13 +516,19 @@ func websocketHandler(conn *websocket.Conn) {
 						z.Lock()
 						if len(t.Objects) > 0 {
 							setcell(mouseX, mouseY, PaintCell{
-								Sprite: "ui_smallcorner_tl",
+								Sprite: "ui_smallcorner_tl_small",
 								Color:  "rgba(0,0,0,0.7)",
+								X:      16,
 							})
 							for i := 1; i < 8; i++ {
 								setcell(mouseX+i, mouseY, PaintCell{
-									Sprite: "ui_fill",
+									Sprite: "ui_fill_small",
 									Color:  "rgba(0,0,0,0.7)",
+								})
+								setcell(mouseX+i, mouseY, PaintCell{
+									Sprite: "ui_fill_small",
+									Color:  "rgba(0,0,0,0.7)",
+									X:      16,
 								})
 							}
 							setcell(mouseX+1, mouseY, PaintCell{

@@ -1,25 +1,33 @@
 package main
 
-type ZoneEntryHUD string
+type ZoneHUD string
 
-func (h ZoneEntryHUD) Paint(setcell func(int, int, PaintCell)) {
+func (h ZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 	for i := 0; i < 20; i++ {
 		setcell(i, 0, PaintCell{
-			Sprite: "ui_fill",
+			Sprite: "ui_fill_small",
 			Color:  "rgba(0,0,0,0.7)",
+			Y:      -16,
+		})
+		setcell(i, 0, PaintCell{
+			Sprite: "ui_fill_small",
+			Color:  "rgba(0,0,0,0.7)",
+			X:      16,
+			Y:      -16,
 		})
 	}
 	setcell(0, 0, PaintCell{
 		Text:  string(h),
 		Color: "#fff",
+		Y:     -16,
 	})
 }
 
-func (h ZoneEntryHUD) Key(code int, special bool) bool {
+func (h ZoneHUD) Key(code int, special bool) bool {
 	return false
 }
 
-func (h ZoneEntryHUD) Click(x, y int) bool {
+func (h ZoneHUD) Click(x, y int) bool {
 	return false
 }
 
