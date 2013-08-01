@@ -242,6 +242,8 @@ type Hero struct {
 	Race       Race
 	Occupation Occupation
 
+	SkinToneIndex uint8
+
 	lock  sync.Mutex
 	Delay uint
 
@@ -275,13 +277,36 @@ func (h *Hero) Blocking() bool {
 	return false
 }
 
+var skinColors = [raceCount][]Color{
+	Human: {
+		"#ffe3cc",
+		"#ffdbbd",
+		"#e6c0a1",
+		"#edd0b7",
+		"#e3c3a8",
+		"#ffcda3",
+		"#e8d1be",
+		"#e6d2c1",
+		"#f7e9dc",
+		"#cfbcab",
+		"#c2a38a",
+		"#c9a281",
+		"#d9a980",
+		"#ba9c82",
+		"#ad8f76",
+		"#a17a5a",
+		"#876d58",
+		"#6e5948",
+	},
+}
+
 func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	h.Lock()
 	defer h.Unlock()
 
 	color := h.CustomColor
 	if color == "" {
-		color = "#fec"
+		color = skinColors[h.Race][h.SkinToneIndex]
 	}
 	setcell(x, y, "", "player_body", color)
 	if h.Feet != nil {
@@ -289,13 +314,9 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	}
 	if h.Legs != nil {
 		h.Legs.PaintWorn(x, y, setcell)
-	} else {
-		setcell(x, y, "", "player_pants", "#873")
 	}
 	if h.Top != nil {
 		h.Top.PaintWorn(x, y, setcell)
-	} else {
-		setcell(x, y, "", "player_shirt", "#754")
 	}
 	if h.Head != nil {
 		h.Head.Paint(x, y, setcell)
@@ -499,6 +520,35 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 	switch race {
 	case Human:
 		h.HeroName = GenerateHumanName(r, h.Gender)
+	}
+	h.SkinToneIndex = uint8(r.Intn(len(skinColors[h.Race])))
+	const pastels = "abcde"
+	const earthy = "34567"
+	palette := pastels
+	if r.Intn(2) == 0 {
+		palette = earthy
+	}
+	h.Top = &Shirt{
+		Type: PlainWhiteTee,
+		CustomColor: [5]Color{Color([]byte{
+			'#',
+			palette[r.Intn(len(palette))],
+			palette[r.Intn(len(palette))],
+			palette[r.Intn(len(palette))],
+		})},
+	}
+	palette = earthy
+	if r.Intn(3) == 0 {
+		palette = pastels
+	}
+	h.Legs = &Pants{
+		Type: OffBrandJeans,
+		CustomColor: [5]Color{Color([]byte{
+			'#',
+			palette[r.Intn(len(palette))],
+			palette[r.Intn(len(palette))],
+			palette[r.Intn(len(palette))],
+		})},
 	}
 	return h
 }
