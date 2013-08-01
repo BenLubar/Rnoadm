@@ -169,7 +169,7 @@ func LoadPlayer(id uint64) (*Player, error) {
 
 func (p *Player) ZIndex() int {
 	if p.Admin {
-		return 9999999999
+		return 1 << 30
 	}
 	return p.Hero.ZIndex()
 }
