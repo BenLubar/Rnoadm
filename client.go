@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	_ "net/http/pprof"
 	"strconv"
 	"strings"
 	"sync"
@@ -160,6 +161,25 @@ document.querySelector('canvas').onclick = document.querySelector('canvas').onco
 	send({Click:{X:Math.floor(e.offsetX/tileSize), Y:Math.floor(e.offsetY/tileSize)}});
 	return false;
 };
+var mouseX = -1, mouseY = -1;
+document.querySelector('canvas').onmouseout = function() {
+	if (mouseX == -1 && mouseY == -1) {
+		return;
+	}
+	mouseX = -1;
+	mouseY = -1;
+	send({MouseMove:{X:mouseX, Y:mouseY}});
+};
+document.querySelector('canvas').onmousemove = function(e) {
+	var x = Math.floor(e.offsetX/tileSize);
+	var y = Math.floor(e.offsetY/tileSize);
+	if (mouseX == x && mouseY == y) {
+		return;
+	}
+	mouseX = x;
+	mouseY = y;
+	send({MouseMove:{X:mouseX, Y:mouseY}});
+};
 </script>
 </body>
 </html>`))
@@ -174,6 +194,9 @@ type packetIn struct {
 		Special bool
 	}
 	Click *struct {
+		X, Y int
+	}
+	MouseMove *struct {
 		X, Y int
 	}
 	ForceRepaint bool

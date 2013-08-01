@@ -407,6 +407,11 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 			h.schedule = nil
 			h.Unlock()
 		}
+		if p == nil {
+			h.Lock()
+			h.scheduleDelay += h.scheduleDelay / 2
+			h.Unlock()
+		}
 		return
 	}
 
@@ -416,7 +421,7 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 		return
 	}
 
-	goalX, goalY := uint8(rand.Intn(256)), uint8(rand.Intn(256))
+	goalX, goalY := x+uint8(rand.Intn(16)-rand.Intn(16)), y+uint8(rand.Intn(16)-rand.Intn(16))
 	z.Lock()
 	blocked := z.Blocked(goalX, goalY)
 	z.Unlock()
@@ -427,6 +432,7 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 		h.schedule = &schedule
 	}
 	h.Delay = uint(rand.Intn(5) + 1)
+	h.scheduleDelay = uint(rand.Intn(100) + 1)
 	h.Unlock()
 }
 
@@ -469,9 +475,12 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 	pos := (*s)[0]
 	*s = (*s)[1:]
 
+	z.Lock()
 	if z.Blocked(pos[0], pos[1]) {
+		z.Unlock()
 		return false
 	}
+	z.Unlock()
 
 	h.Lock()
 	h.Delay = 2
