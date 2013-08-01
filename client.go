@@ -318,6 +318,7 @@ func websocketHandler(conn *websocket.Conn) {
 	}()
 
 	const w, h = 20, 12
+	mouseX, mouseY := -1, -1
 	for {
 		select {
 		case p, ok := <-packets:
@@ -380,6 +381,10 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 					player.Repaint()
 				}
+			}
+			if p.MouseMove != nil {
+				mouseX, mouseY = p.MouseMove.X, p.MouseMove.Y
+				player.Repaint()
 			}
 
 		case <-player.repaint:
@@ -460,7 +465,28 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 			player.Unlock()
 
+			if _, ok := player.hud.(ZoneEntryHUD); ok && mouseX >= 0 && mouseY >= 1 && mouseX < w && mouseY < h {
+				xCoord := mouseX - w/2 + camX
+				x8 := uint8(xCoord)
+				yCoord := mouseY - h/2 + camY
+				y8 := uint8(yCoord)
+				if int(x8) == xCoord && int(y8) == yCoord {
+					if t := z.Tile(x8, y8); t != nil {
+						z.Lock()
+						if len(t.Objects) > 0 {
+							setcell(mouseX, mouseY, "", "ui_smallcorner_tl", "rgba(0,0,0,0.7)")
+							for i := 1; i < 8; i++ {
+								setcell(mouseX+i, mouseY, "", "ui_fill", "rgba(0,0,0,0.7)")
+							}
+							setcell(mouseX+1, mouseY, t.Objects[0].Name(), "", "#fff")
+						}
+						z.Unlock()
+					}
+				}
+			}
+
 			player.hud.Paint(setcell)
+
 			websocket.JSON.Send(conn, &paint)
 
 		case message := <-messages:

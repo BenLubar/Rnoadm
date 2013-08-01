@@ -317,3 +317,19 @@ func (p *Pants) AdminOnly() bool {
 func (s *Shoes) AdminOnly() bool {
 	return shoeTypeInfo[s.Type].AdminOnly
 }
+
+func (h *Hat) ZIndex() int {
+	return 25
+}
+
+func (s *Shirt) ZIndex() int {
+	return 25
+}
+
+func (p *Pants) ZIndex() int {
+	return 25
+}
+
+func (s *Shoes) ZIndex() int {
+	return 25
+}

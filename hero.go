@@ -167,6 +167,13 @@ func LoadPlayer(id uint64) (*Player, error) {
 	return &p, nil
 }
 
+func (p *Player) ZIndex() int {
+	if p.Admin {
+		return 9999999999
+	}
+	return p.Hero.ZIndex()
+}
+
 func (p *Player) Repaint() {
 	select {
 	case p.repaint <- struct{}{}:
@@ -197,6 +204,9 @@ func (p *Player) Think(z *Zone, x, y uint8) {
 type ZoneEntryHUD string
 
 func (h ZoneEntryHUD) Paint(setcell func(int, int, string, string, Color)) {
+	for i := 0; i < 20; i++ {
+		setcell(i, 0, "", "ui_fill", "rgba(0,0,0,0.7)")
+	}
 	setcell(0, 0, string(h), "", "#fff")
 }
 
@@ -441,6 +451,10 @@ func (h *Hero) InteractOptions() []string {
 }
 
 func (h *Hero) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
+}
+
+func (h *Hero) ZIndex() int {
+	return 50
 }
 
 func (h *Hero) GiveItem(o Object) {

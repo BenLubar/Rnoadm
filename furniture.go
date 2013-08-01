@@ -21,6 +21,10 @@ func (b *Bed) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	setcell(x, y, "BED", "", "#f00")
 }
 
+func (b *Bed) ZIndex() int {
+	return 0
+}
+
 type Chest struct {
 	Type WoodType
 	Uninteractable
@@ -40,4 +44,8 @@ func (c *Chest) Blocking() bool {
 
 func (c *Chest) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	setcell(x, y, "CHEST", "", "#f00")
+}
+
+func (c *Chest) ZIndex() int {
+	return 0
 }

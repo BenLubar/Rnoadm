@@ -152,6 +152,10 @@ func (r *Rock) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 	}
 }
 
+func (r *Rock) ZIndex() int {
+	return 0
+}
+
 type Stone struct {
 	Type RockType
 	Uninteractable
@@ -179,6 +183,10 @@ func (s *Stone) AdminOnly() bool {
 	return rockTypeInfo[s.Type].Strength >= 1<<60
 }
 
+func (s *Stone) ZIndex() int {
+	return 25
+}
+
 type Ore struct {
 	Type MetalType
 	Uninteractable
@@ -204,6 +212,10 @@ func (o *Ore) IsItem() {}
 
 func (o *Ore) AdminOnly() bool {
 	return metalTypeInfo[o.Type].Strength >= 1<<60
+}
+
+func (o *Ore) ZIndex() int {
+	return 25
 }
 
 type Pickaxe struct {
@@ -240,6 +252,10 @@ func (p *Pickaxe) AdminOnly() bool {
 	return metalTypeInfo[p.Head].Strength >= 1<<60 || woodTypeInfo[p.Handle].Strength >= 1<<60
 }
 
+func (p *Pickaxe) ZIndex() int {
+	return 25
+}
+
 type MineQuarrySchedule struct {
 	Delayed bool
 	Mine    bool
@@ -252,7 +268,11 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 		s.Delayed = true
 		h.scheduleDelay = 10
 		if p != nil {
-			p.SendMessage("you attempt to mine the " + s.R.Name() + ".")
+			if s.Mine {
+				p.SendMessage("you attempt to mine the " + s.R.Name() + ".")
+			} else {
+				p.SendMessage("you attempt to quarry the " + s.R.Name() + ".")
+			}
 		}
 		return true
 	}

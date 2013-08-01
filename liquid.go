@@ -19,3 +19,7 @@ func (l *Liquid) Blocking() bool {
 func (l *Liquid) Paint(x, y int, setcell func(int, int, string, string, Color)) {
 	setcell(x, y, "", "ui_fill", "#00f") // TODO
 }
+
+func (l *Liquid) ZIndex() int {
+	return 0
+}

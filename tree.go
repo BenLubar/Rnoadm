@@ -119,6 +119,10 @@ func (t *Tree) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 	}
 }
 
+func (t *Tree) ZIndex() int {
+	return 0
+}
+
 type Logs struct {
 	Type WoodType
 	Uninteractable
@@ -144,6 +148,10 @@ func (l *Logs) IsItem() {}
 
 func (l *Logs) AdminOnly() bool {
 	return woodTypeInfo[l.Type].Strength >= 1<<60
+}
+
+func (l *Logs) ZIndex() int {
+	return 25
 }
 
 type Hatchet struct {
@@ -178,6 +186,10 @@ func (h *Hatchet) IsItem() {}
 
 func (h *Hatchet) AdminOnly() bool {
 	return metalTypeInfo[h.Head].Strength >= 1<<60 || woodTypeInfo[h.Handle].Strength >= 1<<60
+}
+
+func (h *Hatchet) ZIndex() int {
+	return 25
 }
 
 type ChopTreeSchedule struct {

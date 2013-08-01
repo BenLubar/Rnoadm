@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"sort"
 	"sync"
 )
 
@@ -337,6 +338,20 @@ func (z *Zone) Name() string {
 	return "unknown zone"
 }
 
+type zindexsort []Object
+
+func (z zindexsort) Len() int {
+	return len(z)
+}
+
+func (z zindexsort) Swap(i, j int) {
+	z[i], z[j] = z[j], z[i]
+}
+
+func (z zindexsort) Less(i, j int) bool {
+	return z[i].ZIndex() > z[j].ZIndex()
+}
+
 type Tile struct {
 	Objects []Object
 	Sprite  int
@@ -344,6 +359,7 @@ type Tile struct {
 
 func (t *Tile) Add(o Object) {
 	t.Objects = append(t.Objects, o)
+	sort.Sort(zindexsort(t.Objects))
 }
 
 func (t *Tile) Remove(o Object) bool {
@@ -383,8 +399,8 @@ func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, string, string, C
 		t.Sprite = rand.Intn(len(grassSprites)-1) + 1
 	}
 	setcell(i, j, "", grassSprites[t.Sprite], "#268f1e")
-	for _, o := range t.Objects {
-		o.Paint(i, j, setcell)
+	for k := len(t.Objects) - 1; k >= 0; k-- {
+		t.Objects[k].Paint(i, j, setcell)
 	}
 }
 
@@ -393,6 +409,7 @@ type Object interface {
 	Examine() string
 	Paint(int, int, func(int, int, string, string, Color))
 	Blocking() bool
+	ZIndex() int
 	InteractOptions() []string
 	Interact(uint8, uint8, *Player, *Zone, int)
 }
