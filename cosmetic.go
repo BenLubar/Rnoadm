@@ -29,6 +29,7 @@ const (
 	BearRidingAUnicycle
 	UnusualStrangeVintageHoundDog
 	SpanishWarMask
+	BigWig
 
 	hatTypeCount
 )
@@ -81,6 +82,13 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		Layer1Color: "#007",
 
 		AdminOnly: true,
+	},
+	BigWig: {
+		Name:    "big wig",
+		Examine: "congress?",
+
+		Base:      "hat_big_wig",
+		BaseColor: "#630",
 	},
 }
 
