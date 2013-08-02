@@ -392,7 +392,7 @@ func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, PaintCell)) {
 		t.Sprite = uint8(rand.Intn(4) + 1)
 	}
 	setcell(i, j, PaintCell{
-		Sprite: "grass",
+		Sprite: "grass_r1",
 		Color:  "#268f1e",
 		SheetX: t.Sprite - 1,
 	})

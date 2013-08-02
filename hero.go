@@ -262,7 +262,7 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 				frame = 9
 			}
 		}
-		if h.scheduleDelay & 1 != 0 {
+		if h.scheduleDelay&1 != 0 {
 			frame += uint8(h.scheduleDelay / 2)
 		}
 		h.frame = frame
