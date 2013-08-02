@@ -209,6 +209,7 @@ type Hero struct {
 		*Pickaxe
 	}
 
+	frame         uint8
 	tileX, tileY  uint8
 	schedule      Schedule
 	scheduleDelay uint
@@ -234,7 +235,7 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	h.Lock()
 	defer h.Unlock()
 
-	var frame uint8
+	frame := h.frame
 	var offsetX, offsetY int8
 	if h.schedule != nil {
 		cx, cy := h.tileX, h.tileY
@@ -261,8 +262,14 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 				frame = 9
 			}
 		}
+		if h.scheduleDelay & 1 != 0 {
+			frame += uint8(h.scheduleDelay / 2)
+		}
+		h.frame = frame
 		offsetX = int8(nx-cx) * 16 * int8(3-h.scheduleDelay) / 4
 		offsetY = int8(ny-cy) * 16 * int8(3-h.scheduleDelay) / 4
+	} else {
+		frame -= frame % 3
 	}
 
 	color := h.CustomColor
