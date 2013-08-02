@@ -257,14 +257,20 @@ func (p *Pickaxe) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	})
 }
 
-func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
+func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uint8, offsetX, offsetY int8) {
 	setcell(x, y, PaintCell{
 		Sprite: "tiny_pick_stick",
 		Color:  woodTypeInfo[p.Handle].Color,
+		SheetX: frame,
+		X:      offsetX,
+		Y:      offsetY,
 	})
 	setcell(x, y, PaintCell{
 		Sprite: "tiny_pick_head",
 		Color:  metalTypeInfo[p.Head].Color,
+		SheetX: frame,
+		X:      offsetX,
+		Y:      offsetY,
 	})
 }
 
@@ -394,4 +400,8 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 	z.Unlock()
 
 	return false
+}
+
+func (s *MineQuarrySchedule) NextMove(x, y uint8) (uint8, uint8) {
+	return x, y
 }

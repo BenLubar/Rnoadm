@@ -187,14 +187,20 @@ func (h *Hatchet) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	})
 }
 
-func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
+func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uint8, offsetX, offsetY int8) {
 	setcell(x, y, PaintCell{
 		Sprite: "tiny_hatchet_stick",
 		Color:  woodTypeInfo[h.Handle].Color,
+		SheetX: frame,
+		X:      offsetX,
+		Y:      offsetY,
 	})
 	setcell(x, y, PaintCell{
 		Sprite: "tiny_hatchet_head",
 		Color:  metalTypeInfo[h.Head].Color,
+		SheetX: frame,
+		X:      offsetX,
+		Y:      offsetY,
 	})
 }
 
@@ -302,4 +308,8 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 	z.Unlock()
 
 	return false
+}
+
+func (s *ChopTreeSchedule) NextMove(x, y uint8) (uint8, uint8) {
+	return x, y
 }

@@ -362,14 +362,6 @@ func websocketHandler(conn *websocket.Conn) {
 					break
 				}
 				switch p.Key.Code {
-				case 38, 'W':
-					player.Move(0, -1)
-				case 37, 'A':
-					player.Move(-1, 0)
-				case 40, 'S':
-					player.Move(0, 1)
-				case 39, 'D':
-					player.Move(1, 0)
 				case 192: // `
 					if player.Admin {
 						player.hud = &AdminHUD{Player: player}

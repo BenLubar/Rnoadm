@@ -202,7 +202,7 @@ func (s *Shoes) Blocking() bool {
 	return false
 }
 
-func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(int, int, PaintCell), worn bool) {
+func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(int, int, PaintCell), worn bool, frame uint8, offsetX, offsetY int8) {
 	var height uint8
 	if worn {
 		height = info.Height
@@ -215,6 +215,9 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 		Sprite: info.Base,
 		Color:  color,
 		Height: height,
+		SheetX: frame,
+		X:      offsetX,
+		Y:      offsetY,
 	})
 	if info.Layer1Color != "" {
 		color = info.Layer1Color
@@ -225,7 +228,10 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 			Sprite: info.Base,
 			Color:  color,
 			Height: height,
+			SheetX: frame,
 			SheetY: 1,
+			X:      offsetX,
+			Y:      offsetY,
 		})
 	}
 	if info.Layer2Color != "" {
@@ -237,7 +243,10 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 			Sprite: info.Base,
 			Color:  color,
 			Height: height,
+			SheetX: frame,
 			SheetY: 2,
+			X:      offsetX,
+			Y:      offsetY,
 		})
 	}
 	if info.Layer3Color != "" {
@@ -249,7 +258,10 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 			Sprite: info.Base,
 			Color:  color,
 			Height: height,
+			SheetX: frame,
 			SheetY: 3,
+			X:      offsetX,
+			Y:      offsetY,
 		})
 	}
 	if info.Layer4Color != "" {
@@ -261,7 +273,10 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 			Sprite: info.Base,
 			Color:  color,
 			Height: height,
+			SheetX: frame,
 			SheetY: 4,
+			X:      offsetX,
+			Y:      offsetY,
 		})
 	}
 }
@@ -269,49 +284,49 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 func (h *Hat) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	info := hatTypeInfo[h.Type]
 	custom := h.CustomColor
-	paintCosmetic(x, y, info, custom, setcell, false)
+	paintCosmetic(x, y, info, custom, setcell, false, 0, 0, 0)
 }
 
 func (s *Shirt) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	info := shirtTypeInfo[s.Type]
 	custom := s.CustomColor
-	paintCosmetic(x, y, info, custom, setcell, false)
+	paintCosmetic(x, y, info, custom, setcell, false, 0, 0, 0)
 }
 
 func (p *Pants) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	info := pantsTypeInfo[p.Type]
 	custom := p.CustomColor
-	paintCosmetic(x, y, info, custom, setcell, false)
+	paintCosmetic(x, y, info, custom, setcell, false, 0, 0, 0)
 }
 
 func (s *Shoes) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	info := shoeTypeInfo[s.Type]
 	custom := s.CustomColor
-	paintCosmetic(x, y, info, custom, setcell, false)
+	paintCosmetic(x, y, info, custom, setcell, false, 0, 0, 0)
 }
 
-func (h *Hat) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
+func (h *Hat) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uint8, offsetX, offsetY int8) {
 	info := hatTypeInfo[h.Type]
 	custom := h.CustomColor
-	paintCosmetic(x, y, info, custom, setcell, true)
+	paintCosmetic(x, y, info, custom, setcell, true, frame, offsetX, offsetY)
 }
 
-func (s *Shirt) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
+func (s *Shirt) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uint8, offsetX, offsetY int8) {
 	info := shirtTypeInfo[s.Type]
 	custom := s.CustomColor
-	paintCosmetic(x, y, info, custom, setcell, true)
+	paintCosmetic(x, y, info, custom, setcell, true, frame, offsetX, offsetY)
 }
 
-func (p *Pants) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
+func (p *Pants) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uint8, offsetX, offsetY int8) {
 	info := pantsTypeInfo[p.Type]
 	custom := p.CustomColor
-	paintCosmetic(x, y, info, custom, setcell, true)
+	paintCosmetic(x, y, info, custom, setcell, true, frame, offsetX, offsetY)
 }
 
-func (s *Shoes) PaintWorn(x, y int, setcell func(int, int, PaintCell)) {
+func (s *Shoes) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uint8, offsetX, offsetY int8) {
 	info := shoeTypeInfo[s.Type]
 	custom := s.CustomColor
-	paintCosmetic(x, y, info, custom, setcell, true)
+	paintCosmetic(x, y, info, custom, setcell, true, frame, offsetX, offsetY)
 }
 
 func (h *Hat) InteractOptions() []string {

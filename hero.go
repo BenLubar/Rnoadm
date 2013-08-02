@@ -92,66 +92,6 @@ func (p *Player) SendMessage(message string) {
 	}
 }
 
-func (p *Player) Move(dx, dy int) {
-	if p.Delay > 0 {
-		return
-	}
-	destX := dx + int(p.TileX)
-	destY := dy + int(p.TileY)
-
-	zoneChange := destX < 0 || destY < 0 || destX > 255 || destY > 255
-
-	p.Lock()
-	z := p.zone
-	p.Unlock()
-	zoneChange = zoneChange || z.Tile(uint8(destX), uint8(destY)) == nil
-	z.Lock()
-	if !zoneChange && z.Blocked(uint8(destX), uint8(destY)) {
-		z.Unlock()
-		return
-	}
-	z.Unlock()
-
-	if zoneChange {
-		if destY >= 0 && destY <= 255 {
-			// TEMPORARY: no zone changes to the sides due to bugs
-			return
-		}
-		z.Lock()
-		z.Tile(p.TileX, p.TileY).Remove(p)
-		z.Unlock()
-		z.Repaint()
-		ReleaseZone(z)
-		p.Lock()
-		if destY < 0 {
-			p.ZoneY -= 2
-			p.TileY = 255
-		} else if destY > 255 {
-			p.ZoneY += 2
-			p.TileY = 0
-		}
-		p.Delay = 2
-		z = GrabZone(p.ZoneX, p.ZoneY)
-		p.zone = z
-		p.Unlock()
-		p.Save()
-		p.hud = nil
-	} else {
-		z.Lock()
-		z.Tile(p.TileX, p.TileY).Remove(p)
-		z.Unlock()
-		p.Lock()
-		p.TileX = uint8(destX)
-		p.TileY = uint8(destY)
-		p.Delay = 2
-		p.Unlock()
-	}
-	z.Lock()
-	z.Tile(p.TileX, p.TileY).Add(p)
-	z.Unlock()
-	z.Repaint()
-}
-
 func playerFilename(id uint64) string {
 	var buf [binary.MaxVarintLen64]byte
 	i := binary.PutUvarint(buf[:], id)
@@ -269,6 +209,7 @@ type Hero struct {
 		*Pickaxe
 	}
 
+	tileX, tileY  uint8
 	schedule      Schedule
 	scheduleDelay uint
 }
@@ -293,6 +234,37 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	h.Lock()
 	defer h.Unlock()
 
+	var frame uint8
+	var offsetX, offsetY int8
+	if h.schedule != nil {
+		cx, cy := h.tileX, h.tileY
+		nx, ny := h.schedule.NextMove(cx, cy)
+		switch h.scheduleDelay {
+		case 3, 1:
+			if cx > nx {
+				frame = 6
+			} else if cx < nx {
+				frame = 9
+			} else if cy > ny {
+				frame = 3
+			} else if cy < ny {
+				frame = 0
+			}
+		case 2, 0:
+			if cy > ny {
+				frame = 3
+			} else if cy < ny {
+				frame = 0
+			} else if cx > nx {
+				frame = 6
+			} else if cy > ny {
+				frame = 9
+			}
+		}
+		offsetX = int8(nx-cx) * 16 * int8(3-h.scheduleDelay) / 4
+		offsetY = int8(ny-cy) * 16 * int8(3-h.scheduleDelay) / 4
+	}
+
 	color := h.CustomColor
 	if color == "" {
 		color = raceInfo[h.Race].SkinTones[h.SkinToneIndex]
@@ -300,24 +272,27 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "body_human",
 		Color:  color,
+		SheetX: frame,
+		X:      offsetX,
+		Y:      offsetY,
 	})
 	if h.Feet != nil {
-		h.Feet.PaintWorn(x, y, setcell)
+		h.Feet.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
 	}
 	if h.Legs != nil {
-		h.Legs.PaintWorn(x, y, setcell)
+		h.Legs.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
 	}
 	if h.Top != nil {
-		h.Top.PaintWorn(x, y, setcell)
+		h.Top.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
 	}
 	if h.Head != nil {
-		h.Head.PaintWorn(x, y, setcell)
+		h.Head.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
 	}
 	if h.Toolbelt.Pickaxe != nil {
-		h.Toolbelt.Pickaxe.PaintWorn(x, y, setcell)
+		h.Toolbelt.Pickaxe.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
 	}
 	if h.Toolbelt.Hatchet != nil {
-		h.Toolbelt.Hatchet.PaintWorn(x, y, setcell)
+		h.Toolbelt.Hatchet.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
 	}
 }
 
@@ -327,6 +302,8 @@ func (h *Hero) Think(z *Zone, x, y uint8) {
 
 func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	h.Lock()
+
+	h.tileX, h.tileY = x, y
 
 	if p == nil || !p.Admin {
 		for i := 0; i < len(h.Backpack); i++ {
@@ -380,6 +357,7 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	if h.Delay > 0 {
 		if h.scheduleDelay > 0 {
 			h.scheduleDelay--
+			z.Repaint()
 		}
 		h.Delay--
 		h.Unlock()
@@ -389,6 +367,7 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	if h.scheduleDelay > 0 {
 		h.scheduleDelay--
 		h.Unlock()
+		z.Repaint()
 		return
 	}
 
@@ -501,6 +480,7 @@ func (h *Hero) Equip(o Object, inventoryOnly bool) {
 
 type Schedule interface {
 	Act(*Zone, uint8, uint8, *Hero, *Player) bool
+	NextMove(uint8, uint8) (uint8, uint8)
 }
 
 type ScheduleSchedule []Schedule
@@ -516,6 +496,13 @@ func (s *ScheduleSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 
 	*s = (*s)[1:]
 	return len(*s) != 0
+}
+
+func (s *ScheduleSchedule) NextMove(x, y uint8) (uint8, uint8) {
+	if len(*s) == 0 {
+		return x, y
+	}
+	return (*s)[0].NextMove(x, y)
 }
 
 type MoveSchedule [][2]uint8
@@ -554,6 +541,16 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 	return true
 }
 
+func (s *MoveSchedule) NextMove(x, y uint8) (uint8, uint8) {
+	if len(*s) == 0 {
+		return x, y
+	}
+	if (*s)[0][0] == x && (*s)[0][1] == y && len(*s) > 1 {
+		return (*s)[1][0], (*s)[1][1]
+	}
+	return (*s)[0][0], (*s)[0][1]
+}
+
 type TakeSchedule struct {
 	Item Object
 }
@@ -571,6 +568,10 @@ func (s *TakeSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 		z.Repaint()
 	}
 	return false
+}
+
+func (s *TakeSchedule) NextMove(x, y uint8) (uint8, uint8) {
+	return x, y
 }
 
 func GenerateHero(race Race, r *rand.Rand) *Hero {
