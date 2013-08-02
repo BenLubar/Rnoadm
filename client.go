@@ -130,7 +130,7 @@ var wsonmessage = ws.onmessage = function(e) {
 							buffer.putImageData(data, 0, 0);
 
 						}
-						canvas.drawImage(images_recolor[p.I][p.C], j*tileSize+p.X, i*tileSize+p.Y+tileSize-Math.max(tileSize, images[p.I].height), Math.max(tileSize, images[p.I].width), Math.max(tileSize, images[p.I].height));
+						canvas.drawImage(images_recolor[p.I][p.C], p.Sx*tileSize, p.Sy*(p.Sh||tileSize), tileSize, (p.Sh||tileSize), j*tileSize+p.X, i*tileSize+p.Y+tileSize-(p.Sh||tileSize), tileSize, p.Sh||tileSize);
 					}
 				}
 			}
@@ -221,6 +221,10 @@ type PaintCell struct {
 	Sprite string `json:"I,omitempty"`
 	Color  Color  `json:"C,omitempty"`
 	X, Y   int8
+
+	Height uint8 `json:"Sh"`
+	SheetX uint8 `json:"Sx"`
+	SheetY uint8 `json:"Sy"`
 }
 type packetPaint struct {
 	Paint [40][16][]PaintCell
