@@ -4,6 +4,8 @@ type cosmeticInfo struct {
 	Name    string
 	Examine string
 
+	Height uint8
+
 	Base      string
 	BaseColor Color
 
@@ -53,6 +55,8 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 	BearRidingAUnicycle: {
 		Name:    "bear riding a unicycle",
 		Examine: "russia, amirite?",
+
+		Height: 77,
 
 		Base:      "hat_bear_riding_a_unicycle",
 		BaseColor: "#fff",
@@ -215,6 +219,10 @@ func (s *Shoes) Blocking() bool {
 }
 
 func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(int, int, PaintCell), worn bool) {
+	var height uint8
+	if worn {
+		height = info.Height
+	}
 	color := info.BaseColor
 	if custom[0] != "" {
 		color = custom[0]
@@ -222,6 +230,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 	setcell(x, y, PaintCell{
 		Sprite: info.Base,
 		Color:  color,
+		Height: height,
 	})
 	if info.Layer1 != "" {
 		color = info.Layer1Color
@@ -231,6 +240,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 		setcell(x, y, PaintCell{
 			Sprite: info.Layer1,
 			Color:  color,
+			Height: height,
 		})
 	}
 	if info.Layer2 != "" {
@@ -241,6 +251,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 		setcell(x, y, PaintCell{
 			Sprite: info.Layer2,
 			Color:  color,
+			Height: height,
 		})
 	}
 	if info.Layer3 != "" {
@@ -251,6 +262,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 		setcell(x, y, PaintCell{
 			Sprite: info.Layer3,
 			Color:  color,
+			Height: height,
 		})
 	}
 	if info.Layer4 != "" {
@@ -261,6 +273,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 		setcell(x, y, PaintCell{
 			Sprite: info.Layer4,
 			Color:  color,
+			Height: height,
 		})
 	}
 }

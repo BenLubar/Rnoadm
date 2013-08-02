@@ -311,7 +311,7 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 		h.Top.PaintWorn(x, y, setcell)
 	}
 	if h.Head != nil {
-		h.Head.Paint(x, y, setcell)
+		h.Head.PaintWorn(x, y, setcell)
 	}
 	if h.Toolbelt.Pickaxe != nil {
 		h.Toolbelt.Pickaxe.PaintWorn(x, y, setcell)

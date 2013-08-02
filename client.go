@@ -130,7 +130,7 @@ var wsonmessage = ws.onmessage = function(e) {
 							buffer.putImageData(data, 0, 0);
 
 						}
-						canvas.drawImage(images_recolor[p.I][p.C], p.Sx*tileSize, p.Sy*(p.Sh||tileSize), tileSize, (p.Sh||tileSize), j*tileSize+p.X, i*tileSize+p.Y+tileSize-(p.Sh||tileSize), tileSize, p.Sh||tileSize);
+						canvas.drawImage(images_recolor[p.I][p.C], p.Sx*tileSize, p.Sy*(p.Sh||tileSize), tileSize, p.Sh||tileSize, j*tileSize+p.X, i*tileSize+p.Y+tileSize-(p.Sh||tileSize), tileSize, p.Sh||tileSize);
 					}
 				}
 			}
