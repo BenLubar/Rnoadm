@@ -355,7 +355,7 @@ func (z zindexsort) Less(i, j int) bool {
 
 type Tile struct {
 	Objects []Object
-	Sprite  int
+	Sprite  uint8
 }
 
 func (t *Tile) Add(o Object) {
@@ -387,21 +387,14 @@ func (t *Tile) Blocked() bool {
 
 type Color string
 
-var grassSprites = []string{
-	"",
-	"grass_1",
-	"grass_2",
-	"grass_3",
-	"grass_4",
-}
-
 func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, PaintCell)) {
 	if t.Sprite == 0 {
-		t.Sprite = rand.Intn(len(grassSprites)-1) + 1
+		t.Sprite = uint8(rand.Intn(4) + 1)
 	}
 	setcell(i, j, PaintCell{
-		Sprite: grassSprites[t.Sprite],
+		Sprite: "grass",
 		Color:  "#268f1e",
+		SheetX: t.Sprite - 1,
 	})
 	for k := len(t.Objects) - 1; k >= 0; k-- {
 		t.Objects[k].Paint(i, j, setcell)

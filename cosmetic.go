@@ -6,19 +6,11 @@ type cosmeticInfo struct {
 
 	Height uint8
 
-	Base      string
-	BaseColor Color
-
-	Layer1      string
+	Base        string
+	BaseColor   Color
 	Layer1Color Color
-
-	Layer2      string
 	Layer2Color Color
-
-	Layer3      string
 	Layer3Color Color
-
-	Layer4      string
 	Layer4Color Color
 
 	AdminOnly bool
@@ -41,13 +33,9 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		Name:    "novelty foam chicken hat",
 		Examine: "when you need to go in style, go in a novelty foam chicken's decapitated head.",
 
-		Base:      "hat_chicken_base",
-		BaseColor: "#fff",
-
-		Layer1:      "hat_chicken_beak",
+		Base:        "hat_chicken",
+		BaseColor:   "#fff",
 		Layer1Color: "#ff0",
-
-		Layer2:      "hat_chicken_comb",
 		Layer2Color: "#f00",
 
 		AdminOnly: true,
@@ -67,10 +55,8 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		Name:    "unusual strange vintage hound dog",
 		Examine: "your opponents will be all shook up when they see these sweet shades and coif. kills: 72",
 
-		Base:      "hat_unusual_strange_vintage_hound_dog_shades",
-		BaseColor: "#fff",
-
-		Layer1:      "hat_unusual_strange_vintage_hound_dog_pomp",
+		Base:        "hat_unusual_strange_vintage_hound_dog",
+		BaseColor:   "#fff",
 		Layer1Color: "#fff",
 
 		AdminOnly: true,
@@ -79,10 +65,8 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		Name:    "spanish war mask",
 		Examine: "many Pedros have worn this mask before you.",
 
-		Base:      "hat_spanish_war_mask_bottom",
-		BaseColor: "#900",
-
-		Layer1:      "hat_spanish_war_mask_top",
+		Base:        "hat_spanish_war_mask",
+		BaseColor:   "#900",
 		Layer1Color: "#007",
 
 		AdminOnly: true,
@@ -232,48 +216,52 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 		Color:  color,
 		Height: height,
 	})
-	if info.Layer1 != "" {
+	if info.Layer1Color != "" {
 		color = info.Layer1Color
 		if custom[1] != "" {
 			color = custom[1]
 		}
 		setcell(x, y, PaintCell{
-			Sprite: info.Layer1,
+			Sprite: info.Base,
 			Color:  color,
 			Height: height,
+			SheetY: 1,
 		})
 	}
-	if info.Layer2 != "" {
+	if info.Layer2Color != "" {
 		color = info.Layer2Color
 		if custom[2] != "" {
 			color = custom[2]
 		}
 		setcell(x, y, PaintCell{
-			Sprite: info.Layer2,
+			Sprite: info.Base,
 			Color:  color,
 			Height: height,
+			SheetY: 2,
 		})
 	}
-	if info.Layer3 != "" {
+	if info.Layer3Color != "" {
 		color = info.Layer3Color
 		if custom[3] != "" {
 			color = custom[3]
 		}
 		setcell(x, y, PaintCell{
-			Sprite: info.Layer3,
+			Sprite: info.Base,
 			Color:  color,
 			Height: height,
+			SheetY: 3,
 		})
 	}
-	if info.Layer4 != "" {
+	if info.Layer4Color != "" {
 		color = info.Layer4Color
 		if custom[4] != "" {
 			color = custom[4]
 		}
 		setcell(x, y, PaintCell{
-			Sprite: info.Layer4,
+			Sprite: info.Base,
 			Color:  color,
 			Height: height,
+			SheetY: 4,
 		})
 	}
 }
