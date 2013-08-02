@@ -395,6 +395,7 @@ func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, PaintCell)) {
 		Sprite: "grass_r1",
 		Color:  "#268f1e",
 		SheetX: t.Sprite - 1,
+		ZIndex: -50,
 	})
 	for k := len(t.Objects) - 1; k >= 0; k-- {
 		t.Objects[k].Paint(i, j, setcell)

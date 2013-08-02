@@ -423,12 +423,14 @@ func (h *AdminHUD) Paint(setcell func(int, int, PaintCell)) {
 	}
 
 	setcell(0, 0, PaintCell{
-		Text:  ">",
-		Color: "#00f",
+		Text:   ">",
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(1, 0, PaintCell{
-		Text:  string(h.Input),
-		Color: "#0ff",
+		Text:   string(h.Input),
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 }
 
@@ -516,13 +518,15 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
 	}
 	if h.Summon {
 		setcell(0, 0, PaintCell{
-			Text:  "SUMMON PLAYER",
-			Color: "#fff",
+			Text:   "SUMMON PLAYER",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 	} else {
 		setcell(0, 0, PaintCell{
-			Text:  "TELEPORT TO PLAYER",
-			Color: "#fff",
+			Text:   "TELEPORT TO PLAYER",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 	}
 	for i, p := range h.List[h.Offset:] {
@@ -530,8 +534,9 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
 			break
 		}
 		setcell(0, i+1, PaintCell{
-			Text:  string(rune(i) + '1'),
-			Color: "#fff",
+			Text:   string(rune(i) + '1'),
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 		id := p.ID
 		var idBuf [16]byte
@@ -540,34 +545,40 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
 			id >>= 4
 		}
 		setcell(1, i+1, PaintCell{
-			Text:  string(idBuf[:]),
-			Color: "#44f",
+			Text:   string(idBuf[:]),
+			Color:  "#44f",
+			ZIndex: 1<<31 - 1,
 		})
 		p.Lock()
 		setcell(7, i+1, PaintCell{
-			Text:  p.Name(),
-			Color: "#00f",
+			Text:   p.Name(),
+			Color:  "#00f",
+			ZIndex: 1<<31 - 1,
 		})
 		p.Unlock()
 	}
 	if h.Offset > 0 {
 		setcell(0, 9, PaintCell{
-			Text:  "9",
-			Color: "#fff",
+			Text:   "9",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 		setcell(1, 9, PaintCell{
-			Text:  "previous",
-			Color: "#fff",
+			Text:   "previous",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 	}
 	if len(h.List) > h.Offset+8 {
 		setcell(0, 10, PaintCell{
-			Text:  "0",
-			Color: "#fff",
+			Text:   "0",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 		setcell(1, 10, PaintCell{
-			Text:  "next",
-			Color: "#fff",
+			Text:   "next",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 	}
 }
@@ -678,28 +689,34 @@ func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 	}
 
 	setcell(0, 0, PaintCell{
-		Text:  "TELEPORT TO ZONE",
-		Color: "#00f",
+		Text:   "TELEPORT TO ZONE",
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(0, 1, PaintCell{
-		Text:  "X",
-		Color: "#00f",
+		Text:   "X",
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(1, 1, PaintCell{
-		Text:  strconv.FormatInt(h.X, 10),
-		Color: "#0ff",
+		Text:   strconv.FormatInt(h.X, 10),
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(0, 2, PaintCell{
-		Text:  "Y",
-		Color: "#00f",
+		Text:   "Y",
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(1, 2, PaintCell{
-		Text:  strconv.FormatInt(h.Y, 10),
-		Color: "#0ff",
+		Text:   strconv.FormatInt(h.Y, 10),
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(1, 3, PaintCell{
-		Text:  h.Name,
-		Color: "#0ff",
+		Text:   h.Name,
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 }
 
@@ -789,8 +806,9 @@ func (h *AdminNoclipHUD) Paint(setcell func(int, int, PaintCell)) {
 	}
 
 	setcell(0, 0, PaintCell{
-		Text:  "NOCLIP",
-		Color: "#00f",
+		Text:   "NOCLIP",
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 }
 
@@ -868,27 +886,32 @@ func (h *AdminChangeNameHUD) Paint(setcell func(int, int, PaintCell)) {
 
 	h.Player.Lock()
 	setcell(0, 0, PaintCell{
-		Text:  strings.ToUpper(h.Player.Name()),
-		Color: "#fff",
+		Text:   strings.ToUpper(h.Player.Name()),
+		Color:  "#fff",
+		ZIndex: 1<<31 - 1,
 	})
 	h.Player.Unlock()
 
 	setcell(0, 1, PaintCell{
-		Text:  h.Name.Name(),
-		Color: "#00f",
+		Text:   h.Name.Name(),
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 	desc, subtype, index := h.index()
 	setcell(0, 2, PaintCell{
-		Text:  "< " + desc + " >",
-		Color: "#0ff",
+		Text:   "< " + desc + " >",
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(0, 3, PaintCell{
-		Text:  "subtype [ " + strconv.FormatUint(uint64(*subtype), 10) + " ]",
-		Color: "#0ff",
+		Text:   "subtype [ " + strconv.FormatUint(uint64(*subtype), 10) + " ]",
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(0, 4, PaintCell{
-		Text:  "index - " + strconv.FormatUint(uint64(*index), 10) + " +",
-		Color: "#0ff",
+		Text:   "index - " + strconv.FormatUint(uint64(*index), 10) + " +",
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 }
 
@@ -1005,18 +1028,21 @@ func (h *AdminChangeTextHUD) Paint(setcell func(int, int, PaintCell)) {
 
 	h.Player.Lock()
 	setcell(0, 0, PaintCell{
-		Text:  strings.ToUpper(h.Player.Name()),
-		Color: "#fff",
+		Text:   strings.ToUpper(h.Player.Name()),
+		Color:  "#fff",
+		ZIndex: 1<<31 - 1,
 	})
 	h.Player.Unlock()
 
 	setcell(0, 1, PaintCell{
-		Text:  ">",
-		Color: "#00f",
+		Text:   ">",
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(1, 1, PaintCell{
-		Text:  string(h.Input),
-		Color: "#0ff",
+		Text:   string(h.Input),
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 }
 
@@ -1078,18 +1104,21 @@ func (h *AdminChangeColorHUD) Paint(setcell func(int, int, PaintCell)) {
 
 	h.Player.Lock()
 	setcell(0, 0, PaintCell{
-		Text:  "CHANGE COLOR",
-		Color: "#00f",
+		Text:   "CHANGE COLOR",
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 	h.Player.Unlock()
 
 	setcell(0, 1, PaintCell{
-		Text:  ">",
-		Color: Color(h.Input),
+		Text:   ">",
+		Color:  Color(h.Input),
+		ZIndex: 1<<31 - 1,
 	})
 	setcell(1, 1, PaintCell{
-		Text:  string(h.Input),
-		Color: "#0ff",
+		Text:   string(h.Input),
+		Color:  "#0ff",
+		ZIndex: 1<<31 - 1,
 	})
 }
 
@@ -1159,40 +1188,47 @@ func (h *AdminMenuHUD) Paint(setcell func(int, int, PaintCell)) {
 	}
 
 	setcell(0, 0, PaintCell{
-		Text:  "ADMIN MENU-O-MATIC",
-		Color: "#00f",
+		Text:   "ADMIN MENU-O-MATIC",
+		Color:  "#00f",
+		ZIndex: 1<<31 - 1,
 	})
 	for i, c := range h.Commands[h.Offset:] {
 		if i == 8 {
 			break
 		}
 		setcell(0, i+1, PaintCell{
-			Text:  string(rune(i) + '1'),
-			Color: "#0ff",
+			Text:   string(rune(i) + '1'),
+			Color:  "#0ff",
+			ZIndex: 1<<31 - 1,
 		})
 		setcell(1, i+1, PaintCell{
-			Text:  c,
-			Color: "#0ff",
+			Text:   c,
+			Color:  "#0ff",
+			ZIndex: 1<<31 - 1,
 		})
 	}
 	if h.Offset > 0 {
 		setcell(0, 9, PaintCell{
-			Text:  "9",
-			Color: "#fff",
+			Text:   "9",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 		setcell(1, 9, PaintCell{
-			Text:  "previous",
-			Color: "#fff",
+			Text:   "previous",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 	}
 	if len(h.Commands) > h.Offset+8 {
 		setcell(0, 10, PaintCell{
-			Text:  "0",
-			Color: "#fff",
+			Text:   "0",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 		setcell(1, 10, PaintCell{
-			Text:  "next",
-			Color: "#fff",
+			Text:   "next",
+			Color:  "#fff",
+			ZIndex: 1<<31 - 1,
 		})
 	}
 }

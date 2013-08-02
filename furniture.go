@@ -19,8 +19,9 @@ func (b *Bed) Blocking() bool {
 
 func (b *Bed) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
-		Text:  "BED",
-		Color: "#f00",
+		Text:   "BED",
+		Color:  "#f00",
+		ZIndex: 75,
 	})
 }
 
@@ -47,8 +48,9 @@ func (c *Chest) Blocking() bool {
 
 func (c *Chest) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
-		Text:  "CHEST",
-		Color: "#f00",
+		Text:   "CHEST",
+		Color:  "#f00",
+		ZIndex: 75,
 	})
 }
 

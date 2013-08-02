@@ -218,6 +218,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 		SheetX: frame,
 		X:      offsetX,
 		Y:      offsetY,
+		ZIndex: 501,
 	})
 	if info.Layer1Color != "" {
 		color = info.Layer1Color
@@ -232,6 +233,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 			SheetY: 1,
 			X:      offsetX,
 			Y:      offsetY,
+			ZIndex: 502,
 		})
 	}
 	if info.Layer2Color != "" {
@@ -247,6 +249,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 			SheetY: 2,
 			X:      offsetX,
 			Y:      offsetY,
+			ZIndex: 503,
 		})
 	}
 	if info.Layer3Color != "" {
@@ -262,6 +265,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 			SheetY: 3,
 			X:      offsetX,
 			Y:      offsetY,
+			ZIndex: 504,
 		})
 	}
 	if info.Layer4Color != "" {
@@ -277,6 +281,7 @@ func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(in
 			SheetY: 4,
 			X:      offsetX,
 			Y:      offsetY,
+			ZIndex: 505,
 		})
 	}
 }

@@ -115,16 +115,19 @@ func (r *Rock) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "rock_base",
 		Color:  rockTypeInfo[r.Type].Color,
+		ZIndex: 51,
 	})
 	if r.Ore != 0 {
 		setcell(x, y, PaintCell{
 			Sprite: "rock_ore_small",
 			Color:  metalTypeInfo[r.Ore].Color,
+			ZIndex: 52,
 		})
 		if r.Big {
 			setcell(x, y, PaintCell{
 				Sprite: "rock_ore_big",
 				Color:  metalTypeInfo[r.Ore].Color,
+				ZIndex: 53,
 			})
 		}
 	}
@@ -182,6 +185,7 @@ func (s *Stone) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "item_stone",
 		Color:  rockTypeInfo[s.Type].Color,
+		ZIndex: 75,
 	})
 }
 
@@ -216,6 +220,7 @@ func (o *Ore) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "item_ore",
 		Color:  metalTypeInfo[o.Type].Color,
+		ZIndex: 75,
 	})
 }
 
@@ -250,10 +255,12 @@ func (p *Pickaxe) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "item_tool_handle",
 		Color:  woodTypeInfo[p.Handle].Color,
+		ZIndex: 75,
 	})
 	setcell(x, y, PaintCell{
 		Sprite: "item_tool_pickaxe",
 		Color:  metalTypeInfo[p.Head].Color,
+		ZIndex: 76,
 	})
 }
 
@@ -264,6 +271,7 @@ func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame u
 		SheetX: frame,
 		X:      offsetX,
 		Y:      offsetY,
+		ZIndex: 506,
 	})
 	setcell(x, y, PaintCell{
 		Sprite: "tiny_pick_head",
@@ -271,6 +279,7 @@ func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame u
 		SheetX: frame,
 		X:      offsetX,
 		Y:      offsetY,
+		ZIndex: 507,
 	})
 }
 

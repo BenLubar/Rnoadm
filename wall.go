@@ -17,6 +17,7 @@ func (w *WallStone) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "wall_stone",
 		Color:  rockTypeInfo[w.Type].Color,
+		ZIndex: 60,
 	})
 }
 
@@ -45,6 +46,7 @@ func (w *WallMetal) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "wall_metal",
 		Color:  metalTypeInfo[w.Type].Color,
+		ZIndex: 60,
 	})
 }
 
@@ -73,6 +75,7 @@ func (w *WallWood) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "wall_wood",
 		Color:  woodTypeInfo[w.Type].Color,
+		ZIndex: 60,
 	})
 }
 
@@ -101,6 +104,7 @@ func (f *FloorStone) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "floor_stone",
 		Color:  rockTypeInfo[f.Type].Color,
+		ZIndex: 0,
 	})
 }
 
@@ -129,6 +133,7 @@ func (f *FloorMetal) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "floor_metal",
 		Color:  metalTypeInfo[f.Type].Color,
+		ZIndex: 0,
 	})
 }
 
@@ -157,6 +162,7 @@ func (f *FloorWood) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "floor_wood",
 		Color:  woodTypeInfo[f.Type].Color,
+		ZIndex: 60,
 	})
 }
 

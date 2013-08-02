@@ -69,72 +69,70 @@ var wsonopen = ws.onopen = function() {
 var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
 	if (msg.Paint) {
+		var w = 32, h = 16;
 		if (!canvas) {
 			canvas = document.querySelector('canvas');
-			canvas.width = 32*tileSize;
-			canvas.height = 16*tileSize;
+			canvas.width = w*tileSize;
+			canvas.height = h*tileSize;
 			canvas = canvas.getContext('2d');
 			canvas.font = '11px sans-serif';
 		}
 
 		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
-		for (var i = 0; i < 16; i++) {
-			for (var j = 32-1; j >= 0; j--) {
-				for (var k in (msg.Paint[j][i] || [])) {
-					var p = msg.Paint[j][i][k];
-					if (p.R) {
-						canvas.fillStyle = '#000';
-						canvas.fillText(p.R, j*tileSize+tileSize/8+p.X, i*tileSize+tileSize*7/8+p.Y+1);
-						canvas.fillStyle = p.C;
-						canvas.fillText(p.R, j*tileSize+tileSize/8+p.X, i*tileSize+tileSize*7/8+p.Y);
-					}
-					if (p.I) {
-						if (!images[p.I]) {
-							images[p.I] = true;
-							(function(img, p) {
-								img.onload = function() {
-									images[p.I] = img;
-									images_recolor[p.I] = {};
-									send({ForceRepaint:true});
-								};
-								img.src = p.I + '.png';
-							})(new Image(), p);
-						}
-						if (images[p.I] === true)
-							continue;
-						if (!images_recolor[p.I][p.C]) {
-							var buffer = document.createElement('canvas');
-							buffer.width = images[p.I].width || 1;
-							buffer.height = images[p.I].height || 1;
-							images_recolor[p.I][p.C] = buffer;
-							buffer = buffer.getContext('2d');
-							buffer.fillStyle = p.C;
-							buffer.fillRect(0, 0, 1, 1);
-							var data = buffer.getImageData(0, 0, 1, 1);
-							var r = data.data[0], g = data.data[1], b = data.data[2], a = data.data[3];
-							buffer.clearRect(0, 0, 1, 1);
-							buffer.drawImage(images[p.I], 0, 0);
-							data = buffer.getImageData(0, 0, buffer.canvas.width, buffer.canvas.height);
-							var fade = function(x, y) {
-								if (x >= 128)
-									return 255 - fade(255-x, 255-y);
-								return x*y/127;
-							};
-							for (var l = 0; l < data.data.length; l += 4) {
-								data.data[l+0] = fade(data.data[l+0], r);
-								data.data[l+1] = fade(data.data[l+1], g);
-								data.data[l+2] = fade(data.data[l+2], b);
-								data.data[l+3] = data.data[l+3]*a/255;
-							}
-							buffer.putImageData(data, 0, 0);
-
-						}
-						canvas.drawImage(images_recolor[p.I][p.C], p.Sx*tileSize, p.Sy*(p.Sh||tileSize), tileSize, p.Sh||tileSize, j*tileSize+p.X, i*tileSize+p.Y+tileSize-(p.Sh||tileSize), tileSize, p.Sh||tileSize);
-					}
-				}
+		msg.Paint.sort(function(a, b) {
+			return a.Lz - b.Lz;
+		}).forEach(function(p) {
+			var x = p.Lx, y = p.Ly;
+			if (p.R) {
+				canvas.fillStyle = '#000';
+				canvas.fillText(p.R, x*tileSize+tileSize/8+p.X, y*tileSize+tileSize*7/8+p.Y+1);
+				canvas.fillStyle = p.C;
+				canvas.fillText(p.R, x*tileSize+tileSize/8+p.X, y*tileSize+tileSize*7/8+p.Y);
 			}
-		}
+			if (p.I) {
+				if (!images[p.I]) {
+					images[p.I] = true;
+					(function(img, p) {
+						img.onload = function() {
+							images[p.I] = img;
+							images_recolor[p.I] = {};
+							send({ForceRepaint:true});
+						};
+						img.src = p.I + '.png';
+					})(new Image(), p);
+				}
+				if (images[p.I] === true)
+					return;
+				if (!images_recolor[p.I][p.C]) {
+					var buffer = document.createElement('canvas');
+					buffer.width = images[p.I].width || 1;
+					buffer.height = images[p.I].height || 1;
+					images_recolor[p.I][p.C] = buffer;
+					buffer = buffer.getContext('2d');
+					buffer.fillStyle = p.C;
+					buffer.fillRect(0, 0, 1, 1);
+					var data = buffer.getImageData(0, 0, 1, 1);
+					var r = data.data[0], g = data.data[1], b = data.data[2], a = data.data[3];
+					buffer.clearRect(0, 0, 1, 1);
+					buffer.drawImage(images[p.I], 0, 0);
+					data = buffer.getImageData(0, 0, buffer.canvas.width, buffer.canvas.height);
+					var fade = function(x, y) {
+						if (x >= 128)
+							return 255 - fade(255-x, 255-y);
+						return x*y/127;
+					};
+					for (var l = 0; l < data.data.length; l += 4) {
+						data.data[l+0] = fade(data.data[l+0], r);
+						data.data[l+1] = fade(data.data[l+1], g);
+						data.data[l+2] = fade(data.data[l+2], b);
+						data.data[l+3] = data.data[l+3]*a/255;
+					}
+					buffer.putImageData(data, 0, 0);
+				}
+				canvas.drawImage(images_recolor[p.I][p.C], p.Sx*tileSize, p.Sy*(p.Sh||tileSize), tileSize, p.Sh||tileSize, x*tileSize+p.X, y*tileSize+p.Y+tileSize-(p.Sh||tileSize), tileSize, p.Sh||tileSize);
+			}
+		});
 	}
 };
 var wsonclose = ws.onclose = function() {
@@ -225,9 +223,13 @@ type PaintCell struct {
 	Height uint8 `json:"Sh"`
 	SheetX uint8 `json:"Sx"`
 	SheetY uint8 `json:"Sy"`
+
+	LocationX uint8 `json:"Lx"`
+	LocationY uint8 `json:"Ly"`
+	ZIndex    int   `json:"Lz"`
 }
 type packetPaint struct {
-	Paint [40][16][]PaintCell
+	Paint []PaintCell
 }
 
 func websocketHandler(conn *websocket.Conn) {
@@ -408,9 +410,11 @@ func websocketHandler(conn *websocket.Conn) {
 		case <-player.repaint:
 			var paint packetPaint
 			setcell := func(x, y int, p PaintCell) {
-				if x >= 0 && x < len(paint.Paint) {
-					if y >= 0 && y < len(paint.Paint[x]) {
-						paint.Paint[x][y] = append(paint.Paint[x][y], p)
+				if x >= 0 && x < 32 {
+					if y >= 0 && y < 16 {
+						p.LocationX = uint8(x)
+						p.LocationY = uint8(y)
+						paint.Paint = append(paint.Paint, p)
 					}
 				}
 			}
@@ -430,8 +434,9 @@ func websocketHandler(conn *websocket.Conn) {
 					yCoord := y - h/2 + camY
 					if xCoord < 0 || xCoord > 255 || yCoord < 0 || yCoord > 255 {
 						setcell(x, y, PaintCell{
-							Text:  "?",
-							Color: "#111",
+							Text:   "?",
+							Color:  "#111",
+							ZIndex: -50,
 						})
 						continue
 					}
@@ -440,8 +445,9 @@ func websocketHandler(conn *websocket.Conn) {
 						tile.Paint(z, x, y, setcell)
 					} else {
 						setcell(x, y, PaintCell{
-							Text:  "?",
-							Color: "#111",
+							Text:   "?",
+							Color:  "#111",
+							ZIndex: -50,
 						})
 					}
 				}
@@ -458,16 +464,18 @@ func websocketHandler(conn *websocket.Conn) {
 					y = -16
 				}
 				setcell(0, h+i/2, PaintCell{
-					Text:  message,
-					Color: "#ccc",
-					Y:     y,
+					Text:   message,
+					Color:  "#ccc",
+					Y:      y,
+					ZIndex: 10000,
 				})
 			}
 
 			player.Lock()
 			setcell(w+1, 0, PaintCell{
-				Text:  "WEARING",
-				Color: "#aaa",
+				Text:   "WEARING",
+				Color:  "#aaa",
+				ZIndex: 10000,
 			})
 			if player.Head != nil {
 				player.Head.Paint(w+1, 1, setcell)
@@ -483,8 +491,9 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			setcell(w+6, 0, PaintCell{
-				Text:  "TOOLBELT",
-				Color: "#aaa",
+				Text:   "TOOLBELT",
+				Color:  "#aaa",
+				ZIndex: 10000,
 			})
 			if player.Toolbelt.Pickaxe != nil {
 				player.Toolbelt.Pickaxe.Paint(w+6, 1, setcell)
@@ -494,8 +503,9 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			setcell(w+1, 2, PaintCell{
-				Text:  "INVENTORY",
-				Color: "#aaa",
+				Text:   "INVENTORY",
+				Color:  "#aaa",
+				ZIndex: 10000,
 			})
 			for i, o := range player.Backpack {
 				o.Paint(i%10+w+1, i/10+3, setcell)
@@ -515,21 +525,25 @@ func websocketHandler(conn *websocket.Conn) {
 								Sprite: "ui_smallcorner_tl_small",
 								Color:  "rgba(0,0,0,0.7)",
 								X:      16,
+								ZIndex: 9999,
 							})
 							for i := 1; i < 8; i++ {
 								setcell(mouseX+i, mouseY, PaintCell{
 									Sprite: "ui_fill_small",
 									Color:  "rgba(0,0,0,0.7)",
+									ZIndex: 9999,
 								})
 								setcell(mouseX+i, mouseY, PaintCell{
 									Sprite: "ui_fill_small",
 									Color:  "rgba(0,0,0,0.7)",
 									X:      16,
+									ZIndex: 9999,
 								})
 							}
 							setcell(mouseX+1, mouseY, PaintCell{
-								Text:  t.Objects[0].Name(),
-								Color: "#fff",
+								Text:   t.Objects[0].Name(),
+								Color:  "#fff",
+								ZIndex: 10000,
 							})
 						}
 						z.Unlock()

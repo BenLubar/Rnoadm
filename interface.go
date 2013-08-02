@@ -8,18 +8,21 @@ func (h ZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 			Sprite: "ui_fill_small",
 			Color:  "rgba(0,0,0,0.7)",
 			Y:      -16,
+			ZIndex: 9999,
 		})
 		setcell(i, 0, PaintCell{
 			Sprite: "ui_fill_small",
 			Color:  "rgba(0,0,0,0.7)",
 			X:      16,
 			Y:      -16,
+			ZIndex: 9999,
 		})
 	}
 	setcell(0, 0, PaintCell{
-		Text:  string(h),
-		Color: "#fff",
-		Y:     -16,
+		Text:   string(h),
+		Color:  "#fff",
+		Y:      -16,
+		ZIndex: 10000,
 	})
 }
 
@@ -183,30 +186,35 @@ func (h *ClickHUD) Paint(setcell func(int, int, PaintCell)) {
 		setcell(h.X-8, h.Y, PaintCell{
 			Sprite: "ui_largecorner_tl",
 			Color:  "#111",
+			ZIndex: 10001,
 		})
 		x -= 8
 	} else {
 		setcell(h.X+8, h.Y, PaintCell{
 			Sprite: "ui_largecorner_tr",
 			Color:  "#111",
+			ZIndex: 10001,
 		})
 	}
 	for i := 1; i < 8; i++ {
 		setcell(x+i, h.Y, PaintCell{
 			Sprite: "ui_fill",
 			Color:  "#111",
+			ZIndex: 10001,
 		})
 	}
 
 	if !h.Inventory && !h.Blocked {
 		setcell(h.X+1, h.Y, PaintCell{
-			Text:  "walk here",
-			Color: "#fff",
+			Text:   "walk here",
+			Color:  "#fff",
+			ZIndex: 10002,
 		})
 	} else if h.Inventory {
 		setcell(h.X-7, h.Y, PaintCell{
-			Text:  "drop",
-			Color: "#fff",
+			Text:   "drop",
+			Color:  "#fff",
+			ZIndex: 10002,
 		})
 	}
 
@@ -217,24 +225,28 @@ func (h *ClickHUD) Paint(setcell func(int, int, PaintCell)) {
 				setcell(h.X-i, h.Y+row, PaintCell{
 					Sprite: "ui_fill",
 					Color:  "#333",
+					ZIndex: 10001,
 				})
 			} else {
 				setcell(h.X+i, h.Y+row, PaintCell{
 					Sprite: "ui_fill",
 					Color:  "#333",
+					ZIndex: 10001,
 				})
 			}
 		}
 		option.Object.Paint(h.X, h.Y+row, setcell)
 		if h.Inventory {
 			setcell(h.X-7, h.Y+row, PaintCell{
-				Text:  option.Text,
-				Color: "#fff",
+				Text:   option.Text,
+				Color:  "#fff",
+				ZIndex: 10002,
 			})
 		} else {
 			setcell(h.X+1, h.Y+row, PaintCell{
-				Text:  option.Text,
-				Color: "#fff",
+				Text:   option.Text,
+				Color:  "#fff",
+				ZIndex: 10002,
 			})
 		}
 		row++
@@ -247,20 +259,24 @@ func (h *ClickHUD) Paint(setcell func(int, int, PaintCell)) {
 	setcell(x, h.Y+row, PaintCell{
 		Sprite: "ui_largecorner_bl",
 		Color:  "#333",
+		ZIndex: 10001,
 	})
 	for i := 1; i < 8; i++ {
 		setcell(x+i, h.Y+row, PaintCell{
 			Sprite: "ui_fill",
 			Color:  "#333",
+			ZIndex: 10001,
 		})
 	}
 	setcell(x+8, h.Y+row, PaintCell{
 		Sprite: "ui_largecorner_br",
 		Color:  "#333",
+		ZIndex: 10001,
 	})
 	setcell(x+1, h.Y+row, PaintCell{
-		Text:  "cancel",
-		Color: "#fff",
+		Text:   "cancel",
+		Color:  "#fff",
+		ZIndex: 10002,
 	})
 }
 

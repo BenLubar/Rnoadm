@@ -94,11 +94,13 @@ func (t *Tree) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "tree_trunk",
 		Color:  woodTypeInfo[t.Type].Color,
+		ZIndex: 51,
 	})
 	if color := woodTypeInfo[t.Type].LeafColor; color != "" {
 		setcell(x, y, PaintCell{
 			Sprite: "tree_leaves",
 			Color:  color,
+			ZIndex: 52,
 		})
 	}
 }
@@ -146,6 +148,7 @@ func (l *Logs) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "item_logs",
 		Color:  woodTypeInfo[l.Type].Color,
+		ZIndex: 75,
 	})
 }
 
@@ -180,10 +183,12 @@ func (h *Hatchet) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "item_tool_handle",
 		Color:  woodTypeInfo[h.Handle].Color,
+		ZIndex: 75,
 	})
 	setcell(x, y, PaintCell{
 		Sprite: "item_tool_hatchet",
 		Color:  metalTypeInfo[h.Head].Color,
+		ZIndex: 76,
 	})
 }
 
@@ -194,6 +199,7 @@ func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame u
 		SheetX: frame,
 		X:      offsetX,
 		Y:      offsetY,
+		ZIndex: 506,
 	})
 	setcell(x, y, PaintCell{
 		Sprite: "tiny_hatchet_head",
@@ -201,6 +207,7 @@ func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame u
 		SheetX: frame,
 		X:      offsetX,
 		Y:      offsetY,
+		ZIndex: 507,
 	})
 }
 

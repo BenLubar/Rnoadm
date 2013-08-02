@@ -262,12 +262,12 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 				frame = 9
 			}
 		}
-		if h.scheduleDelay&1 != 0 {
-			frame += uint8(h.scheduleDelay / 2)
+		if h.scheduleDelay&1 == 1 {
+			frame += uint8(h.scheduleDelay/2 + 1)
 		}
 		h.frame = frame
-		offsetX = int8(nx-cx) * 16 * int8(3-h.scheduleDelay) / 4
-		offsetY = int8(ny-cy) * 16 * int8(3-h.scheduleDelay) / 4
+		offsetX = int8(nx-cx) * 16 * int8(4-h.scheduleDelay) / 4
+		offsetY = int8(ny-cy) * 16 * int8(4-h.scheduleDelay) / 4
 	} else {
 		frame -= frame % 3
 	}
@@ -282,6 +282,7 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 		SheetX: frame,
 		X:      offsetX,
 		Y:      offsetY,
+		ZIndex: 500,
 	})
 	if h.Feet != nil {
 		h.Feet.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
