@@ -298,7 +298,7 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 		color = raceInfo[h.Race].SkinTones[h.SkinToneIndex]
 	}
 	setcell(x, y, PaintCell{
-		Sprite: "player_body",
+		Sprite: "body_human",
 		Color:  color,
 	})
 	if h.Feet != nil {
