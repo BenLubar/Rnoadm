@@ -590,7 +590,7 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 		palette = earthy
 	}
 	h.Top = &Shirt{
-		Type: PlainWhiteTee,
+		Type: HipHopTeeShirt,
 		CustomColor: [5]Color{Color([]byte{
 			'#',
 			palette[r.Intn(len(palette))],

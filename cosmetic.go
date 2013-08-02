@@ -83,17 +83,17 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 type ShirtType uint16
 
 const (
-	PlainWhiteTee ShirtType = iota
+	HipHopTeeShirt ShirtType = iota
 
 	shirtTypeCount
 )
 
 var shirtTypeInfo = [shirtTypeCount]cosmeticInfo{
-	PlainWhiteTee: {
-		Name:    "plain white tee",
+	HipHopTeeShirt: {
+		Name:    "hip hop tee shirt",
 		Examine: "$120. by fruit, feat. the loom.",
 
-		Base:      "player_shirt",
+		Base:      "shirt_basic",
 		BaseColor: "#fff",
 	},
 }
@@ -111,7 +111,7 @@ var pantsTypeInfo = [pantsTypeCount]cosmeticInfo{
 		Name:    "off-brand jeans",
 		Examine: "these have seen some use.",
 
-		Base:      "player_pants",
+		Base:      "pants_basic",
 		BaseColor: "#758a9d",
 	},
 }
@@ -129,7 +129,7 @@ var shoeTypeInfo = [shoeTypeCount]cosmeticInfo{
 		Name:    "white sneakers",
 		Examine: "your favorite pair.",
 
-		Base:      "player_shoes",
+		Base:      "shoes_basic",
 		BaseColor: "#eef8f0",
 	},
 }
