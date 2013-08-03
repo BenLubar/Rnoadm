@@ -118,6 +118,9 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			if p.Auth != nil {
+				if p.Auth.Login == "" || p.Auth.Password == "" {
+					return
+				}
 				// TODO: throttling
 				filename := filepath.Join(seedFilename(), "login"+Base32Encode([]byte(strings.ToLower(p.Auth.Login)))+".gz")
 				var login userLogin

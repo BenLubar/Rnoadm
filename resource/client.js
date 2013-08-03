@@ -236,11 +236,6 @@ var loginHud = function(draw) {
 			Y:      1,
 		});
 	}
-	draw(w/2 - 1.5, h/2 - 4, {
-		Sprite: 'ui_title',
-		Color:  '#888',
-		X:      0
-	});
 	for (var x = w/2 - 3.75; x < w/2 + 3.75; x += 0.5) {
 		draw(x, h/2 - 2.75, {
 			Sprite: 'ui_r1',
@@ -253,6 +248,11 @@ var loginHud = function(draw) {
 			Y:      1
 		});
 	}
+	draw(w/2 - 1.625, h/2 - 4, {
+		Sprite: 'ui_title',
+		Color:  '#888',
+		X:      0
+	});
 	var permutations = [1, 2, 3, 4].sort(function(a, b) { return Math.random() * 2 - 1; });
 	for (var i in permutations) {
 		draw(w/2 - 1 + i/2, h/2 - 4, {
@@ -292,14 +292,30 @@ var loginHud = function(draw) {
 };
 
 var loginHudSubmit = function() {
+	if (!loginHudUsername) {
+		loginHudFocus = 0;
+		repaint();
+		return;
+	}
+	if (!loginHudPassword) {
+		loginHudFocus = 1;
+		repaint();
+		return;
+	}
 	send({'Auth': {'Login': loginHudUsername, 'Password': loginHudPassword}});
 	loginHudPassword = '';
 	loginHudFocus = 0;
 }
 
 var lostConnectionHud = function(draw) {
-	draw(16, 8, {
-		Sprite: 'ui_r1',
-		Color:  '#777'
+	for (var x = w/2 - 4; x < w/2 + 4; x++) {
+		draw(x, h/2, {
+			Sprite: 'ui_r1',
+			Color:  '#777'
+		});
+	}
+	draw(w/2 - 2, h/2 - 0.5, {
+		Text:  'Lost connection.',
+		Color: '#000'
 	});
 };
