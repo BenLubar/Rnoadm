@@ -2,7 +2,6 @@ package main
 
 import (
 	"compress/gzip"
-	"encoding/base32"
 	"encoding/binary"
 	"encoding/gob"
 	"log"
@@ -61,6 +60,47 @@ const (
 	occupationCount
 )
 
+var userIDLock sync.Mutex
+
+func newUserID() uint64 {
+	userIDLock.Lock()
+	defer userIDLock.Unlock()
+
+	var userID uint64
+
+	fn := filepath.Join(seedFilename(), "mUSERID.gz")
+	f, err := os.Open(fn)
+	if err == nil {
+		g, err := gzip.NewReader(f)
+		if err != nil {
+			f.Close()
+			panic(err)
+		}
+		err = gob.NewDecoder(g).Decode(&userID)
+		g.Close()
+		f.Close()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	userID++
+
+	f, err = os.Create(fn)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	g, _ := gzip.NewWriterLevel(f, gzip.BestCompression)
+	defer g.Close()
+	err = gob.NewEncoder(g).Encode(&userID)
+	if err != nil {
+		panic(err)
+	}
+
+	return userID
+}
+
 type Player struct {
 	ID uint64
 	Hero
@@ -68,7 +108,7 @@ type Player struct {
 	TileX, TileY uint8
 
 	hud interface {
-		Paint(func(int, int, PaintCell))
+		//Paint(func(int, int, PaintCell))
 		Key(int, bool) bool
 		Click(int, int) bool
 	}
@@ -95,13 +135,7 @@ func (p *Player) SendMessage(message string) {
 func playerFilename(id uint64) string {
 	var buf [binary.MaxVarintLen64]byte
 	i := binary.PutUvarint(buf[:], id)
-	encoded := base32.StdEncoding.EncodeToString(buf[:i])
-
-	l := len(encoded)
-	for encoded[l-1] == '=' {
-		l--
-	}
-	return "p" + encoded[:l] + ".gz"
+	return "p" + Base32Encode(buf[:i]) + ".gz"
 }
 
 func (p *Player) Save() {
@@ -231,7 +265,7 @@ func (h *Hero) Blocking() bool {
 	return false
 }
 
-func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -302,7 +336,7 @@ func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	if h.Toolbelt.Hatchet != nil {
 		h.Toolbelt.Hatchet.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
 	}
-}
+}*/
 
 func (h *Hero) Think(z *Zone, x, y uint8) {
 	h.think(z, x, y, nil)

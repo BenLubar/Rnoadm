@@ -17,13 +17,13 @@ func (b *Bed) Blocking() bool {
 	return false
 }
 
-func (b *Bed) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (b *Bed) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Text:   "BED",
 		Color:  "#f00",
 		ZIndex: 75,
 	})
-}
+}*/
 
 func (b *Bed) ZIndex() int {
 	return 0
@@ -46,13 +46,13 @@ func (c *Chest) Blocking() bool {
 	return true
 }
 
-func (c *Chest) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (c *Chest) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Text:   "CHEST",
 		Color:  "#f00",
 		ZIndex: 75,
 	})
-}
+}*/
 
 func (c *Chest) ZIndex() int {
 	return 0

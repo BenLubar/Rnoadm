@@ -135,29 +135,28 @@ func EachLoadedZone(f func(*Zone)) {
 	loadedZoneLock.Unlock()
 }
 
-func seedFilename() string {
-	var buf [binary.MaxVarintLen64]byte
-	i := binary.PutVarint(buf[:], Seed)
-	encoded := base32.StdEncoding.EncodeToString(buf[:i])
+func Base32Encode(b []byte) string {
+	encoded := base32.StdEncoding.EncodeToString(b)
 
 	l := len(encoded)
 	for encoded[l-1] == '=' {
 		l--
 	}
-	return "rnoadm-" + encoded[:l]
+
+	return encoded[:l]
+}
+
+func seedFilename() string {
+	var buf [binary.MaxVarintLen64]byte
+	i := binary.PutVarint(buf[:], Seed)
+	return "rnoadm-" + Base32Encode(buf[:i])
 }
 
 func zoneFilename(x, y int64) string {
 	var buf [binary.MaxVarintLen64 * 2]byte
 	i := binary.PutVarint(buf[:], x)
 	i += binary.PutVarint(buf[i:], y)
-	encoded := base32.StdEncoding.EncodeToString(buf[:i])
-
-	l := len(encoded)
-	for encoded[l-1] == '=' {
-		l--
-	}
-	return "z" + encoded[:l] + ".gz"
+	return "z" + Base32Encode(buf[:i]) + ".gz"
 }
 
 type Zone struct {
@@ -387,7 +386,7 @@ func (t *Tile) Blocked() bool {
 
 type Color string
 
-func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, PaintCell)) {
+/*func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, PaintCell)) {
 	if t.Sprite == 0 {
 		t.Sprite = uint8(rand.Intn(4) + 1)
 	}
@@ -400,12 +399,12 @@ func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, PaintCell)) {
 	for k := len(t.Objects) - 1; k >= 0; k-- {
 		t.Objects[k].Paint(i, j, setcell)
 	}
-}
+}*/
 
 type Object interface {
 	Name() string
 	Examine() string
-	Paint(int, int, func(int, int, PaintCell))
+	//Paint(int, int, func(int, int, PaintCell))
 	Blocking() bool
 	ZIndex() int
 	InteractOptions() []string

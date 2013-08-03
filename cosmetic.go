@@ -202,7 +202,7 @@ func (s *Shoes) Blocking() bool {
 	return false
 }
 
-func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(int, int, PaintCell), worn bool, frame uint8, offsetX, offsetY int8) {
+/*func paintCosmetic(x, y int, info cosmeticInfo, custom [5]Color, setcell func(int, int, PaintCell), worn bool, frame uint8, offsetX, offsetY int8) {
 	var height uint8
 	if worn {
 		height = info.Height
@@ -332,7 +332,7 @@ func (s *Shoes) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uin
 	info := shoeTypeInfo[s.Type]
 	custom := s.CustomColor
 	paintCosmetic(x, y, info, custom, setcell, true, frame, offsetX, offsetY)
-}
+}*/
 
 func (h *Hat) InteractOptions() []string {
 	return []string{"wear"}

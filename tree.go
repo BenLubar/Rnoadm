@@ -90,7 +90,7 @@ func (t *Tree) Examine() string {
 	return "a tall " + woodTypeInfo[t.Type].Name + " tree."
 }
 
-func (t *Tree) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (t *Tree) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "tree_trunk",
 		Color:  woodTypeInfo[t.Type].Color,
@@ -103,7 +103,7 @@ func (t *Tree) Paint(x, y int, setcell func(int, int, PaintCell)) {
 			ZIndex: 52,
 		})
 	}
-}
+}*/
 
 func (t *Tree) Blocking() bool {
 	return true
@@ -144,13 +144,13 @@ func (l *Logs) Examine() string {
 	return "some " + woodTypeInfo[l.Type].Name + " logs."
 }
 
-func (l *Logs) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (l *Logs) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "item_logs",
 		Color:  woodTypeInfo[l.Type].Color,
 		ZIndex: 75,
 	})
-}
+}*/
 
 func (l *Logs) Blocking() bool {
 	return false
@@ -179,7 +179,7 @@ func (h *Hatchet) Examine() string {
 	return "a hatchet made from " + metalTypeInfo[h.Head].Name + " and " + woodTypeInfo[h.Handle].Name + "."
 }
 
-func (h *Hatchet) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (h *Hatchet) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "item_tool_handle",
 		Color:  woodTypeInfo[h.Handle].Color,
@@ -209,7 +209,7 @@ func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame u
 		Y:      offsetY,
 		ZIndex: 507,
 	})
-}
+}*/
 
 func (h *Hatchet) Blocking() bool {
 	return false

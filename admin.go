@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"math/rand"
-	"sort"
-	"strconv"
 	"strings"
 	"unicode"
 )
@@ -416,7 +414,7 @@ type AdminHUD struct {
 	Key_   bool
 }
 
-func (h *AdminHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *AdminHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
@@ -432,7 +430,7 @@ func (h *AdminHUD) Paint(setcell func(int, int, PaintCell)) {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}
+}*/
 
 func (h *AdminHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -502,7 +500,7 @@ type AdminTeleportHUD struct {
 	Summon bool
 }
 
-func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -581,7 +579,7 @@ func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
 			ZIndex: 1<<31 - 1,
 		})
 	}
-}
+}*/
 
 func (h *AdminTeleportHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -672,7 +670,7 @@ type AdminTeleportZoneHUD struct {
 	Name   string
 }
 
-func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -718,7 +716,7 @@ func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}
+}*/
 
 func (h *AdminTeleportZoneHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -798,7 +796,7 @@ type AdminNoclipHUD struct {
 	Player *Player
 }
 
-func (h *AdminNoclipHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *AdminNoclipHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -810,7 +808,7 @@ func (h *AdminNoclipHUD) Paint(setcell func(int, int, PaintCell)) {
 		Color:  "#00f",
 		ZIndex: 1<<31 - 1,
 	})
-}
+}*/
 
 func (h *AdminNoclipHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -878,7 +876,7 @@ type AdminChangeNameHUD struct {
 	Index  int
 }
 
-func (h *AdminChangeNameHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *AdminChangeNameHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
@@ -913,7 +911,7 @@ func (h *AdminChangeNameHUD) Paint(setcell func(int, int, PaintCell)) {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}
+}*/
 
 func (h *AdminChangeNameHUD) index() (string, *NameSubtype, *uint16) {
 	switch h.Index {
@@ -1020,7 +1018,7 @@ type AdminChangeTextHUD struct {
 	Input  []rune
 }
 
-func (h *AdminChangeTextHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *AdminChangeTextHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
@@ -1044,7 +1042,7 @@ func (h *AdminChangeTextHUD) Paint(setcell func(int, int, PaintCell)) {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}
+}*/
 
 func (h *AdminChangeTextHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -1096,7 +1094,7 @@ type AdminChangeColorHUD struct {
 	Input  []rune
 }
 
-func (h *AdminChangeColorHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *AdminChangeColorHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
@@ -1120,7 +1118,7 @@ func (h *AdminChangeColorHUD) Paint(setcell func(int, int, PaintCell)) {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}
+}*/
 
 func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -1172,7 +1170,7 @@ type AdminMenuHUD struct {
 	Offset   int
 }
 
-func (h *AdminMenuHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *AdminMenuHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -1231,7 +1229,7 @@ func (h *AdminMenuHUD) Paint(setcell func(int, int, PaintCell)) {
 			ZIndex: 1<<31 - 1,
 		})
 	}
-}
+}*/
 
 func (h *AdminMenuHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {

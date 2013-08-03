@@ -13,13 +13,13 @@ func (w *WallStone) Examine() string {
 	return "a wall made of " + rockTypeInfo[w.Type].Name + "."
 }
 
-func (w *WallStone) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (w *WallStone) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "wall_stone",
 		Color:  rockTypeInfo[w.Type].Color,
 		ZIndex: 60,
 	})
-}
+}*/
 
 func (w *WallStone) Blocking() bool {
 	return true
@@ -42,13 +42,13 @@ func (w *WallMetal) Examine() string {
 	return "a wall made of " + metalTypeInfo[w.Type].Name + "."
 }
 
-func (w *WallMetal) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (w *WallMetal) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "wall_metal",
 		Color:  metalTypeInfo[w.Type].Color,
 		ZIndex: 60,
 	})
-}
+}*/
 
 func (w *WallMetal) Blocking() bool {
 	return true
@@ -71,13 +71,13 @@ func (w *WallWood) Examine() string {
 	return "a wall made of " + woodTypeInfo[w.Type].Name + "."
 }
 
-func (w *WallWood) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (w *WallWood) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "wall_wood",
 		Color:  woodTypeInfo[w.Type].Color,
 		ZIndex: 60,
 	})
-}
+}*/
 
 func (w *WallWood) Blocking() bool {
 	return true
@@ -100,13 +100,13 @@ func (f *FloorStone) Examine() string {
 	return "a floor made of " + rockTypeInfo[f.Type].Name + "."
 }
 
-func (f *FloorStone) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (f *FloorStone) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "floor_stone",
 		Color:  rockTypeInfo[f.Type].Color,
 		ZIndex: 0,
 	})
-}
+}*/
 
 func (f *FloorStone) Blocking() bool {
 	return false
@@ -129,13 +129,13 @@ func (f *FloorMetal) Examine() string {
 	return "a floor made of " + metalTypeInfo[f.Type].Name + "."
 }
 
-func (f *FloorMetal) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (f *FloorMetal) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "floor_metal",
 		Color:  metalTypeInfo[f.Type].Color,
 		ZIndex: 0,
 	})
-}
+}*/
 
 func (f *FloorMetal) Blocking() bool {
 	return false
@@ -158,13 +158,13 @@ func (f *FloorWood) Examine() string {
 	return "a floor made of " + woodTypeInfo[f.Type].Name + "."
 }
 
-func (f *FloorWood) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (f *FloorWood) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "floor_wood",
 		Color:  woodTypeInfo[f.Type].Color,
 		ZIndex: 60,
 	})
-}
+}*/
 
 func (f *FloorWood) Blocking() bool {
 	return false

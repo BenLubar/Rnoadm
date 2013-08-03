@@ -59,7 +59,7 @@ func (f *Flora) Examine() string {
 	return "a " + floraTypeInfo[f.Type].Name + " plant."
 }
 
-func (f *Flora) Paint(x, y int, setcell func(int, int, PaintCell)) {
+/*func (f *Flora) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	if color := floraTypeInfo[f.Type].LeafColor; color != "" {
 		setcell(x, y, PaintCell{
 			Sprite: "item_plant_leaves",
@@ -109,7 +109,7 @@ func (f *Flora) Paint(x, y int, setcell func(int, int, PaintCell)) {
 			ZIndex: 56,
 		})
 	}
-}
+}*/
 
 func (f *Flora) Blocking() bool {
 	return false

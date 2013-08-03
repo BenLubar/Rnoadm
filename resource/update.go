@@ -16,7 +16,7 @@ func main() {
 }
 
 func file(fn string) {
-	if path.Ext(fn) != ".png" {
+	if path.Ext(fn) == ".go" {
 		return
 	}
 	in, err := ioutil.ReadFile(fn)
@@ -32,7 +32,7 @@ func file(fn string) {
 	fmt.Fprintf(out, `package resource
 
 func init() {
-	Resource[%q] = []byte{`, fn)
+	Resource[%q] = []byte{`, path.Base(fn))
 
 	for i, b := range in {
 		if i == 0 {

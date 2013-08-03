@@ -2,7 +2,7 @@ package main
 
 type ZoneHUD string
 
-func (h ZoneHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h ZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 	for i := 0; i < 20; i++ {
 		setcell(i, 0, PaintCell{
 			Sprite: "ui_fill_small",
@@ -24,7 +24,7 @@ func (h ZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 		Y:      -16,
 		ZIndex: 10000,
 	})
-}
+}*/
 
 func (h ZoneHUD) Key(code int, special bool) bool {
 	return false
@@ -50,7 +50,7 @@ type ClickHUD struct {
 	Inventory    bool
 }
 
-func (h *ClickHUD) Paint(setcell func(int, int, PaintCell)) {
+/*func (h *ClickHUD) Paint(setcell func(int, int, PaintCell)) {
 	if h.Options == nil {
 		h.Player.Lock()
 		zone := h.Player.zone
@@ -278,7 +278,7 @@ func (h *ClickHUD) Paint(setcell func(int, int, PaintCell)) {
 		Color:  "#fff",
 		ZIndex: 10002,
 	})
-}
+}*/
 
 func (h *ClickHUD) Key(code int, special bool) bool {
 	h.Player.hud = nil
