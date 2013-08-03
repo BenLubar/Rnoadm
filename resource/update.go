@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 )
 
@@ -16,10 +17,23 @@ func main() {
 }
 
 func file(fn string) {
-	if path.Ext(fn) == ".go" {
+	ext := path.Ext(fn)
+	if ext == ".go" || ext == ".jar" {
 		return
 	}
-	in, err := ioutil.ReadFile(fn)
+	var in []byte
+	var err error
+	if ext == ".js" {
+		cmd := exec.Command("java", "-jar", "closure-compiler.jar",
+			"--accept_const_keyword",
+			"--compilation_level", "ADVANCED_OPTIMIZATIONS",
+			"--formatting", "SINGLE_QUOTES",
+			"--js", fn)
+		cmd.Stderr = os.Stderr
+		in, err = cmd.Output()
+	} else {
+		in, err = ioutil.ReadFile(fn)
+	}
 	if err != nil {
 		panic(err)
 	}

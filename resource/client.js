@@ -228,12 +228,12 @@ var loginHud = function(draw) {
 		draw(x + 0.5, h/2 + 0.5, {
 			Sprite: 'ui_r1',
 			Color:  '#444',
-			Y:      1,
+			Y:      1
 		});
 		draw(x, h/2 + 0.5, {
 			Sprite: 'ui_r1',
 			Color:  '#444',
-			Y:      1,
+			Y:      1
 		});
 	}
 	for (var x = w/2 - 3.75; x < w/2 + 3.75; x += 0.5) {

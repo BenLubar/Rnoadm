@@ -22,3 +22,4 @@ _testmain.go
 Rnoadm
 Rnoadm.exe
 rnoadm-*/*.gz
+resource/closure-compiler.jar
