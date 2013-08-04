@@ -21,7 +21,7 @@ const (
 	genderCount
 )
 
-var genderData = [genderCount]struct {
+var genderInfo = [genderCount]struct {
 	Name string
 }{
 	Male: {
@@ -109,12 +109,6 @@ type Player struct {
 
 	Seed RandomSource
 
-	hud interface {
-		//Paint(func(int, int, PaintCell))
-		Key(int, bool) bool
-		Click(int, int) bool
-	}
-
 	LastLoginAddr string
 	LastLogin     time.Time
 	Admin         bool
@@ -122,6 +116,9 @@ type Player struct {
 
 	messages chan<- string
 	kick     chan<- string
+	hud      chan<- packetSetHUD
+
+	characterCreation *Hero
 
 	lock sync.Mutex
 
@@ -145,8 +142,7 @@ func (p *Player) Unlock() {
 func (p *Player) SendMessage(message string) {
 	select {
 	case p.messages <- message:
-		p.Repaint()
-	case <-time.After(time.Second):
+	case <-time.After(time.Minute):
 	}
 }
 
@@ -155,6 +151,70 @@ func (p *Player) Kick(message string) {
 	case p.kick <- message:
 	default: // player was already kicked
 	}
+}
+
+func (p *Player) SetHUD(name string, data map[string]interface{}) {
+	select {
+	case p.hud <- packetSetHUD{
+		SetHUD: _SetHUD{
+			Name: name,
+			Data: data,
+		},
+	}:
+	case <-time.After(time.Minute):
+	}
+}
+
+func (p *Player) CharacterCreation(command string) {
+	p.Lock()
+	defer p.Unlock()
+
+	r := rand.New(&p.Seed)
+
+	if p.characterCreation == nil {
+		if p.Hero != nil {
+			p.characterCreation = GenerateHero(p.Hero.Race, r)
+			p.characterCreation.Last1 = p.Hero.Last1
+			p.characterCreation.Last1T = p.Hero.Last1T
+			p.characterCreation.Last2 = p.Hero.Last2
+			p.characterCreation.Last2T = p.Hero.Last2T
+			p.characterCreation.Last3 = p.Hero.Last3
+			p.characterCreation.Last3T = p.Hero.Last3T
+			p.characterCreation.SkinToneIndex = p.Hero.SkinToneIndex
+		} else {
+			p.characterCreation = GenerateHero(Human, r)
+		}
+	}
+
+	race := raceInfo[p.characterCreation.Race]
+	switch command {
+	case "race":
+		p.characterCreation.Race = Human // TODO: more races
+		race = raceInfo[p.characterCreation.Race]
+		found := false
+		for _, g := range race.Genders {
+			if p.characterCreation.Gender == g {
+				found = true
+				break
+			}
+		}
+		if !found {
+			p.characterCreation.Gender = race.Genders[r.Intn(len(race.Genders))]
+		}
+		if p.characterCreation.SkinToneIndex >= uint8(len(race.SkinTones)) {
+			p.characterCreation.SkinToneIndex = uint8(r.Intn(len(race.SkinTones)))
+		}
+	case "gender":
+		p.characterCreation.Gender = race.Genders[r.Intn(len(race.Genders))]
+	case "skin":
+		p.characterCreation.SkinToneIndex = (p.characterCreation.SkinToneIndex + 1) % uint8(len(race.SkinTones))
+	}
+
+	p.SetHUD("character_creation", map[string]interface{}{
+		"race":   race.Name,
+		"gender": genderInfo[p.characterCreation.Gender].Name,
+		"skin":   race.SkinTones[p.characterCreation.SkinToneIndex],
+	})
 }
 
 func playerFilename(id uint64) string {

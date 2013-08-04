@@ -2,14 +2,14 @@ package main
 
 import (
 	"log"
-	"math/rand"
+	/*"math/rand"
 	"strings"
-	"unicode"
+	"unicode"*/
 )
 
 var AdminLog *log.Logger
 
-var adminCommands = map[string]func(*Player){
+/*var adminCommands = map[string]func(*Player){
 	"MENU": func(p *Player) {
 		p.hud = &AdminMenuHUD{Player: p}
 	},
@@ -430,7 +430,7 @@ type AdminHUD struct {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}*/
+}
 
 func (h *AdminHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -500,7 +500,7 @@ type AdminTeleportHUD struct {
 	Summon bool
 }
 
-/*func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
+func (h *AdminTeleportHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -579,7 +579,7 @@ type AdminTeleportHUD struct {
 			ZIndex: 1<<31 - 1,
 		})
 	}
-}*/
+}
 
 func (h *AdminTeleportHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -670,7 +670,7 @@ type AdminTeleportZoneHUD struct {
 	Name   string
 }
 
-/*func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, PaintCell)) {
+func (h *AdminTeleportZoneHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -716,7 +716,7 @@ type AdminTeleportZoneHUD struct {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}*/
+}
 
 func (h *AdminTeleportZoneHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -796,7 +796,7 @@ type AdminNoclipHUD struct {
 	Player *Player
 }
 
-/*func (h *AdminNoclipHUD) Paint(setcell func(int, int, PaintCell)) {
+func (h *AdminNoclipHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -808,7 +808,7 @@ type AdminNoclipHUD struct {
 		Color:  "#00f",
 		ZIndex: 1<<31 - 1,
 	})
-}*/
+}
 
 func (h *AdminNoclipHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -876,7 +876,7 @@ type AdminChangeNameHUD struct {
 	Index  int
 }
 
-/*func (h *AdminChangeNameHUD) Paint(setcell func(int, int, PaintCell)) {
+func (h *AdminChangeNameHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
@@ -911,7 +911,7 @@ type AdminChangeNameHUD struct {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}*/
+}
 
 func (h *AdminChangeNameHUD) index() (string, *NameSubtype, *uint16) {
 	switch h.Index {
@@ -1018,7 +1018,7 @@ type AdminChangeTextHUD struct {
 	Input  []rune
 }
 
-/*func (h *AdminChangeTextHUD) Paint(setcell func(int, int, PaintCell)) {
+func (h *AdminChangeTextHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
@@ -1042,7 +1042,7 @@ type AdminChangeTextHUD struct {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}*/
+}
 
 func (h *AdminChangeTextHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -1094,7 +1094,7 @@ type AdminChangeColorHUD struct {
 	Input  []rune
 }
 
-/*func (h *AdminChangeColorHUD) Paint(setcell func(int, int, PaintCell)) {
+func (h *AdminChangeColorHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		return
@@ -1118,7 +1118,7 @@ type AdminChangeColorHUD struct {
 		Color:  "#0ff",
 		ZIndex: 1<<31 - 1,
 	})
-}*/
+}
 
 func (h *AdminChangeColorHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -1170,7 +1170,7 @@ type AdminMenuHUD struct {
 	Offset   int
 }
 
-/*func (h *AdminMenuHUD) Paint(setcell func(int, int, PaintCell)) {
+func (h *AdminMenuHUD) Paint(setcell func(int, int, PaintCell)) {
 	if !h.Player.Admin {
 		h.Player.hud = nil
 		h.Player.Repaint()
@@ -1229,7 +1229,7 @@ type AdminMenuHUD struct {
 			ZIndex: 1<<31 - 1,
 		})
 	}
-}*/
+}
 
 func (h *AdminMenuHUD) Key(code int, special bool) bool {
 	if !h.Player.Admin {
@@ -1275,4 +1275,4 @@ func (h *AdminMenuHUD) Key(code int, special bool) bool {
 
 func (h *AdminMenuHUD) Click(x, y int) bool {
 	return false
-}
+}*/

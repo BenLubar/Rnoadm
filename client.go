@@ -4,7 +4,9 @@ import (
 	"code.google.com/p/go.crypto/bcrypt"
 	"code.google.com/p/go.net/websocket"
 	"compress/gzip"
+	"crypto/sha1"
 	"encoding/gob"
+	"encoding/hex"
 	"github.com/BenLubar/Rnoadm/resource"
 	"log"
 	"net/http"
@@ -19,9 +21,15 @@ import (
 var OnlinePlayers = make(map[uint64]*Player)
 var onlinePlayersLock sync.Mutex
 
+var clientHash string
+
 func init() {
 	http.HandleFunc("/", httpHandler)
 	http.Handle("/ws", websocket.Handler(websocketHandler))
+
+	h := sha1.New()
+	h.Write(resource.Resource["client.js"])
+	clientHash = hex.EncodeToString(h.Sum(nil))
 }
 
 func httpHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,10 +82,26 @@ type packetIn struct {
 		Login    string
 		Password string
 	}
+	CharacterCreation *struct {
+		Command string
+	}
+}
+
+type packetClientHash struct {
+	ClientHash string
 }
 
 type packetKick struct {
 	Kick string
+}
+
+type _SetHUD struct {
+	Name string
+	Data map[string]interface{}
+}
+
+type packetSetHUD struct {
+	SetHUD _SetHUD
 }
 
 func websocketHandler(conn *websocket.Conn) {
@@ -90,6 +114,10 @@ func websocketHandler(conn *websocket.Conn) {
 			break
 		}
 	}
+
+	websocket.JSON.Send(conn, packetClientHash{
+		ClientHash: clientHash,
+	})
 
 	packets := make(chan packetIn)
 	go func() {
@@ -110,6 +138,7 @@ func websocketHandler(conn *websocket.Conn) {
 
 	var player *Player
 	kick := make(chan string, 1)
+	hud := make(chan packetSetHUD, 16)
 
 	for {
 		select {
@@ -185,6 +214,7 @@ func websocketHandler(conn *websocket.Conn) {
 				player.LastLoginAddr = addr
 				player.Save()
 				player.kick = kick
+				player.hud = hud
 
 				onlinePlayersLock.Lock()
 				if otherSession, ok := OnlinePlayers[player.ID]; ok {
@@ -234,15 +264,26 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 				}()
 
+				if player.Hero == nil {
+					player.CharacterCreation("")
+					continue
+				}
 				player.Kick("logging in has temporarily been disabled")
 			}
 			if player == nil {
 				continue
 			}
 
+			if p.CharacterCreation != nil {
+				player.CharacterCreation(p.CharacterCreation.Command)
+			}
+
 			if player.Hero == nil {
 				continue
 			}
+
+		case p := <-hud:
+			websocket.JSON.Send(conn, p)
 
 		case message := <-kick:
 			websocket.JSON.Send(conn, packetKick{

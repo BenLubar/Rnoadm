@@ -1,13 +1,21 @@
+const tileSize = 32;
+const w = 32, h = 16;
 var gameState;
 var images = {};
 var images_recolor = {};
-var tileSize = 32;
-var w = 32, h = 16;
+var clientHash;
+var huds = {};
 var canvas = document.querySelector('canvas');
 canvas.width = w*tileSize;
 canvas.height = h*tileSize;
 canvas = canvas.getContext('2d');
 canvas.font = '11px sans-serif';
+
+var frame = 0;
+setInterval(function() {
+	frame++;
+	repaint();
+}, 500);
 
 var inRepaint = false;
 function repaint() {
@@ -94,6 +102,19 @@ var wsonopen = ws.onopen = function() {
 
 var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
+	if (msg['ClientHash']) {
+		if (clientHash) {
+			if (clientHash != msg['ClientHash']) {
+				location.reload(true);
+			}
+		} else {
+			clientHash = msg['ClientHash'];
+		}
+	}
+	if (msg['SetHUD']) {
+		gameState.hud = huds[msg['SetHUD']['Name']](msg['SetHUD']['Data']);
+		repaint();
+	}
 	if (msg['Kick']) {
 		ws.onclose = wsonclose = function() {};
 		gameState = {};
@@ -151,6 +172,7 @@ document.onkeypress = function(e) {
 		switch (loginHudFocus) {
 		case 0:
 			loginHudUsername += String.fromCharCode(e.charCode);
+			localStorage['login'] = loginHudUsername;
 			break;
 		case 1:
 			loginHudPassword += String.fromCharCode(e.charCode);
@@ -160,21 +182,12 @@ document.onkeypress = function(e) {
 	}
 };
 document.querySelector('canvas').onclick = document.querySelector('canvas').oncontextmenu = function(e) {
-	if (gameState.hud === loginHud) {
-		var x = Math.floor(e.offsetX * 4 / tileSize)/4 - w/2;
-		var y = Math.floor(e.offsetY * 4 / tileSize)/4 - h/2;
-		if (x >= -4 && x < 4) {
-			if (y >= -2.75 && y <= -1.75) {
-				loginHudFocus = 0; // login
-				repaint();
-			} else if (y >= -1.25 && y <= -0.25) {
-				loginHudFocus = 1; // password
-				repaint();
-			} else if (y >= 0.00 && y <= 0.75) {
-				loginHudSubmit();
-			}
-		}
-		return false;
+	var x = Math.floor(e.offsetX * 4 / tileSize)/4 - w/2;
+	var y = Math.floor(e.offsetY * 4 / tileSize)/4 - h/2;
+
+	if (gameState.hud && gameState.hud.click) {
+		if (gameState.hud.click(x, y) === false)
+			return false;
 	}
 	return false;
 };
@@ -212,10 +225,9 @@ document.querySelector('canvas').onmousemove = function(e) {
 	}, 500);
 };*/
 
-var loginHudUsername = '';
+var loginHudUsername = localStorage['login'] || '';
 var loginHudPassword = '';
 var loginHudFocus = 0;
-var loginHudRepaintTimeout;
 var loginHud = function(draw) {
 	for (var x = w/2 - 4; x < w/2 + 4; x++) {
 		for (var y = h/2 - 4; y < h/2 + 1; y++) {
@@ -266,9 +278,6 @@ var loginHud = function(draw) {
 		Color:  '#888',
 		X:      5
 	});
-	if (loginHudRepaintTimeout)
-		clearTimeout(loginHudRepaintTimeout);
-	loginHudRepaintTimeout = setTimeout(repaint, 200);
 	draw(w/2 - 3.75, h/2 - 3.25, {
 		Text:  'Login',
 		Color: '#aaa'
@@ -291,6 +300,25 @@ var loginHud = function(draw) {
 	});
 };
 
+loginHud.click = function(x, y) {
+	if (x >= -4 && x < 4) {
+		if (y >= -2.75 && y <= -1.75) {
+			loginHudFocus = 0; // login
+			repaint();
+			return false;
+		}
+		if (y >= -1.25 && y <= -0.25) {
+			loginHudFocus = 1; // password
+			repaint();
+			return false;
+		}
+		if (y >= 0.00 && y <= 0.75) {
+			loginHudSubmit();
+			return false;
+		}
+	}
+};
+
 var loginHudSubmit = function() {
 	if (!loginHudUsername) {
 		loginHudFocus = 0;
@@ -307,15 +335,82 @@ var loginHudSubmit = function() {
 	loginHudFocus = 0;
 }
 
+huds['character_creation'] = function(data) {
+	var f = function(draw) {
+		for (var x = w/2 - 4; x < w/2 + 4; x++) {
+			for (var y = h/2 - 4; y < h/2 + 2; y++) {
+				draw(x, y, {
+					Sprite: 'ui_fill',
+					Color:  '#777'
+				});
+			}
+		}
+		draw(w/2 - 2, h/2 - 2, {
+			Text:  'Race:',
+			Color: '#fff'
+		});
+		draw(w/2, h/2 - 2, {
+			Text:  data['race'],
+			Color: '#fff'
+		});
+		draw(w/2 - 2, h/2 - 1, {
+			Text:  'Gender:',
+			Color: '#fff'
+		});
+		draw(w/2, h/2 - 1, {
+			Text:  data['gender'],
+			Color: '#fff'
+		});
+		draw(w/2 - 2, h/2, {
+			Text:  'Skin:',
+			Color: '#fff'
+		});
+		var rotate = [0, 6, 3, 9];
+		draw(w/2, h/2, {
+			Sprite: 'body_' + data['race'],
+			Color:  data['skin'],
+			X:      rotate[frame % 4]
+		});
+		draw(w/2, h/2, {
+			Sprite: 'censor_' + data['race'],
+			Color:  data['skin'],
+			X:      rotate[frame % 4]
+		});
+		if (data['gender'] == 'female') {
+			draw(w/2, h/2, {
+				Sprite: 'censor_' + data['race'],
+				Color:  data['skin'],
+				X:      rotate[frame % 4],
+				Y:      1
+			});
+		}
+	};
+	f.click = function(x, y) {
+		if (x >= -4 && x < 4) {
+			if (y >= -1.75 && y <= -1.25) {
+				send({'CharacterCreation': {'Command': 'race'}});
+				return false;
+			} else if (y >= -0.75 && y <= -0.25) {
+				send({'CharacterCreation': {'Command': 'gender'}});
+				return false;
+			} else if (y >= 0.25 && y <= 0.75) {
+				send({'CharacterCreation': {'Command': 'skin'}});
+				return false;
+			} 
+		}
+	};
+	return f;
+};
+
 var lostConnectionHud = function(draw) {
 	for (var x = w/2 - 4; x < w/2 + 4; x++) {
 		draw(x, h/2, {
 			Sprite: 'ui_r1',
-			Color:  '#777'
+			Color:  '#fff'
 		});
 	}
-	draw(w/2 - 2, h/2 - 0.5, {
+	draw(w/2 - 2, h/2 - 0.25, {
 		Text:  'Lost connection.',
-		Color: '#000'
+		Color: '#666'
 	});
 };
