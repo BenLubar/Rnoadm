@@ -2,6 +2,7 @@ const tileSize = 32;
 const w = 32, h = 16;
 var gameState;
 var images = {};
+var images_resize = {};
 var images_recolor = {};
 var clientHash;
 var huds = {};
@@ -28,6 +29,8 @@ function repaint() {
 		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
 		var draw = function(x, y, p) {
+			var scale = p.Scale || 1;
+			var height = p.Height || tileSize;
 			if (p.Text) {
 				var tx = x*tileSize + tileSize/8;
 				var ty = y*tileSize + tileSize*7/8;
@@ -42,6 +45,7 @@ function repaint() {
 					var img = new Image();
 					img.onload = function() {
 						images[p.Sprite] = img;
+						images_resize[p.Sprite] = {};
 						images_recolor[p.Sprite] = {};
 						repaint();
 					};
@@ -49,18 +53,54 @@ function repaint() {
 				}
 				if (images[p.Sprite] === true)
 					return;
-				if (!images_recolor[p.Sprite][p.Color]) {
+				if (!images_resize[p.Sprite][scale]) {
 					var buffer = document.createElement('canvas');
-					buffer.width = images[p.Sprite].width || 1;
-					buffer.height = images[p.Sprite].height || 1;
-					images_recolor[p.Sprite][p.Color] = buffer;
+					buffer.width = images[p.Sprite].width;
+					buffer.height = images[p.Sprite].height;
+					images_resize[p.Sprite][scale] = buffer;
+					images_recolor[p.Sprite][scale] = {};
+					buffer = buffer.getContext('2d');
+					buffer.drawImage(images[p.Sprite], 0, 0);
+					var base = buffer.getImageData(0, 0, images[p.Sprite].width, images[p.Sprite].height);
+					buffer = buffer.canvas;
+					buffer.width = images[p.Sprite].width * scale;
+					buffer.height = images[p.Sprite].height * scale;
+					buffer = buffer.getContext('2d');
+					var scaled = buffer.getImageData(0, 0, buffer.canvas.width, buffer.canvas.height);
+					var rowIndex = 0;
+					var baseIndex = 0;
+					var scaledIndex = 0;
+					for (var sy = 0; sy < buffer.canvas.height; sy++) {
+						for (var sx = 0; sx < buffer.canvas.width; sx++) {
+							scaled.data[scaledIndex+0] = base.data[baseIndex+0];
+							scaled.data[scaledIndex+1] = base.data[baseIndex+1];
+							scaled.data[scaledIndex+2] = base.data[baseIndex+2];
+							scaled.data[scaledIndex+3] = base.data[baseIndex+3];
+							if (sx % scale == scale - 1) {
+								baseIndex += 4;
+							}
+							scaledIndex += 4;
+						}
+						if (sy % scale == scale - 1) {
+							rowIndex = baseIndex;
+						} else {
+							baseIndex = rowIndex;
+						}
+					}
+					buffer.putImageData(scaled, 0, 0);
+				}
+				if (!images_recolor[p.Sprite][scale][p.Color]) {
+					var buffer = document.createElement('canvas');
+					buffer.width = images_resize[p.Sprite][scale].width || 1;
+					buffer.height = images_resize[p.Sprite][scale].height || 1;
+					images_recolor[p.Sprite][scale][p.Color] = buffer;
 					buffer = buffer.getContext('2d');
 					buffer.fillStyle = p.Color;
 					buffer.fillRect(0, 0, 1, 1);
 					var data = buffer.getImageData(0, 0, 1, 1);
 					var r = data.data[0], g = data.data[1], b = data.data[2], a = data.data[3];
 					buffer.clearRect(0, 0, 1, 1);
-					buffer.drawImage(images[p.Sprite], 0, 0);
+					buffer.drawImage(images_resize[p.Sprite][scale], 0, 0);
 					data = buffer.getImageData(0, 0, buffer.canvas.width, buffer.canvas.height);
 					var fade = function(x, y) {
 						if (x >= 128)
@@ -75,15 +115,15 @@ function repaint() {
 					}
 					buffer.putImageData(data, 0, 0);
 				}
-				canvas.drawImage(images_recolor[p.Sprite][p.Color],
-					(p.X || 0) * tileSize,
-					(p.Y || 0) * (p.SpriteHeight || tileSize),
-					tileSize,
-					p.Height || tileSize,
+				canvas.drawImage(images_recolor[p.Sprite][scale][p.Color],
+					(p.X || 0) * tileSize * scale,
+					(p.Y || 0) * height * scale,
+					tileSize * scale,
+					height * scale,
 					x*tileSize,
-					y*tileSize + tileSize - (p.Height || tileSize),
-					tileSize,
-					p.Height || tileSize);
+					y*tileSize + (tileSize - height) * scale,
+					tileSize * scale,
+					height * scale);
 			}
 		};
 
@@ -347,63 +387,79 @@ var loginHudSubmit = function() {
 
 huds['character_creation'] = function(data) {
 	var f = function(draw) {
-		for (var x = w/2 - 4; x < w/2 + 4; x++) {
+		for (var x = w/2 - 6; x < w/2 + 6; x++) {
+			draw(x, h/2 - 5, {
+				Sprite: 'ui_r1',
+				Color:  '#444',
+				X:      x == w/2 - 6 ? 3 : x == w/2 + 5 ? 4 : 0
+			});
 			for (var y = h/2 - 4; y < h/2 + 2; y++) {
 				draw(x, y, {
-					Sprite: 'ui_fill',
-					Color:  '#777'
+					Sprite: 'ui_r1',
+					Color:  '#222'
 				});
 			}
 		}
-		draw(w/2 - 2, h/2 - 2, {
+		draw(w/2, h/2 - 4, {
 			Text:  'Race:',
-			Color: '#fff'
+			Color: '#aaa'
 		});
-		draw(w/2, h/2 - 2, {
+		draw(w/2 + 2, h/2 - 4, {
 			Text:  data['race'],
 			Color: '#fff'
 		});
-		draw(w/2 - 2, h/2 - 1, {
+		draw(w/2, h/2 - 3, {
 			Text:  'Gender:',
-			Color: '#fff'
+			Color: '#aaa'
 		});
-		draw(w/2, h/2 - 1, {
+		draw(w/2 + 2, h/2 - 3, {
 			Text:  data['gender'],
 			Color: '#fff'
 		});
-		draw(w/2 - 2, h/2, {
+		draw(w/2, h/2 - 2, {
 			Text:  'Skin:',
-			Color: '#fff'
+			Color: '#aaa'
 		});
 		var rotate = [0, 6, 3, 9];
-		draw(w/2, h/2 + 0.25, {
+		draw(w/2 + 2.125, h/2 - 2.125, {
+			Sprite: 'ui_r1',
+			Color:  data['skin'],
+			Y:      1
+		});
+		draw(w/2 - 6, h/2 - 4, {
 			Sprite: 'body_' + data['race'],
 			Color:  data['skin'],
-			X:      rotate[frame % 4]
+			X:      rotate[frame % 4],
+			Scale:  4
 		});
-		draw(w/2, h/2 + 0.25, {
-			Sprite: 'censor_' + data['race'],
-			Color:  data['skin'],
-			X:      rotate[frame % 4]
+		draw(w/2 - 6, h/2 - 4, {
+			Sprite: 'shoes_basic',
+			Color:  '#0f0',
+			X:      rotate[frame % 4],
+			Scale:  4
 		});
-		if (data['gender'] == 'female') {
-			draw(w/2, h/2 + 0.25, {
-				Sprite: 'censor_' + data['race'],
-				Color:  data['skin'],
-				X:      rotate[frame % 4],
-				Y:      1
-			});
-		}
+		draw(w/2 - 6, h/2 - 4, {
+			Sprite: 'pants_basic',
+			Color:  '#00f',
+			X:      rotate[frame % 4],
+			Scale:  4
+		});
+		draw(w/2 - 6, h/2 - 4, {
+			Sprite: 'shirt_basic',
+			Color:  '#f00',
+			X:      rotate[frame % 4],
+			Scale:  4
+		});
 	};
 	f.click = function(x, y) {
 		if (x >= -4 && x < 4) {
-			if (y >= -1.75 && y <= -1.25) {
+			if (y >= -3.75 && y <= -3.25) {
 				send({'CharacterCreation': {'Command': 'race'}});
 				return false;
-			} else if (y >= -0.75 && y <= -0.25) {
+			} else if (y >= -2.75 && y <= -2.25) {
 				send({'CharacterCreation': {'Command': 'gender'}});
 				return false;
-			} else if (y >= 0 && y <= 1) {
+			} else if (y >= -2.125 && y <= -1) {
 				send({'CharacterCreation': {'Command': 'skin'}});
 				return false;
 			} 
