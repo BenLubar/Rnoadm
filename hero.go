@@ -206,16 +206,18 @@ func (p *Player) CharacterCreation(command string) {
 		}
 	case "gender":
 		found := false
+		changed := false
 		for _, g := range race.Genders {
 			if found {
 				p.characterCreation.Gender = g
+				changed = true
 				break
 			}
 			if p.characterCreation.Gender == g {
 				found = true
 			}
 		}
-		if !found {
+		if !changed {
 			p.characterCreation.Gender = race.Genders[0]
 		}
 	case "skin":
