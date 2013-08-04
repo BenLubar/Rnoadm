@@ -222,12 +222,40 @@ func (p *Player) CharacterCreation(command string) {
 		}
 	case "skin":
 		p.characterCreation.SkinToneIndex = (p.characterCreation.SkinToneIndex + 1) % uint8(len(race.SkinTones))
+	case "shirt":
+		const pastels = "abcde"
+		const earthy = "34567"
+		palette := pastels
+		if r.Intn(2) == 0 {
+			palette = earthy
+		}
+		p.characterCreation.Top.CustomColor[0] = Color([]byte{
+			'#',
+			palette[r.Intn(len(palette))],
+			palette[r.Intn(len(palette))],
+			palette[r.Intn(len(palette))],
+		})
+	case "pants":
+		const pastels = "abcde"
+		const earthy = "34567"
+		palette := pastels
+		if r.Intn(2) == 0 {
+			palette = earthy
+		}
+		p.characterCreation.Legs.CustomColor[0] = Color([]byte{
+			'#',
+			palette[r.Intn(len(palette))],
+			palette[r.Intn(len(palette))],
+			palette[r.Intn(len(palette))],
+		})
 	}
 
 	p.SetHUD("character_creation", map[string]interface{}{
 		"race":   race.Name,
 		"gender": genderInfo[p.characterCreation.Gender].Name,
 		"skin":   race.SkinTones[p.characterCreation.SkinToneIndex],
+		"shirt":  p.characterCreation.Top.CustomColor[0],
+		"pants":  p.characterCreation.Legs.CustomColor[0],
 	})
 }
 
@@ -744,6 +772,9 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
 		})},
+	}
+	h.Feet = &Shoes{
+		Type: WhiteSneakers,
 	}
 	return h
 }

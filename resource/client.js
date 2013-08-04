@@ -396,7 +396,7 @@ huds['character_creation'] = function(data) {
 			for (var y = h/2 - 4; y < h/2 + 2; y++) {
 				draw(x, y, {
 					Sprite: 'ui_r1',
-					Color:  '#222'
+					Color:  x >= w/2 - 5 && x < w/2 - 1 && y < h/2 ? '#ccc' : '#222'
 				});
 			}
 		}
@@ -420,39 +420,57 @@ huds['character_creation'] = function(data) {
 			Text:  'Skin:',
 			Color: '#aaa'
 		});
-		var rotate = [0, 6, 3, 9];
 		draw(w/2 + 2.125, h/2 - 2.125, {
 			Sprite: 'ui_r1',
 			Color:  data['skin'],
 			Y:      1
 		});
-		draw(w/2 - 6, h/2 - 4, {
+		draw(w/2, h/2 - 1, {
+			Text:  'Shirt:',
+			Color: '#aaa'
+		});
+		draw(w/2 + 2.125, h/2 - 1.125, {
+			Sprite: 'ui_r1',
+			Color:  data['shirt'],
+			Y:      1
+		});
+		draw(w/2, h/2, {
+			Text:  'Pants:',
+			Color: '#aaa'
+		});
+		draw(w/2 + 2.125, h/2 - 0.125, {
+			Sprite: 'ui_r1',
+			Color:  data['pants'],
+			Y:      1
+		});
+		var rotate = [0, 6, 3, 9];
+		draw(w/2 - 5, h/2 - 4, {
 			Sprite: 'body_' + data['race'],
 			Color:  data['skin'],
 			X:      rotate[frame % 4],
 			Scale:  4
 		});
-		draw(w/2 - 6, h/2 - 4, {
+		draw(w/2 - 5, h/2 - 4, {
 			Sprite: 'shoes_basic',
-			Color:  '#0f0',
+			Color:  '#eef8f0',
 			X:      rotate[frame % 4],
 			Scale:  4
 		});
-		draw(w/2 - 6, h/2 - 4, {
+		draw(w/2 - 5, h/2 - 4, {
 			Sprite: 'pants_basic',
-			Color:  '#00f',
+			Color:  data['pants'],
 			X:      rotate[frame % 4],
 			Scale:  4
 		});
-		draw(w/2 - 6, h/2 - 4, {
+		draw(w/2 - 5, h/2 - 4, {
 			Sprite: 'shirt_basic',
-			Color:  '#f00',
+			Color:  data['shirt'],
 			X:      rotate[frame % 4],
 			Scale:  4
 		});
 	};
 	f.click = function(x, y) {
-		if (x >= -4 && x < 4) {
+		if (x >= 0 && x < 6) {
 			if (y >= -3.75 && y <= -3.25) {
 				send({'CharacterCreation': {'Command': 'race'}});
 				return false;
@@ -461,6 +479,12 @@ huds['character_creation'] = function(data) {
 				return false;
 			} else if (y >= -2.125 && y <= -1) {
 				send({'CharacterCreation': {'Command': 'skin'}});
+				return false;
+			} else if (y >= -1.125 && y <= 0) {
+				send({'CharacterCreation': {'Command': 'shirt'}});
+				return false;
+			} else if (y >= 0.125 && y <= 1) {
+				send({'CharacterCreation': {'Command': 'pants'}});
 				return false;
 			} 
 		}
