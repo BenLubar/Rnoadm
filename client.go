@@ -104,6 +104,27 @@ type packetSetHUD struct {
 	SetHUD _SetHUD
 }
 
+var bruteThrottle = make(map[string]uint8)
+var bruteThrottleLock sync.Mutex
+
+func init() {
+	go func() {
+		for {
+			bruteThrottleLock.Lock()
+			for addr, n := range bruteThrottle {
+				if n <= 1 {
+					delete(bruteThrottle, addr)
+				} else {
+					bruteThrottle[addr]--
+				}
+			}
+			bruteThrottleLock.Unlock()
+
+			time.Sleep(time.Minute)
+		}
+	}()
+}
+
 func websocketHandler(conn *websocket.Conn) {
 	defer conn.Close()
 
@@ -114,6 +135,16 @@ func websocketHandler(conn *websocket.Conn) {
 			break
 		}
 	}
+
+	bruteThrottleLock.Lock()
+	if bruteThrottle[addr] > 5 {
+		bruteThrottleLock.Unlock()
+		websocket.JSON.Send(conn, packetKick{
+			Kick: "Too many login attempts. Come back later.",
+		})
+		return
+	}
+	bruteThrottleLock.Unlock()
 
 	websocket.JSON.Send(conn, packetClientHash{
 		ClientHash: clientHash,
@@ -197,6 +228,12 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 					err = bcrypt.CompareHashAndPassword(login.Password, []byte(p.Auth.Password))
 					if err != nil {
+						bruteThrottleLock.Lock()
+						bruteThrottle[addr]++
+						if bruteThrottle[addr] >= 5 {
+							bruteThrottle[addr] = 20
+						}
+						bruteThrottleLock.Unlock()
 						websocket.JSON.Send(conn, packetKick{
 							Kick: "password incorrect",
 						})
