@@ -48,7 +48,7 @@ var raceInfo = [raceCount]struct {
 	Human: {
 		Name:      "human",
 		Genders:   []Gender{Male, Female},
-		SkinTones: []Color{"#ffe3cc", "#ffdbbd", "#e6c0a1", "#edd0b7", "#e3c3a8", "#ffcda3", "#e8d1be", "#e6d2c1", "#f7e9dc", "#cfbcab", "#c2a38a", "#c9a281", "#d9a980", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948"},
+		SkinTones: []Color{"#ffe3cc", "#ffdbbd", "#ffcda3", "#f7e9dc", "#edd0b7", "#e8d1be", "#e5c298", "#e3c3a8", "#c9a281", "#c2a38a", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948", "#635041", "#4f3f33"},
 	},
 }
 
