@@ -205,7 +205,19 @@ func (p *Player) CharacterCreation(command string) {
 			p.characterCreation.SkinToneIndex = uint8(r.Intn(len(race.SkinTones)))
 		}
 	case "gender":
-		p.characterCreation.Gender = race.Genders[r.Intn(len(race.Genders))]
+		found := false
+		for _, g := range race.Genders {
+			if found {
+				p.characterCreation.Gender = g
+				break
+			}
+			if p.characterCreation.Gender == g {
+				found = true
+			}
+		}
+		if !found {
+			p.characterCreation.Gender = race.Genders[0]
+		}
 	case "skin":
 		p.characterCreation.SkinToneIndex = (p.characterCreation.SkinToneIndex + 1) % uint8(len(race.SkinTones))
 	}

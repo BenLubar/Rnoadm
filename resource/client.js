@@ -366,18 +366,18 @@ huds['character_creation'] = function(data) {
 			Color: '#fff'
 		});
 		var rotate = [0, 6, 3, 9];
-		draw(w/2, h/2, {
+		draw(w/2, h/2 + 0.25, {
 			Sprite: 'body_' + data['race'],
 			Color:  data['skin'],
 			X:      rotate[frame % 4]
 		});
-		draw(w/2, h/2, {
+		draw(w/2, h/2 + 0.25, {
 			Sprite: 'censor_' + data['race'],
 			Color:  data['skin'],
 			X:      rotate[frame % 4]
 		});
 		if (data['gender'] == 'female') {
-			draw(w/2, h/2, {
+			draw(w/2, h/2 + 0.25, {
 				Sprite: 'censor_' + data['race'],
 				Color:  data['skin'],
 				X:      rotate[frame % 4],
@@ -393,7 +393,7 @@ huds['character_creation'] = function(data) {
 			} else if (y >= -0.75 && y <= -0.25) {
 				send({'CharacterCreation': {'Command': 'gender'}});
 				return false;
-			} else if (y >= 0.25 && y <= 0.75) {
+			} else if (y >= 0 && y <= 1) {
 				send({'CharacterCreation': {'Command': 'skin'}});
 				return false;
 			} 
