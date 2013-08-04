@@ -94,11 +94,11 @@ var wsonopen = ws.onopen = function() {
 
 var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
-	if (msg.Kick) {
+	if (msg['Kick']) {
 		ws.onclose = wsonclose = function() {};
 		gameState = {};
 		repaint();
-		alert('Kicked: ' + msg.Kick);
+		alert('Kicked: ' + msg['Kick']);
 	}
 	console.log(msg);
 };

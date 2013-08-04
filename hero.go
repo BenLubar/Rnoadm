@@ -103,25 +103,43 @@ func newUserID() uint64 {
 
 type Player struct {
 	ID uint64
-	Hero
+	*Hero
 	ZoneX, ZoneY int64
 	TileX, TileY uint8
+
+	Seed RandomSource
 
 	hud interface {
 		//Paint(func(int, int, PaintCell))
 		Key(int, bool) bool
 		Click(int, int) bool
 	}
-	repaint chan struct{}
 
-	Joined    time.Time
-	LastLogin time.Time
-	Admin     bool
-	Examine_  string
+	LastLoginAddr string
+	LastLogin     time.Time
+	Admin         bool
+	Examine_      string
 
 	messages chan<- string
+	kick     chan<- string
+
+	lock sync.Mutex
 
 	zone *Zone
+}
+
+func (p *Player) Lock() {
+	p.lock.Lock()
+	if p.Hero != nil {
+		p.Hero.Lock()
+	}
+}
+
+func (p *Player) Unlock() {
+	if p.Hero != nil {
+		p.Hero.Unlock()
+	}
+	p.lock.Unlock()
 }
 
 func (p *Player) SendMessage(message string) {
@@ -132,19 +150,24 @@ func (p *Player) SendMessage(message string) {
 	}
 }
 
+func (p *Player) Kick(message string) {
+	select {
+	case p.kick <- message:
+	default: // player was already kicked
+	}
+}
+
 func playerFilename(id uint64) string {
 	var buf [binary.MaxVarintLen64]byte
 	i := binary.PutUvarint(buf[:], id)
-	return "p" + Base32Encode(buf[:i]) + ".gz"
+	return "player" + Base32Encode(buf[:i]) + ".gz"
 }
 
 func (p *Player) Save() {
 	p.Lock()
 	defer p.Unlock()
 
-	dir := seedFilename()
-
-	f, err := os.Create(filepath.Join(dir, playerFilename(p.ID)))
+	f, err := os.Create(filepath.Join(seedFilename(), playerFilename(p.ID)))
 	if err != nil {
 		log.Printf("[save:%d] %v", p.ID, err)
 		return
@@ -165,9 +188,7 @@ func (p *Player) Save() {
 }
 
 func LoadPlayer(id uint64) (*Player, error) {
-	dir := seedFilename()
-
-	f, err := os.Open(filepath.Join(dir, playerFilename(id)))
+	f, err := os.Open(filepath.Join(seedFilename(), playerFilename(id)))
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +206,6 @@ func LoadPlayer(id uint64) (*Player, error) {
 	if err != nil {
 		return nil, err
 	}
-	p.repaint = make(chan struct{}, 1)
 	return &p, nil
 }
 
@@ -197,10 +217,7 @@ func (p *Player) ZIndex() int {
 }
 
 func (p *Player) Repaint() {
-	select {
-	case p.repaint <- struct{}{}:
-	default:
-	}
+	// TODO: remove this no-op
 }
 
 func (p *Player) Examine() string {

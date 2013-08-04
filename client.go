@@ -8,7 +8,6 @@ import (
 	"github.com/BenLubar/Rnoadm/resource"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -98,7 +97,6 @@ func websocketHandler(conn *websocket.Conn) {
 			var p packetIn
 			err := websocket.JSON.Receive(conn, &p)
 			if err != nil {
-				log.Printf("[%s] %v", addr, err)
 				close(packets)
 				return
 			}
@@ -110,6 +108,9 @@ func websocketHandler(conn *websocket.Conn) {
 		}
 	}()
 
+	var player *Player
+	kick := make(chan string, 1)
+
 	for {
 		select {
 		case p, ok := <-packets:
@@ -118,6 +119,9 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			if p.Auth != nil {
+				if player != nil {
+					return
+				}
 				if p.Auth.Login == "" || p.Auth.Password == "" {
 					return
 				}
@@ -170,11 +174,81 @@ func websocketHandler(conn *websocket.Conn) {
 						return
 					}
 				}
-				websocket.JSON.Send(conn, packetKick{
-					Kick: "logging in has temporarily been disabled",
-				})
-				return
+				player, err = LoadPlayer(login.ID)
+				if err != nil {
+					player = &Player{
+						ID: login.ID,
+					}
+					player.Seed.Seed(int64(login.ID))
+				}
+				player.LastLogin = time.Now().UTC()
+				player.LastLoginAddr = addr
+				player.Save()
+				player.kick = kick
+
+				onlinePlayersLock.Lock()
+				if otherSession, ok := OnlinePlayers[player.ID]; ok {
+					otherSession.Kick("Logged in from another location.")
+				}
+				OnlinePlayers[player.ID] = player
+				onlinePlayersLock.Unlock()
+
+				player.Lock()
+				if player.Hero != nil {
+					zone := GrabZone(player.ZoneX, player.ZoneY)
+					player.zone = zone
+					tile := zone.Tile(player.TileX, player.TileY)
+					if tile == nil {
+						player.TileX, player.TileY = 127, 127
+						tile = zone.Tile(127, 127)
+					}
+					player.Unlock()
+
+					zone.Lock()
+					tile.Add(player)
+					zone.Unlock()
+				} else {
+					player.Unlock()
+				}
+
+				defer func() {
+					onlinePlayersLock.Lock()
+					if session := OnlinePlayers[player.ID]; session == player {
+						delete(OnlinePlayers, player.ID)
+						defer player.Save()
+					}
+					onlinePlayersLock.Unlock()
+
+					player.Lock()
+					zone := player.zone
+					var tile *Tile
+					if zone != nil {
+						tile = zone.Tile(player.TileX, player.TileY)
+					}
+					player.Unlock()
+
+					if tile != nil {
+						zone.Lock()
+						tile.Remove(player)
+						zone.Unlock()
+					}
+				}()
+
+				player.Kick("logging in has temporarily been disabled")
 			}
+			if player == nil {
+				continue
+			}
+
+			if player.Hero == nil {
+				continue
+			}
+
+		case message := <-kick:
+			websocket.JSON.Send(conn, packetKick{
+				Kick: message,
+			})
+			return
 		}
 	}
 }
