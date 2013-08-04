@@ -142,43 +142,15 @@ document.onkeydown = function(e) {
 		return;
 	if (e.keyCode < 20)
 		e.preventDefault();
-	if (gameState.hud === loginHud) {
-		switch (e.keyCode) {
-		case 8: // backspace
-			switch (loginHudFocus) {
-			case 0:
-				if (loginHudUsername)
-					loginHudUsername = loginHudUsername.substring(0, loginHudUsername.length - 1);
-				break;
-			case 1:
-				if (loginHudPassword)
-					loginHudPassword = loginHudPassword.substring(0, loginHudPassword.length - 1);
-				break;
-			}
-			repaint();
-			break;
-		case 9: // tab
-			loginHudFocus = (loginHudFocus + 1) % 2;
-			repaint();
-			break;
-		case 13: // enter
-			loginHudSubmit();
-			break;
-		}
+	if (gameState.hud && gameState.hud.keyDown) {
+		if (gameState.hud.keyDown(e.keyCode) === false)
+			return;
 	}
 };
 document.onkeypress = function(e) {
-	if (gameState.hud === loginHud) {
-		switch (loginHudFocus) {
-		case 0:
-			loginHudUsername += String.fromCharCode(e.charCode);
-			localStorage['login'] = loginHudUsername;
-			break;
-		case 1:
-			loginHudPassword += String.fromCharCode(e.charCode);
-			break;
-		}
-		repaint();
+	if (gameState.hud && gameState.hud.keyPress) {
+		if (gameState.hud.keyPress(e.charCode) === false)
+			return;
 	}
 };
 document.querySelector('canvas').onclick = document.querySelector('canvas').oncontextmenu = function(e) {
@@ -305,18 +277,56 @@ loginHud.click = function(x, y) {
 		if (y >= -2.75 && y <= -1.75) {
 			loginHudFocus = 0; // login
 			repaint();
-			return false;
-		}
-		if (y >= -1.25 && y <= -0.25) {
+		} else if (y >= -1.25 && y <= -0.25) {
 			loginHudFocus = 1; // password
 			repaint();
-			return false;
-		}
-		if (y >= 0.00 && y <= 0.75) {
+		} else if (y >= 0.00 && y <= 0.75) {
 			loginHudSubmit();
+		}
+		if (y >= -4 && y <= 1) {
 			return false;
 		}
 	}
+};
+
+loginHud.keyDown = function(code) {
+	switch (code) {
+	case 8: // backspace
+		switch (loginHudFocus) {
+		case 0:
+			if (loginHudUsername)
+				loginHudUsername = loginHudUsername.substring(0, loginHudUsername.length - 1);
+			break;
+		case 1:
+			if (loginHudPassword)
+				loginHudPassword = loginHudPassword.substring(0, loginHudPassword.length - 1);
+			break;
+		}
+		repaint();
+		return false;
+	case 9: // tab
+		loginHudFocus = (loginHudFocus + 1) % 2;
+		repaint();
+		return false;
+	case 13: // enter
+		loginHudSubmit();
+		return false;
+	}
+};
+
+loginHud.keyPress = function(code) {
+	code = String.fromCharCode(code);
+	switch (loginHudFocus) {
+	case 0:
+		loginHudUsername += code;
+		localStorage['login'] = loginHudUsername;
+		break;
+	case 1:
+		loginHudPassword += code;
+		break;
+	}
+	repaint();
+	return false;
 };
 
 var loginHudSubmit = function() {
