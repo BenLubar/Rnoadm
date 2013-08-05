@@ -145,12 +145,14 @@ function repaint() {
 				var obj = gameState.objects[i];
 				var drawObject = function(o) {
 					o.colors.forEach(function(color, j) {
-						draw(obj.x - playerX + w/2, obj.y - playerY + h/2, {
-							Sprite: o.sprite,
-							Color:  color,
-							Scale:  o.scale,
-							Y:      j
-						});
+						if (color) {
+							draw(obj.x - playerX + w/2, obj.y - playerY + h/2, {
+								Sprite: o.sprite,
+								Color:  color,
+								Scale:  o.scale,
+								Y:      j
+							});
+						}
 					});
 					o.attach.forEach(drawObject);
 				};

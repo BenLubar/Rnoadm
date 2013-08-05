@@ -359,10 +359,10 @@ func (z *Zone) AllTileChange() []TileChange {
 			if t != nil {
 				for _, o := range t.Objects {
 					changes = append(changes, TileChange{
-						X:    uint8(x),
-						Y:    uint8(y),
-						ID:   o.NetworkID(),
-						Obj:  o.Serialize(),
+						X:   uint8(x),
+						Y:   uint8(y),
+						ID:  o.NetworkID(),
+						Obj: o.Serialize(),
 					})
 				}
 			}
@@ -451,8 +451,8 @@ type Object interface {
 
 type Item interface {
 	Object
-//	Mass() uint64   // grams
-//	Volume() uint64 // cubic centimeters
+	//	Mass() uint64   // grams
+	//	Volume() uint64 // cubic centimeters
 	AdminOnly() bool
 }
 

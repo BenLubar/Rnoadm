@@ -60,6 +60,14 @@ func (f *Flora) Examine() string {
 	return "a " + floraTypeInfo[f.Type].Name + " plant."
 }
 
+func (f *Flora) Serialize() *NetworkedObject {
+	info := floraTypeInfo[f.Type]
+	return &NetworkedObject{
+		Sprite: "plant",
+		Colors: []Color{info.LeafColor, info.StemColor, info.BulbColor, info.BoringPetalColor, info.CompassPetalColor, info.SuspiciousPetalColor, info.FlowerColor},
+	}
+}
+
 func (f *Flora) Blocking() bool {
 	return false
 }
