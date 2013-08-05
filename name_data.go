@@ -10,7 +10,6 @@ const (
 	NameSurnameVowel
 	NameFrontSyllableConsonant
 	NameEndConsonant
-	NameEndConsonantMaybeE
 	NameEndVowel
 
 	nameSubtypeCount
@@ -2680,8 +2679,6 @@ var names = [nameSubtypeCount][]string{
 		"ton",
 		"way",
 		"win",
-	},
-	NameEndConsonantMaybeE: {
 		"born",
 		"burn",
 		"cliff",
