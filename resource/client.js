@@ -116,14 +116,14 @@ function repaint() {
 					buffer.putImageData(data, 0, 0);
 				}
 				canvas.drawImage(images_recolor[p.Sprite][scale][p.Color],
-					(p.X || 0) * tileSize * scale,
-					(p.Y || 0) * height * scale,
-					tileSize * scale,
-					height * scale,
-					x*tileSize,
-					y*tileSize + (tileSize - height) * scale,
-					tileSize * scale,
-					height * scale);
+					Math.floor((p.X || 0) * tileSize * scale),
+					Math.floor((p.Y || 0) * height * scale),
+					Math.floor(tileSize * scale),
+					Math.floor(height * scale),
+					Math.floor(x*tileSize),
+					Math.floor(y*tileSize + (tileSize - height) * scale),
+					Math.floor(tileSize * scale),
+					Math.floor(height * scale));
 			}
 		};
 
