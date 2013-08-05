@@ -59,6 +59,10 @@ html {
 	background: #000;
 	text-align: center;
 }
+@font-face {
+	font-family: rnoadm-expection;
+	src:         url(expection.ttf);
+}
 </style>
 </head>
 <body>
@@ -108,6 +112,7 @@ type NetworkedObject struct {
 	Sprite   string             `json:"I"`
 	Colors   []Color            `json:"C"`
 	Scale    uint8              `json:"S,omitempty"`
+	Height   uint16             `json:"H,omitempty"`
 	Attached []*NetworkedObject `json:"A,omitempty"`
 }
 

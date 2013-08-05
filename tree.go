@@ -141,13 +141,6 @@ func (l *Logs) Examine() string {
 	return "some " + woodTypeInfo[l.Type].Name + " logs."
 }
 
-func (l *Logs) Serialize() *NetworkedObject {
-	return &NetworkedObject{ // TODO
-		Sprite: "ui_r1",
-		Colors: []Color{"#f0f"},
-	}
-}
-
 /*func (l *Logs) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "item_logs",
@@ -182,13 +175,6 @@ func (h *Hatchet) Name() string {
 
 func (h *Hatchet) Examine() string {
 	return "a hatchet made from " + metalTypeInfo[h.Head].Name + " and " + woodTypeInfo[h.Handle].Name + "."
-}
-
-func (h *Hatchet) Serialize() *NetworkedObject {
-	return &NetworkedObject{ // TODO
-		Sprite: "ui_r1",
-		Colors: []Color{"#f0f"},
-	}
 }
 
 /*func (h *Hatchet) Paint(x, y int, setcell func(int, int, PaintCell)) {
@@ -314,10 +300,13 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 	if treeScore <= hatchetScore {
 		if z.Tile(s.X, s.Y).Remove(s.T) {
 			z.Unlock()
+			SendZoneTileChange(z.X, z.Y, TileChange{
+				ID:      s.T.NetworkID(),
+				Removed: true,
+			})
 			h.Lock()
 			h.GiveItem(&Logs{Type: s.T.Type})
 			h.Unlock()
-			// TODO: send zone update
 			return false
 		}
 	}

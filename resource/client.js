@@ -10,7 +10,6 @@ var canvas = document.querySelector('canvas');
 canvas.width = w*tileSize;
 canvas.height = h*tileSize;
 canvas = canvas.getContext('2d');
-canvas.font = '11px sans-serif';
 
 var zoneBuffer = document.createElement('canvas');
 zoneBuffer.width = 256*tileSize;
@@ -20,7 +19,7 @@ var zoneBufferDirty = false;
 
 var frame = 0;
 setInterval(function() {
-	frame = Math.floor(+new Date() / 50);
+	frame = +new Date() / 50;
 	repaint();
 }, 50);
 
@@ -39,8 +38,9 @@ function repaint() {
 			var scale = p.Scale || 1;
 			var height = p.Height || tileSize;
 			if (p.Text) {
-				var tx = x*tileSize + tileSize/8;
-				var ty = y*tileSize + tileSize*7/8;
+				var tx = Math.floor(x*tileSize + tileSize/8);
+				var ty = Math.floor(y*tileSize + tileSize*7/8);
+				ctx.font = Math.floor(scale * 16) + 'px rnoadm-expection';
 				ctx.fillStyle = '#000';
 				ctx.fillText(p.Text, tx, ty + 1);
 				ctx.fillStyle = p.Color;
@@ -163,6 +163,7 @@ function repaint() {
 									Sprite: o.sprite,
 									Color:  color,
 									Scale:  o.scale,
+									Height: o.height,
 									Y:      j
 								}, zoneCtx);
 							}
@@ -232,7 +233,8 @@ var wsonmessage = ws.onmessage = function(e) {
 			return {
 				sprite: o['I'],
 				colors: o['C'],
-				scale:  o['S'] || 1,
+				scale:  o['S'],
+				height: o['H'],
 				attach: (o['A'] || []).map(toObject)
 			};
 		};
@@ -296,39 +298,17 @@ document.querySelector('canvas').onclick = document.querySelector('canvas').onco
 	}
 	return false;
 };
-/*var mouseX = -1, mouseY = -1;
-var mouseTimeout;
+var mouseX = -w, mouseY = -h;
 document.querySelector('canvas').onmouseout = function() {
-	if (mouseX == -1 && mouseY == -1) {
-		return;
-	}
-	mouseX = -1;
-	mouseY = -1;
-	if (mouseTimeout) {
-		clearTimeout(mouseTimeout);
-		mouseTimeout = null;
-	} else {
-		send({MouseMove:{X:-1, Y:-1}});
-	}
+	mouseX = -w;
+	mouseY = -h;
+	repaint();
 };
 document.querySelector('canvas').onmousemove = function(e) {
-	var x = Math.floor(e.offsetX/tileSize);
-	var y = Math.floor(e.offsetY/tileSize);
-	if (mouseX == x && mouseY == y) {
-		return;
-	}
-	if (mouseTimeout) {
-		clearTimeout(mouseTimeout);
-	} else {
-		send({MouseMove:{X:-1, Y:-1}});
-	}
-	mouseX = x;
-	mouseY = y;
-	mouseTimeout = setTimeout(function() {
-		send({MouseMove:{X:x, Y:y}});
-		mouseTimeout = null;
-	}, 500);
-};*/
+	mouseX = Math.floor(e.offsetX * 4 / tileSize)/4 - w/2;
+	mouseY = Math.floor(e.offsetY * 4 / tileSize)/4 - h/2;
+	repaint();
+};
 
 var loginHudUsername = localStorage['login'] || '';
 var loginHudPassword = '';
@@ -366,22 +346,22 @@ var loginHud = function(draw) {
 		});
 	}
 	draw(w/2 - 1.625, h/2 - 4, {
-		Sprite: 'ui_title',
+		Text:   'R',
 		Color:  '#888',
-		X:      0
+		Scale:  2
 	});
-	var permutations = [1, 2, 3, 4].sort(function(a, b) { return Math.random() * 2 - 1; });
+	var permutations = 'ando'.split('').sort(function(a, b) { return Math.random() * 2 - 1; });
 	for (var i in permutations) {
 		draw(w/2 - 1 + i/2, h/2 - 4, {
-			Sprite: 'ui_title',
+			Text:   permutations[i],
 			Color:  '#888',
-			X:      permutations[i]
+			Scale:  2
 		});
 	}
 	draw(w/2 + 1, h/2 - 4, {
-		Sprite: 'ui_title',
-		Color:  '#888',
-		X:      5
+		Text:  'm',
+		Color: '#888',
+		Scale: 2
 	});
 	draw(w/2 - 3.75, h/2 - 3.25, {
 		Text:  'Login',
@@ -495,9 +475,25 @@ huds['character_creation'] = function(data) {
 				});
 			}
 		}
+		for (var x = w/2 + 1; x < w/2 + 5; x += 0.5) {
+			draw(x, h/2 + 1.5, {
+				Sprite: 'ui_r1',
+				Color:  '#444',
+				X:      x == w/2 + 1 ? 1 : x == w/2 + 4.5 ? 2 : 0,
+				Y:      1
+			});
+		}
+		draw(w/2 + 2.25, h/2 + 1.5, {
+			Text:  'Accept',
+			Color: mouseX >= -1 && mouseX < 5 && mouseY >= 2 && mouseY < 2.5 ? '#fff' : '#aaa'
+		});
+		draw(w/2 - 2, h/2 - 5.25, {
+			Text:  'Character Creation',
+			Color: '#fff'
+		});
 		draw(w/2, h/2 - 4, {
 			Text:  'Race:',
-			Color: '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -3.75 && mouseY <= -3.25 ? '#fff' : '#aaa'
 		});
 		draw(w/2 + 2, h/2 - 4, {
 			Text:  data['race'],
@@ -505,7 +501,7 @@ huds['character_creation'] = function(data) {
 		});
 		draw(w/2, h/2 - 3, {
 			Text:  'Gender:',
-			Color: '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2.75 && mouseY <= -2.25 ? '#fff' : '#aaa'
 		});
 		draw(w/2 + 2, h/2 - 3, {
 			Text:  data['gender'],
@@ -513,7 +509,7 @@ huds['character_creation'] = function(data) {
 		});
 		draw(w/2, h/2 - 2, {
 			Text:  'Skin:',
-			Color: '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2 && mouseY <= -1 ? '#fff' : '#aaa'
 		});
 		draw(w/2 + 2.125, h/2 - 2.125, {
 			Sprite: 'ui_r1',
@@ -522,7 +518,7 @@ huds['character_creation'] = function(data) {
 		});
 		draw(w/2, h/2 - 1, {
 			Text:  'Shirt:',
-			Color: '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -1 && mouseY <= 0 ? '#fff' : '#aaa'
 		});
 		draw(w/2 + 2.125, h/2 - 1.125, {
 			Sprite: 'ui_r1',
@@ -531,7 +527,7 @@ huds['character_creation'] = function(data) {
 		});
 		draw(w/2, h/2, {
 			Text:  'Pants:',
-			Color: '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= 0 && mouseY <= 1 ? '#fff' : '#aaa'
 		});
 		draw(w/2 + 2.125, h/2 - 0.125, {
 			Sprite: 'ui_r1',
@@ -563,7 +559,11 @@ huds['character_creation'] = function(data) {
 			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
-		draw(w/2 - 4.5, h/2, {
+		draw(w/2 - 5, h/2, {
+			Text:  'Name:',
+			Color: mouseX >= -5 && mouseX < 0 && mouseY >= 0.25 && mouseY <= 0.75 ? '#fff' : '#aaa'
+		});
+		draw(w/2 - 3.5, h/2, {
 			Text:  data['name'],
 			Color: '#fff'
 		});
@@ -576,17 +576,17 @@ huds['character_creation'] = function(data) {
 			} else if (y >= -2.75 && y <= -2.25) {
 				send({'CharacterCreation': {'Command': 'gender'}});
 				return false;
-			} else if (y >= -2.125 && y <= -1) {
+			} else if (y >= -2 && y <= -1) {
 				send({'CharacterCreation': {'Command': 'skin'}});
 				return false;
-			} else if (y >= -1.125 && y <= 0) {
+			} else if (y >= -1 && y <= 0) {
 				send({'CharacterCreation': {'Command': 'shirt'}});
 				return false;
-			} else if (y >= 0.125 && y <= 1) {
+			} else if (y >= 0 && y <= 1) {
 				send({'CharacterCreation': {'Command': 'pants'}});
 				return false;
 			} 
-		} else if (x >= -4 && x < 0 && y >= 0.25 && y <= 0.75) {
+		} else if (x >= -5 && x < 0 && y >= 0.25 && y <= 0.75) {
 			send({'CharacterCreation': {'Command': 'name'}});
 			return false;
 		}

@@ -4,7 +4,7 @@ type cosmeticInfo struct {
 	Name    string
 	Examine string
 
-	Height uint8
+	Height uint16
 
 	Base        string
 	BaseColor   Color
@@ -208,6 +208,7 @@ func serializeCosmetic(info cosmeticInfo, custom [5]Color) *NetworkedObject {
 	return &NetworkedObject{
 		Sprite: info.Base,
 		Colors: colors,
+		Height: info.Height,
 	}
 }
 
