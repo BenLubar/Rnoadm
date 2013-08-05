@@ -221,6 +221,12 @@ func (p *Player) CharacterCreation(command string) {
 		if !changed {
 			p.characterCreation.Gender = race.Genders[0]
 		}
+		fallthrough
+	case "name":
+		switch p.characterCreation.Race {
+		case Human:
+			p.characterCreation.HeroName = GenerateHumanName(r, p.characterCreation.Gender)
+		}
 	case "skin":
 		p.characterCreation.SkinToneIndex = (p.characterCreation.SkinToneIndex + 1) % uint8(len(race.SkinTones))
 	case "shirt":
@@ -257,6 +263,7 @@ func (p *Player) CharacterCreation(command string) {
 		"skin":   race.SkinTones[p.characterCreation.SkinToneIndex],
 		"shirt":  p.characterCreation.Top.CustomColor[0],
 		"pants":  p.characterCreation.Legs.CustomColor[0],
+		"name":   p.characterCreation.Name(),
 	})
 }
 
@@ -688,9 +695,9 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 	}
 	z.Unlock()
 	SendZoneTileChange(z.X, z.Y, TileChange{
-		X:    pos[0],
-		Y:    pos[1],
-		ID:   obj.NetworkID(),
+		X:  pos[0],
+		Y:  pos[1],
+		ID: obj.NetworkID(),
 	})
 	return true
 }

@@ -14,7 +14,7 @@ canvas.font = '11px sans-serif';
 
 var frame = 0;
 setInterval(function() {
-	frame++;
+	frame = Math.floor(+new Date() / 50);
 	repaint();
 }, 50);
 
@@ -131,6 +131,16 @@ function repaint() {
 		var playerY = gameState.playerY || 0;
 
 		if (gameState.objects) {
+			for (var x = 0; x < 256; x += 4) {
+				for (var y = 0; y < 256; y += 4) {
+					draw(x - playerX + w/2, y - playerY + h/2, {
+						Sprite: 'grass_r1',
+						Color:  '#268f1e',
+						Scale:  4,
+						X:      ((x + y + x*y/4) / 4) % 4
+					});
+				}
+			}
 			for (var i in gameState.objects) {
 				var obj = gameState.objects[i];
 				var drawObject = function(o) {
@@ -532,6 +542,10 @@ huds['character_creation'] = function(data) {
 			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
+		draw(w/2 - 4.5, h/2, {
+			Text:  data['name'],
+			Color: '#fff'
+		});
 	};
 	f.click = function(x, y) {
 		if (x >= 0 && x < 6) {
@@ -551,6 +565,9 @@ huds['character_creation'] = function(data) {
 				send({'CharacterCreation': {'Command': 'pants'}});
 				return false;
 			} 
+		} else if (x >= -4 && x < 0 && y >= 0.25 && y <= 0.75) {
+			send({'CharacterCreation': {'Command': 'name'}});
+			return false;
 		}
 	};
 	return f;
