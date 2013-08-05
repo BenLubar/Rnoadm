@@ -12,6 +12,12 @@ canvas.height = h*tileSize;
 canvas = canvas.getContext('2d');
 canvas.font = '11px sans-serif';
 
+var zoneBuffer = document.createElement('canvas');
+zoneBuffer.width = 256*tileSize;
+zoneBuffer.height = 256*tileSize;
+var zoneCtx = zoneBuffer.getContext('2d');
+var zoneBufferDirty = false;
+
 var frame = 0;
 setInterval(function() {
 	frame = Math.floor(+new Date() / 50);
@@ -28,16 +34,17 @@ function repaint() {
 
 		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
-		var draw = function(x, y, p) {
+		var draw = function(x, y, p, ctx) {
+			ctx = ctx || canvas;
 			var scale = p.Scale || 1;
 			var height = p.Height || tileSize;
 			if (p.Text) {
 				var tx = x*tileSize + tileSize/8;
 				var ty = y*tileSize + tileSize*7/8;
-				canvas.fillStyle = '#000';
-				canvas.fillText(p.Text, tx, ty + 1);
-				canvas.fillStyle = p.Color;
-				canvas.fillText(p.Text, tx, ty);
+				ctx.fillStyle = '#000';
+				ctx.fillText(p.Text, tx, ty + 1);
+				ctx.fillStyle = p.Color;
+				ctx.fillText(p.Text, tx, ty);
 			}
 			if (p.Sprite) {
 				if (!images[p.Sprite]) {
@@ -47,6 +54,9 @@ function repaint() {
 						images[p.Sprite] = img;
 						images_resize[p.Sprite] = {};
 						images_recolor[p.Sprite] = {};
+						if (ctx != canvas) {
+							zoneBufferDirty = true;
+						}
 						repaint();
 					};
 					img.src = p.Sprite + '.png';
@@ -115,7 +125,7 @@ function repaint() {
 					}
 					buffer.putImageData(data, 0, 0);
 				}
-				canvas.drawImage(images_recolor[p.Sprite][scale][p.Color],
+				ctx.drawImage(images_recolor[p.Sprite][scale][p.Color],
 					Math.floor((p.X || 0) * tileSize * scale),
 					Math.floor((p.Y || 0) * height * scale),
 					Math.floor(tileSize * scale),
@@ -131,34 +141,41 @@ function repaint() {
 		var playerY = gameState.playerY || 0;
 
 		if (gameState.objects) {
-			for (var x = 0; x < 256; x += 4) {
-				for (var y = 0; y < 256; y += 4) {
-					draw(x - playerX + w/2, y - playerY + h/2, {
-						Sprite: 'grass_r1',
-						Color:  '#268f1e',
-						Scale:  4,
-						X:      ((x + y + x*y/4) / 4) % 4
-					});
+			if (zoneBufferDirty) {
+				zoneBufferDirty = false;
+				zoneCtx.clearRect(0, 0, zoneBuffer.width, zoneBuffer.height);
+				for (var x = 0; x < 256; x += 4) {
+					for (var y = 0; y < 256; y += 4) {
+						draw(x, y, {
+							Sprite: 'grass_r1',
+							Color:  '#268f1e',
+							Scale:  4,
+							X:      ((x + y + x*y/4) / 4) % 4
+						}, zoneCtx);
+					}
+				}
+				for (var i in gameState.objects) {
+					var obj = gameState.objects[i];
+					var drawObject = function(o) {
+						o.colors.forEach(function(color, j) {
+							if (color) {
+								draw(obj.x, obj.y, {
+									Sprite: o.sprite,
+									Color:  color,
+									Scale:  o.scale,
+									Y:      j
+								}, zoneCtx);
+							}
+						});
+						o.attach.forEach(drawObject);
+					};
+
+					drawObject(obj.object);
 				}
 			}
-			for (var i in gameState.objects) {
-				var obj = gameState.objects[i];
-				var drawObject = function(o) {
-					o.colors.forEach(function(color, j) {
-						if (color) {
-							draw(obj.x - playerX + w/2, obj.y - playerY + h/2, {
-								Sprite: o.sprite,
-								Color:  color,
-								Scale:  o.scale,
-								Y:      j
-							});
-						}
-					});
-					o.attach.forEach(drawObject);
-				};
-
-				drawObject(obj.object);
-			}
+			canvas.drawImage(zoneBuffer,
+				Math.floor((w/2 - playerX) * tileSize),
+				Math.floor((h/2 - playerY) * tileSize));
 		}
 
 		if (gameState.hud) {
@@ -197,6 +214,7 @@ var wsonmessage = ws.onmessage = function(e) {
 		alert('Kicked: ' + msg['Kick']);
 	}
 	if (msg['ResetZone']) {
+		zoneBufferDirty = true;
 		gameState.objects = {};
 		repaint();
 	}
@@ -209,6 +227,7 @@ var wsonmessage = ws.onmessage = function(e) {
 		repaint();
 	}
 	if (msg['TileChange']) {
+		zoneBufferDirty = true;
 		var toObject = function(o) {
 			return {
 				sprite: o['I'],
