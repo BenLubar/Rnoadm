@@ -35,11 +35,17 @@ function repaint() {
 
 		var draw = function(x, y, p, ctx) {
 			ctx = ctx || canvas;
+			var woff = w*tileSize/2;
+			var hoff = h*tileSize/2;
+			if (ctx != canvas) {
+				woff = 0;
+				hoff = 0;
+			}
 			var scale = p.Scale || 1;
 			var height = p.Height || tileSize;
 			if (p.Text) {
-				var tx = Math.floor(x*tileSize + tileSize/8);
-				var ty = Math.floor(y*tileSize + tileSize*7/8);
+				var tx = Math.floor(woff + x*tileSize + tileSize/8);
+				var ty = Math.floor(hoff + y*tileSize + tileSize*7/8);
 				ctx.font = Math.floor(scale * 16) + 'px rnoadm-expection';
 				ctx.fillStyle = '#000';
 				ctx.fillText(p.Text, tx, ty + 1);
@@ -130,8 +136,8 @@ function repaint() {
 					Math.floor((p.Y || 0) * height * scale),
 					Math.floor(tileSize * scale),
 					Math.floor(height * scale),
-					Math.floor(x*tileSize),
-					Math.floor(y*tileSize + (tileSize - height) * scale),
+					Math.floor(woff + x*tileSize),
+					Math.floor(hoff + y*tileSize + (tileSize - height) * scale),
 					Math.floor(tileSize * scale),
 					Math.floor(height * scale));
 			}
@@ -318,72 +324,72 @@ var loginHudUsername = localStorage['login'] || '';
 var loginHudPassword = '';
 var loginHudFocus = 0;
 var loginHud = function(draw) {
-	for (var x = w/2 - 4; x < w/2 + 4; x++) {
-		for (var y = h/2 - 4; y < h/2 + 1; y++) {
+	for (var x = -4; x < 4; x++) {
+		for (var y = -4; y < 1; y++) {
 			draw(x, y, {
 				Sprite: 'ui_r1',
-				Color:  y == h/2 - 4 ? '#444' : '#222',
-				X:      y == h/2 - 4 ? x == w/2 - 4 ? 3 : x == w/2 + 3 ? 4 : 0 : 0
+				Color:  y == -4 ? '#444' : '#222',
+				X:      y == -4 ? x == -4 ? 3 : x == 3 ? 4 : 0 : 0
 			});
 		}
-		draw(x + 0.5, h/2 + 0.5, {
+		draw(x, 0.5, {
 			Sprite: 'ui_r1',
 			Color:  '#444',
 			Y:      1
 		});
-		draw(x, h/2 + 0.5, {
+		draw(x + 0.5, 0.5, {
 			Sprite: 'ui_r1',
 			Color:  '#444',
 			Y:      1
 		});
 	}
-	for (var x = w/2 - 3.75; x < w/2 + 3.75; x += 0.5) {
-		draw(x, h/2 - 2.75, {
+	for (var x = -3.75; x < 3.75; x += 0.5) {
+		draw(x, -2.75, {
 			Sprite: 'ui_r1',
 			Color:  '#111',
 			Y:      1
 		});
-		draw(x, h/2 - 1.25, {
+		draw(x, -1.25, {
 			Sprite: 'ui_r1',
 			Color:  '#111',
 			Y:      1
 		});
 	}
-	draw(w/2 - 1.625, h/2 - 4, {
+	draw(-1.625, -4, {
 		Text:   'R',
 		Color:  '#888',
 		Scale:  2
 	});
 	var permutations = 'ando'.split('').sort(function(a, b) { return Math.random() * 2 - 1; });
 	for (var i in permutations) {
-		draw(w/2 - 1 + i/2, h/2 - 4, {
+		draw(-1 + i/2, -4, {
 			Text:   permutations[i],
 			Color:  '#888',
 			Scale:  2
 		});
 	}
-	draw(w/2 + 1, h/2 - 4, {
+	draw(1, -4, {
 		Text:  'm',
 		Color: '#888',
 		Scale: 2
 	});
-	draw(w/2 - 3.75, h/2 - 3.25, {
+	draw(-3.75, -3.25, {
 		Text:  'Login',
 		Color: '#aaa'
 	});
-	draw(w/2 - 3.75, h/2 - 2.75, {
+	draw(-3.75, -2.75, {
 		Text:  loginHudUsername + (loginHudFocus === 0 ? '_' : ''),
 		Color: '#fff'
 	});
-	draw(w/2 - 3.75, h/2 - 1.75, {
+	draw(-3.75, -1.75, {
 		Text:  'Password',
 		Color: '#aaa'
 	});
-	draw(w/2 - 3.75, h/2 - 1.25, {
+	draw(-3.75, -1.25, {
 		Text:  loginHudPassword.replace(/./g, '*') + (loginHudFocus === 1 ? '_' : ''),
 		Color: '#fff'
 	});
-	draw(w/2 - 3, h/2 - 0.25, {
+	draw(-3, -0.25, {
 		Text:  'Log in or register',
 		Color: '#aaa'
 	});
@@ -466,109 +472,109 @@ huds['character_creation'] = function(data) {
 	var f = function(draw) {
 		gameState.playerX = 127 + Math.cos(frame / 10000 * 7) * 64;
 		gameState.playerY = 127 + Math.sin(frame / 10000 * 6) * 64;
-		for (var x = w/2 - 6; x < w/2 + 6; x++) {
-			draw(x, h/2 - 5, {
+		for (var x = -6; x < 6; x++) {
+			draw(x, -5, {
 				Sprite: 'ui_r1',
 				Color:  '#444',
-				X:      x == w/2 - 6 ? 3 : x == w/2 + 5 ? 4 : 0
+				X:      x == -6 ? 3 : x == 5 ? 4 : 0
 			});
-			for (var y = h/2 - 4; y < h/2 + 2; y++) {
+			for (var y = -4; y < 2; y++) {
 				draw(x, y, {
 					Sprite: 'ui_r1',
-					Color:  x >= w/2 - 5 && x < w/2 - 1 && y < h/2 ? '#ccc' : '#222'
+					Color:  x >= -5 && x < -1 && y < 0 ? '#ccc' : '#222'
 				});
 			}
 		}
-		for (var x = w/2 + 1; x < w/2 + 5; x += 0.5) {
-			draw(x, h/2 + 1.5, {
+		for (var x = 1; x < 5; x += 0.5) {
+			draw(x, 1.5, {
 				Sprite: 'ui_r1',
 				Color:  '#444',
-				X:      x == w/2 + 1 ? 1 : x == w/2 + 4.5 ? 2 : 0,
+				X:      x == 1 ? 1 : x == 4.5 ? 2 : 0,
 				Y:      1
 			});
 		}
-		draw(w/2 + 2.25, h/2 + 1.5, {
+		draw(2.25, 1.5, {
 			Text:  'Accept',
 			Color: mouseX >= -1 && mouseX < 5 && mouseY >= 2 && mouseY < 2.5 ? '#fff' : '#aaa'
 		});
-		draw(w/2 - 2.75, h/2 - 5, {
+		draw(-2.75, -5, {
 			Text:  'Character Creation',
 			Color: '#888',
 			Scale: 2
 		});
-		draw(w/2, h/2 - 4, {
+		draw(0, -4, {
 			Text:  'Race:',
 			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -3.75 && mouseY <= -3.25 ? '#fff' : '#aaa'
 		});
-		draw(w/2 + 2, h/2 - 4, {
+		draw(2, -4, {
 			Text:  data['race'],
 			Color: '#fff'
 		});
-		draw(w/2, h/2 - 3, {
+		draw(0, -3, {
 			Text:  'Gender:',
 			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2.75 && mouseY <= -2.25 ? '#fff' : '#aaa'
 		});
-		draw(w/2 + 2, h/2 - 3, {
+		draw(2, -3, {
 			Text:  data['gender'],
 			Color: '#fff'
 		});
-		draw(w/2, h/2 - 2, {
+		draw(0, -2, {
 			Text:  'Skin:',
 			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2 && mouseY <= -1 ? '#fff' : '#aaa'
 		});
-		draw(w/2 + 2.125, h/2 - 2.125, {
+		draw(2.125, -2.125, {
 			Sprite: 'ui_r1',
 			Color:  data['skin'],
 			Y:      1
 		});
-		draw(w/2, h/2 - 1, {
+		draw(0, -1, {
 			Text:  'Shirt:',
 			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -1 && mouseY <= 0 ? '#fff' : '#aaa'
 		});
-		draw(w/2 + 2.125, h/2 - 1.125, {
+		draw(2.125, -1.125, {
 			Sprite: 'ui_r1',
 			Color:  data['shirt'],
 			Y:      1
 		});
-		draw(w/2, h/2, {
+		draw(0, 0, {
 			Text:  'Pants:',
 			Color: mouseX >= 0 && mouseX < 6 && mouseY >= 0 && mouseY <= 1 ? '#fff' : '#aaa'
 		});
-		draw(w/2 + 2.125, h/2 - 0.125, {
+		draw(2.125, -0.125, {
 			Sprite: 'ui_r1',
 			Color:  data['pants'],
 			Y:      1
 		});
 		var rotate = [0, 6, 3, 9];
-		draw(w/2 - 5, h/2 - 4, {
+		draw(-5, -4, {
 			Sprite: 'body_' + data['race'],
 			Color:  data['skin'],
 			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
-		draw(w/2 - 5, h/2 - 4, {
+		draw(-5, -4, {
 			Sprite: 'shoes_basic',
 			Color:  '#eef8f0',
 			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
-		draw(w/2 - 5, h/2 - 4, {
+		draw(-5, -4, {
 			Sprite: 'pants_basic',
 			Color:  data['pants'],
 			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
-		draw(w/2 - 5, h/2 - 4, {
+		draw(-5, -4, {
 			Sprite: 'shirt_basic',
 			Color:  data['shirt'],
 			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
-		draw(w/2 - 5, h/2, {
+		draw(-5, 0, {
 			Text:  'Name:',
 			Color: mouseX >= -5 && mouseX < 0 && mouseY >= 0.25 && mouseY <= 0.75 ? '#fff' : '#aaa'
 		});
-		draw(w/2 - 3.5, h/2, {
+		draw(-3.5, 0, {
 			Text:  data['name'],
 			Color: '#fff'
 		});
@@ -603,13 +609,13 @@ huds['character_creation'] = function(data) {
 };
 
 var lostConnectionHud = function(draw) {
-	for (var x = w/2 - 4; x < w/2 + 4; x++) {
-		draw(x, h/2, {
+	for (var x = -4; x < 4; x++) {
+		draw(x, 0, {
 			Sprite: 'ui_r1',
 			Color:  '#fff'
 		});
 	}
-	draw(w/2 - 2, h/2 - 0.25, {
+	draw(-2, -0.25, {
 		Text:  'Lost connection.',
 		Color: '#666'
 	});

@@ -294,8 +294,10 @@ func websocketHandler(conn *websocket.Conn) {
 				updates = zoneUpdates
 				player.zone = zone
 				if player.Hero != nil {
+					tx, ty := player.TileX, player.TileY
 					tile := zone.Tile(player.TileX, player.TileY)
 					if tile == nil {
+						tx, ty = 127, 127
 						player.TileX, player.TileY = 127, 127
 						tile = zone.Tile(127, 127)
 					}
@@ -303,6 +305,12 @@ func websocketHandler(conn *websocket.Conn) {
 
 					zone.Lock()
 					tile.Add(player)
+					SendZoneTileChange(zone.X, zone.Y, TileChange{
+						ID:  player.NetworkID(),
+						X:   tx,
+						Y:   ty,
+						Obj: player.Serialize(),
+					})
 					zone.Unlock()
 				} else {
 					player.Unlock()
@@ -328,6 +336,13 @@ func websocketHandler(conn *websocket.Conn) {
 						zone.Lock()
 						tile.Remove(player)
 						zone.Unlock()
+						SendZoneTileChange(zone.X, zone.Y, TileChange{
+							ID:      player.NetworkID(),
+							Removed: true,
+						})
+					}
+					if zone != nil {
+						ReleaseZone(zone, player)
 					}
 				}()
 
