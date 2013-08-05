@@ -33,7 +33,7 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		Name:    "novelty foam chicken hat",
 		Examine: "when you need to go in style, go in a novelty foam chicken's decapitated head.",
 
-		Base:        "hat_chicken",
+		Base:        "hat_novelty_foam_chicken",
 		BaseColor:   "#fff",
 		Layer1Color: "#ff0",
 		Layer2Color: "#f00",
