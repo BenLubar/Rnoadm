@@ -79,6 +79,7 @@ func init() {
 }
 
 type Tree struct {
+	networkID
 	Type WoodType
 }
 
@@ -90,20 +91,16 @@ func (t *Tree) Examine() string {
 	return "a tall " + woodTypeInfo[t.Type].Name + " tree."
 }
 
-/*func (t *Tree) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	setcell(x, y, PaintCell{
-		Sprite: "tree_trunk",
-		Color:  woodTypeInfo[t.Type].Color,
-		ZIndex: 51,
-	})
-	if color := woodTypeInfo[t.Type].LeafColor; color != "" {
-		setcell(x, y, PaintCell{
-			Sprite: "tree_leaves",
-			Color:  color,
-			ZIndex: 52,
-		})
+func (t *Tree) Serialize() *NetworkedObject {
+	colors := []Color{woodTypeInfo[t.Type].Color}
+	if leaf := woodTypeInfo[t.Type].LeafColor; leaf != "" {
+		colors = append(colors, leaf)
 	}
-}*/
+	return &NetworkedObject{
+		Sprite: "tree",
+		Colors: colors,
+	}
+}
 
 func (t *Tree) Blocking() bool {
 	return true
@@ -132,8 +129,8 @@ func (t *Tree) ZIndex() int {
 }
 
 type Logs struct {
+	networkID
 	Type WoodType
-	Uninteractable
 }
 
 func (l *Logs) Name() string {
@@ -142,6 +139,13 @@ func (l *Logs) Name() string {
 
 func (l *Logs) Examine() string {
 	return "some " + woodTypeInfo[l.Type].Name + " logs."
+}
+
+func (l *Logs) Serialize() *NetworkedObject {
+	return &NetworkedObject{ // TODO
+		Sprite: "ui_r1",
+		Colors: []Color{"#f0f"},
+	}
 }
 
 /*func (l *Logs) Paint(x, y int, setcell func(int, int, PaintCell)) {
@@ -167,6 +171,7 @@ func (l *Logs) ZIndex() int {
 }
 
 type Hatchet struct {
+	networkID
 	Head   MetalType
 	Handle WoodType
 }
@@ -177,6 +182,13 @@ func (h *Hatchet) Name() string {
 
 func (h *Hatchet) Examine() string {
 	return "a hatchet made from " + metalTypeInfo[h.Head].Name + " and " + woodTypeInfo[h.Handle].Name + "."
+}
+
+func (h *Hatchet) Serialize() *NetworkedObject {
+	return &NetworkedObject{ // TODO
+		Sprite: "ui_r1",
+		Colors: []Color{"#f0f"},
+	}
 }
 
 /*func (h *Hatchet) Paint(x, y int, setcell func(int, int, PaintCell)) {
@@ -302,13 +314,10 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 	if treeScore <= hatchetScore {
 		if z.Tile(s.X, s.Y).Remove(s.T) {
 			z.Unlock()
-			z.Repaint()
 			h.Lock()
 			h.GiveItem(&Logs{Type: s.T.Type})
 			h.Unlock()
-			if p != nil {
-				p.Repaint()
-			}
+			// TODO: send zone update
 			return false
 		}
 	}

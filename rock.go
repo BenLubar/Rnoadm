@@ -92,6 +92,7 @@ func init() {
 }
 
 type Rock struct {
+	networkID
 	Type RockType
 	Ore  MetalType
 	Big  bool
@@ -169,8 +170,8 @@ func (r *Rock) ZIndex() int {
 }
 
 type Stone struct {
+	networkID
 	Type RockType
-	Uninteractable
 }
 
 func (s *Stone) Name() string {
@@ -204,8 +205,8 @@ func (s *Stone) ZIndex() int {
 }
 
 type Ore struct {
+	networkID
 	Type MetalType
-	Uninteractable
 }
 
 func (o *Ore) Name() string {
@@ -239,6 +240,7 @@ func (o *Ore) ZIndex() int {
 }
 
 type Pickaxe struct {
+	networkID
 	Head   MetalType
 	Handle WoodType
 }
@@ -391,8 +393,8 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 	}
 	if rockScore <= pickaxeScore {
 		if z.Tile(s.X, s.Y).Remove(s.R) {
+			// TODO: zone tile update
 			z.Unlock()
-			z.Repaint()
 			h.Lock()
 			if s.Mine {
 				h.GiveItem(&Ore{Type: s.R.Ore})
@@ -400,9 +402,6 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 				h.GiveItem(&Stone{Type: s.R.Type})
 			}
 			h.Unlock()
-			if p != nil {
-				p.Repaint()
-			}
 			return false
 		}
 	}

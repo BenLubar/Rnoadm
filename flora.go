@@ -48,6 +48,7 @@ var floraTypeInfo = [floraTypeCount]struct {
 }
 
 type Flora struct {
+	networkID
 	Type FloraType
 }
 
@@ -58,58 +59,6 @@ func (f *Flora) Name() string {
 func (f *Flora) Examine() string {
 	return "a " + floraTypeInfo[f.Type].Name + " plant."
 }
-
-/*func (f *Flora) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	if color := floraTypeInfo[f.Type].LeafColor; color != "" {
-		setcell(x, y, PaintCell{
-			Sprite: "item_plant_leaves",
-			Color:  color,
-			ZIndex: 50,
-		})
-	}
-	if color := floraTypeInfo[f.Type].StemColor; color != "" {
-		setcell(x, y, PaintCell{
-			Sprite: "item_plant_stem",
-			Color:  color,
-			ZIndex: 51,
-		})
-	}
-	if color := floraTypeInfo[f.Type].BulbColor; color != "" {
-		setcell(x, y, PaintCell{
-			Sprite: "item_plant_bulb",
-			Color:  color,
-			ZIndex: 52,
-		})
-	}
-	if color := floraTypeInfo[f.Type].BoringPetalColor; color != "" {
-		setcell(x, y, PaintCell{
-			Sprite: "item_plant_flower_boring",
-			Color:  color,
-			ZIndex: 53,
-		})
-	}
-	if color := floraTypeInfo[f.Type].CompassPetalColor; color != "" {
-		setcell(x, y, PaintCell{
-			Sprite: "item_plant_flower_compass",
-			Color:  color,
-			ZIndex: 54,
-		})
-	}
-	if color := floraTypeInfo[f.Type].SuspiciousPetalColor; color != "" {
-		setcell(x, y, PaintCell{
-			Sprite: "item_plant_flower_suspicious",
-			Color:  color,
-			ZIndex: 55,
-		})
-	}
-	if color := floraTypeInfo[f.Type].FlowerColor; color != "" {
-		setcell(x, y, PaintCell{
-			Sprite: "item_plant_flower_center",
-			Color:  color,
-			ZIndex: 56,
-		})
-	}
-}*/
 
 func (f *Flora) Blocking() bool {
 	return false

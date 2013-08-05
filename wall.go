@@ -1,8 +1,8 @@
 package main
 
 type WallStone struct {
+	networkID
 	Type RockType
-	Uninteractable
 }
 
 func (w *WallStone) Name() string {
@@ -30,8 +30,8 @@ func (w *WallStone) ZIndex() int {
 }
 
 type WallMetal struct {
+	networkID
 	Type MetalType
-	Uninteractable
 }
 
 func (w *WallMetal) Name() string {
@@ -59,8 +59,8 @@ func (w *WallMetal) ZIndex() int {
 }
 
 type WallWood struct {
+	networkID
 	Type WoodType
-	Uninteractable
 }
 
 func (w *WallWood) Name() string {
@@ -88,8 +88,8 @@ func (w *WallWood) ZIndex() int {
 }
 
 type FloorStone struct {
+	networkID
 	Type RockType
-	Uninteractable
 }
 
 func (f *FloorStone) Name() string {
@@ -117,8 +117,8 @@ func (f *FloorStone) ZIndex() int {
 }
 
 type FloorMetal struct {
+	networkID
 	Type MetalType
-	Uninteractable
 }
 
 func (f *FloorMetal) Name() string {
@@ -146,8 +146,8 @@ func (f *FloorMetal) ZIndex() int {
 }
 
 type FloorWood struct {
+	networkID
 	Type WoodType
-	Uninteractable
 }
 
 func (f *FloorWood) Name() string {

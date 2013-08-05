@@ -16,7 +16,7 @@ var frame = 0;
 setInterval(function() {
 	frame++;
 	repaint();
-}, 500);
+}, 50);
 
 var inRepaint = false;
 function repaint() {
@@ -127,8 +127,31 @@ function repaint() {
 			}
 		};
 
-		if (gameState.hud)
+		var playerX = gameState.playerX || 0;
+		var playerY = gameState.playerY || 0;
+
+		if (gameState.objects) {
+			for (var i in gameState.objects) {
+				var obj = gameState.objects[i];
+				var drawObject = function(o) {
+					o.colors.forEach(function(color, j) {
+						draw(obj.x - playerX + w/2, obj.y - playerY + h/2, {
+							Sprite: o.sprite,
+							Color:  color,
+							Scale:  o.scale,
+							Y:      j
+						});
+					});
+					o.attach.forEach(drawObject);
+				};
+
+				drawObject(obj.object);
+			}
+		}
+
+		if (gameState.hud) {
 			gameState.hud(draw);
+		}
 	});
 }
 
@@ -160,6 +183,45 @@ var wsonmessage = ws.onmessage = function(e) {
 		gameState = {};
 		repaint();
 		alert('Kicked: ' + msg['Kick']);
+	}
+	if (msg['ResetZone']) {
+		gameState.objects = {};
+		repaint();
+	}
+	if ('PlayerX' in msg) {
+		gameState.playerX = msg['PlayerX'];
+		repaint();
+	}
+	if ('PlayerY' in msg) {
+		gameState.playerY = msg['PlayerY'];
+		repaint();
+	}
+	if (msg['TileChange']) {
+		var toObject = function(o) {
+			return {
+				sprite: o['I'],
+				colors: o['C'],
+				scale:  o['S'] || 1,
+				attach: (o['A'] || []).map(toObject)
+			};
+		};
+		msg['TileChange'].forEach(function(tile) {
+			if (tile['R']) {
+				delete gameState.objects[tile['ID']];
+			} else {
+				if (tile['O']) {
+					gameState.objects[tile['ID']] = {
+						x:      tile['X'],
+						y:      tile['Y'],
+						object: toObject(tile['O'])
+					};
+				} else {
+					gameState.objects[tile['ID']].x = tile['X'];
+					gameState.objects[tile['ID']].y = tile['Y'];
+				}
+			}
+		});
+		repaint();
 	}
 	console.log(msg);
 };
@@ -387,6 +449,8 @@ var loginHudSubmit = function() {
 
 huds['character_creation'] = function(data) {
 	var f = function(draw) {
+		gameState.playerX = 127 + Math.cos(frame / 10000 * 7) * 64;
+		gameState.playerY = 127 + Math.sin(frame / 10000 * 6) * 64;
 		for (var x = w/2 - 6; x < w/2 + 6; x++) {
 			draw(x, h/2 - 5, {
 				Sprite: 'ui_r1',
@@ -447,25 +511,25 @@ huds['character_creation'] = function(data) {
 		draw(w/2 - 5, h/2 - 4, {
 			Sprite: 'body_' + data['race'],
 			Color:  data['skin'],
-			X:      rotate[frame % 4],
+			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
 		draw(w/2 - 5, h/2 - 4, {
 			Sprite: 'shoes_basic',
 			Color:  '#eef8f0',
-			X:      rotate[frame % 4],
+			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
 		draw(w/2 - 5, h/2 - 4, {
 			Sprite: 'pants_basic',
 			Color:  data['pants'],
-			X:      rotate[frame % 4],
+			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
 		draw(w/2 - 5, h/2 - 4, {
 			Sprite: 'shirt_basic',
 			Color:  data['shirt'],
-			X:      rotate[frame % 4],
+			X:      rotate[Math.floor(frame/10) % 4],
 			Scale:  4
 		});
 	};

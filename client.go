@@ -104,6 +104,26 @@ type packetSetHUD struct {
 	SetHUD _SetHUD
 }
 
+type NetworkedObject struct {
+	Sprite   string             `json:"I"`
+	Colors   []Color            `json:"C"`
+	Scale    uint8              `json:"S,omitempty"`
+	Attached []*NetworkedObject `json:"A,omitempty"`
+}
+
+type TileChange struct {
+	ID      uint64
+	X, Y    uint8
+	Removed bool             `json:"R,omitempty"`
+	Obj     *NetworkedObject `json:"O,omitempty"`
+}
+
+type packetTileChange struct {
+	TileChange       []TileChange
+	PlayerX, PlayerY uint8
+	ResetZone        bool
+}
+
 var bruteThrottle = make(map[string]uint8)
 var bruteThrottleLock sync.Mutex
 
@@ -170,6 +190,10 @@ func websocketHandler(conn *websocket.Conn) {
 	var player *Player
 	kick := make(chan string, 1)
 	hud := make(chan packetSetHUD, 16)
+	var updates <-chan TileChange
+	var updateQueue packetTileChange
+	updateTimer := time.NewTicker(5 * time.Millisecond)
+	defer updateTimer.Stop()
 
 	for {
 		select {
@@ -261,9 +285,10 @@ func websocketHandler(conn *websocket.Conn) {
 				onlinePlayersLock.Unlock()
 
 				player.Lock()
+				zone, zoneUpdates := GrabZone(player.ZoneX, player.ZoneY, player)
+				updates = zoneUpdates
+				player.zone = zone
 				if player.Hero != nil {
-					zone := GrabZone(player.ZoneX, player.ZoneY)
-					player.zone = zone
 					tile := zone.Tile(player.TileX, player.TileY)
 					if tile == nil {
 						player.TileX, player.TileY = 127, 127
@@ -301,6 +326,9 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 				}()
 
+				updateQueue.ResetZone = true
+				updateQueue.TileChange = zone.AllTileChange()
+
 				if player.Hero == nil {
 					player.CharacterCreation("")
 					continue
@@ -327,6 +355,28 @@ func websocketHandler(conn *websocket.Conn) {
 				Kick: message,
 			})
 			return
+
+		case update, ok := <-updates:
+			if !ok {
+				updates = nil
+				updateQueue.ResetZone = true
+				updateQueue.TileChange = updateQueue.TileChange[:0]
+				continue
+			}
+			updateQueue.TileChange = append(updateQueue.TileChange, update)
+
+		case <-updateTimer.C:
+			if len(updateQueue.TileChange) > 0 {
+				player.Lock()
+				updateQueue.PlayerX = player.TileX
+				updateQueue.PlayerY = player.TileY
+				player.Unlock()
+
+				websocket.JSON.Send(conn, updateQueue)
+
+				updateQueue.ResetZone = false
+				updateQueue.TileChange = updateQueue.TileChange[:0]
+			}
 		}
 	}
 }

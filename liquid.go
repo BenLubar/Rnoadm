@@ -1,7 +1,7 @@
 package main
 
 type Liquid struct {
-	Uninteractable
+	networkID
 }
 
 func (l *Liquid) Name() string {

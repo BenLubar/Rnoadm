@@ -1,8 +1,8 @@
 package main
 
 type Bed struct {
+	networkID
 	Frame WoodType
-	Uninteractable
 }
 
 func (b *Bed) Name() string {
@@ -30,8 +30,8 @@ func (b *Bed) ZIndex() int {
 }
 
 type Chest struct {
+	networkID
 	Type WoodType
-	Uninteractable
 }
 
 func (c *Chest) Name() string {

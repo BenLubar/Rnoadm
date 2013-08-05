@@ -102,6 +102,7 @@ func newUserID() uint64 {
 }
 
 type Player struct {
+	networkID
 	ID uint64
 	*Hero
 	ZoneX, ZoneY int64
@@ -318,10 +319,6 @@ func (p *Player) ZIndex() int {
 	return p.Hero.ZIndex()
 }
 
-func (p *Player) Repaint() {
-	// TODO: remove this no-op
-}
-
 func (p *Player) Examine() string {
 	if p.Admin {
 		p.Lock()
@@ -339,6 +336,7 @@ func (p *Player) Think(z *Zone, x, y uint8) {
 }
 
 type Hero struct {
+	networkID
 	*HeroName
 
 	CustomColor Color
@@ -518,7 +516,6 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	if h.Delay > 0 {
 		if h.scheduleDelay > 0 {
 			h.scheduleDelay--
-			z.Repaint()
 		}
 		h.Delay--
 		h.Unlock()
@@ -528,7 +525,6 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	if h.scheduleDelay > 0 {
 		h.scheduleDelay--
 		h.Unlock()
-		z.Repaint()
 		return
 	}
 
@@ -566,13 +562,6 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	h.Delay = uint(rand.Intn(5) + 1)
 	h.scheduleDelay = uint(rand.Intn(100) + 1)
 	h.Unlock()
-}
-
-func (h *Hero) InteractOptions() []string {
-	return nil
-}
-
-func (h *Hero) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (h *Hero) ZIndex() int {
@@ -698,7 +687,11 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 		z.Tile(pos[0], pos[1]).Add(obj)
 	}
 	z.Unlock()
-	z.Repaint()
+	SendZoneTileChange(z.X, z.Y, TileChange{
+		X:    pos[0],
+		Y:    pos[1],
+		ID:   obj.NetworkID(),
+	})
 	return true
 }
 
@@ -726,7 +719,7 @@ func (s *TakeSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 		h.Lock()
 		h.GiveItem(s.Item)
 		h.Unlock()
-		z.Repaint()
+		// TODO: zone tile update
 	}
 	return false
 }

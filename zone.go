@@ -12,7 +12,28 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
+	"sync/atomic"
 )
+
+var nextNetworkID uint64
+
+type networkID uint64
+
+func (id *networkID) NetworkID() uint64 {
+	if i := atomic.LoadUint64((*uint64)(id)); i != 0 {
+		return i
+	}
+	atomic.CompareAndSwapUint64((*uint64)(id), 0, atomic.AddUint64(&nextNetworkID, 1))
+	return atomic.LoadUint64((*uint64)(id))
+}
+
+func (id *networkID) Serialize() *NetworkedObject {
+	// TODO: remove this method
+	return &NetworkedObject{
+		Sprite: "ui_r1",
+		Colors: []Color{"#f0f"},
+	}
+}
 
 const root3 = 1.7320508075688772935274463415058723669428052538103806
 const zoneTiles = 46872
@@ -34,7 +55,7 @@ func init() {
 
 type loadedZone struct {
 	zone *Zone
-	ref  uint
+	ref  map[*Player]chan<- TileChange
 }
 
 type zoneInfo struct {
@@ -43,13 +64,15 @@ type zoneInfo struct {
 	Biome   Biome
 }
 
-var loadedZones = make(map[[2]int64]*loadedZone)
+var loadedZones = make(map[[2]int64]loadedZone)
 var loadedZoneLock sync.Mutex
 var ZoneInfo map[[2]int64]zoneInfo
 
-func GrabZone(x, y int64) *Zone {
+func GrabZone(x, y int64, p *Player) (*Zone, <-chan TileChange) {
 	loadedZoneLock.Lock()
 	defer loadedZoneLock.Unlock()
+
+	ch := make(chan TileChange, 64)
 
 	if ZoneInfo == nil {
 		f, err := os.Open(filepath.Join(seedFilename(), "mZONEMETA.gz"))
@@ -73,8 +96,8 @@ func GrabZone(x, y int64) *Zone {
 	}
 
 	if z, ok := loadedZones[[2]int64{x, y}]; ok {
-		z.ref++
-		return z.zone
+		z.ref[p] = ch
+		return z.zone, ch
 	}
 
 	z, err := LoadZone(x, y)
@@ -106,23 +129,37 @@ func GrabZone(x, y int64) *Zone {
 		panic(err)
 	}
 
-	loadedZones[[2]int64{x, y}] = &loadedZone{
+	lz := loadedZone{
 		zone: z,
-		ref:  1,
+		ref:  make(map[*Player]chan<- TileChange),
 	}
-	return z
+	lz.ref[p] = ch
+	loadedZones[[2]int64{x, y}] = lz
+	return z, ch
 }
 
-func ReleaseZone(z *Zone) {
+func ReleaseZone(z *Zone, p *Player) {
 	loadedZoneLock.Lock()
 	defer loadedZoneLock.Unlock()
 
 	l := loadedZones[[2]int64{z.X, z.Y}]
-	l.ref--
-	if l.ref == 0 {
+	close(l.ref[p])
+	delete(l.ref, p)
+	if len(l.ref) == 0 {
 		l.zone.Save()
 		delete(loadedZones, [2]int64{z.X, z.Y})
 	}
+}
+
+func SendZoneTileChange(x, y int64, c TileChange) {
+	loadedZoneLock.Lock()
+	for _, ch := range loadedZones[[2]int64{x, y}].ref {
+		select {
+		case ch <- c:
+		default:
+		}
+	}
+	loadedZoneLock.Unlock()
 }
 
 func EachLoadedZone(f func(*Zone)) {
@@ -166,7 +203,6 @@ type Zone struct {
 	Element Element
 	Biome   Biome
 	Tiles   [zoneTiles]Tile
-	dirty   chan struct{}
 	mtx     sync.Mutex
 }
 
@@ -207,8 +243,6 @@ const (
 func (z *Zone) Generate() {
 	z.Lock()
 	defer z.Unlock()
-
-	z.dirty = make(chan struct{}, 1)
 
 	z.Seed.Seed(Seed ^ z.X ^ int64(uint64(z.Y)<<32|uint64(z.Y)>>32))
 	r := z.Rand()
@@ -289,7 +323,6 @@ func LoadZone(x, y int64) (*Zone, error) {
 	if err != nil {
 		return nil, err
 	}
-	z.dirty = make(chan struct{}, 1)
 	return &z, nil
 }
 
@@ -312,26 +345,31 @@ func (z *Zone) Think() {
 			}
 		}
 	}
-
-	select {
-	case <-z.dirty:
-		for i := range z.Tiles {
-			for _, o := range z.Tiles[i].Objects {
-				if p, ok := o.(*Player); ok {
-					p.Repaint()
-				}
-			}
-		}
-	default:
-	}
 	z.Unlock()
 }
 
-func (z *Zone) Repaint() {
-	select {
-	case z.dirty <- struct{}{}:
-	default:
+func (z *Zone) AllTileChange() []TileChange {
+	z.Lock()
+	defer z.Unlock()
+
+	var changes []TileChange
+	for x := 0; x < 256; x++ {
+		for y := 0; y < 256; y++ {
+			t := z.Tile(uint8(x), uint8(y))
+			if t != nil {
+				for _, o := range t.Objects {
+					changes = append(changes, TileChange{
+						X:    uint8(x),
+						Y:    uint8(y),
+						ID:   o.NetworkID(),
+						Obj:  o.Serialize(),
+					})
+				}
+			}
+		}
 	}
+
+	return changes
 }
 
 func (z *Zone) Name() string {
@@ -404,16 +442,17 @@ type Color string
 type Object interface {
 	Name() string
 	Examine() string
-	//Paint(int, int, func(int, int, PaintCell))
 	Blocking() bool
 	ZIndex() int
-	InteractOptions() []string
-	Interact(uint8, uint8, *Player, *Zone, int)
+
+	NetworkID() uint64
+	Serialize() *NetworkedObject
 }
 
 type Item interface {
 	Object
-	IsItem()
+//	Mass() uint64   // grams
+//	Volume() uint64 // cubic centimeters
 	AdminOnly() bool
 }
 
@@ -450,10 +489,3 @@ func init() {
 	gob.Register(Item(&Pickaxe{}))
 	gob.Register(Item(&Hatchet{}))
 }
-
-type Uninteractable bool
-
-func (*Uninteractable) InteractOptions() []string {
-	return nil
-}
-func (*Uninteractable) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {}

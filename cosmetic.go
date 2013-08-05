@@ -135,21 +135,25 @@ var shoeTypeInfo = [shoeTypeCount]cosmeticInfo{
 }
 
 type Hat struct {
+	networkID
 	Type        HatType
 	CustomColor [5]Color
 }
 
 type Shirt struct {
+	networkID
 	Type        ShirtType
 	CustomColor [5]Color
 }
 
 type Pants struct {
+	networkID
 	Type        PantsType
 	CustomColor [5]Color
 }
 
 type Shoes struct {
+	networkID
 	Type        ShoeType
 	CustomColor [5]Color
 }
@@ -184,6 +188,40 @@ func (p *Pants) Examine() string {
 
 func (s *Shoes) Examine() string {
 	return shoeTypeInfo[s.Type].Examine
+}
+
+func serializeCosmetic(info cosmeticInfo, custom [5]Color) *NetworkedObject {
+	colors := []Color{info.BaseColor, info.Layer1Color, info.Layer2Color, info.Layer3Color, info.Layer4Color}
+
+	for i := len(colors) - 1; i > 0; i-- {
+		if colors[i] == "" {
+			colors = colors[:i]
+		}
+	}
+
+	for i := range colors {
+		if custom[i] != "" {
+			colors[i] = custom[i]
+		}
+	}
+
+	return &NetworkedObject{
+		Sprite: info.Base,
+		Colors: colors,
+	}
+}
+
+func (h *Hat) Serialize() *NetworkedObject {
+	return serializeCosmetic(hatTypeInfo[h.Type], h.CustomColor)
+}
+func (s *Shirt) Serialize() *NetworkedObject {
+	return serializeCosmetic(shirtTypeInfo[s.Type], s.CustomColor)
+}
+func (p *Pants) Serialize() *NetworkedObject {
+	return serializeCosmetic(pantsTypeInfo[p.Type], p.CustomColor)
+}
+func (s *Shoes) Serialize() *NetworkedObject {
+	return serializeCosmetic(shoeTypeInfo[s.Type], s.CustomColor)
 }
 
 func (h *Hat) Blocking() bool {
@@ -385,14 +423,6 @@ func (s *Shoes) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 		player.Unlock()
 	}
 }
-
-func (h *Hat) IsItem() {}
-
-func (s *Shirt) IsItem() {}
-
-func (p *Pants) IsItem() {}
-
-func (s *Shoes) IsItem() {}
 
 func (h *Hat) AdminOnly() bool {
 	return hatTypeInfo[h.Type].AdminOnly

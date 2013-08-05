@@ -1,3 +1,6 @@
+// +build ignore
+// (for now)
+
 package main
 
 type ZoneHUD string
