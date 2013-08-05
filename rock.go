@@ -112,6 +112,20 @@ func (r *Rock) Examine() string {
 	return "a deposit of " + rockTypeInfo[r.Type].Name + " rock."
 }
 
+func (r *Rock) Serialize() *NetworkedObject {
+	colors := []Color{rockTypeInfo[r.Type].Color}
+	if r.Ore != 0 {
+		colors = append(colors, metalTypeInfo[r.Ore].Color)
+		if r.Big {
+			colors = append(colors, metalTypeInfo[r.Ore].Color)
+		}
+	}
+	return &NetworkedObject{
+		Sprite: "rock",
+		Colors: colors,
+	}
+}
+
 /*func (r *Rock) Paint(x, y int, setcell func(int, int, PaintCell)) {
 	setcell(x, y, PaintCell{
 		Sprite: "rock_base",
