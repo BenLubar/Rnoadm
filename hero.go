@@ -170,6 +170,11 @@ func (p *Player) CharacterCreation(command string) {
 	p.Lock()
 	defer p.Unlock()
 
+	if p.Hero != nil {
+		// TODO: change this when health is implemented
+		return
+	}
+
 	r := rand.New(&p.Seed)
 
 	if p.characterCreation == nil {
@@ -255,6 +260,24 @@ func (p *Player) CharacterCreation(command string) {
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
 		})
+	case "accept":
+		p.characterCreation.Lock()
+		p.Hero = p.characterCreation
+		p.characterCreation = nil
+		zone := p.zone
+		tile := zone.Tile(p.TileX, p.TileY)
+		if tile == nil {
+			p.TileX, p.TileY = 127, 127
+			tile = zone.Tile(127, 127)
+		}
+		p.Unlock()
+
+		zone.Lock()
+		tile.Add(p)
+		zone.Unlock()
+		p.Lock()
+		p.SetHUD("", nil)
+		return
 	}
 
 	p.SetHUD("character_creation", map[string]interface{}{
@@ -317,6 +340,10 @@ func LoadPlayer(id uint64) (*Player, error) {
 		return nil, err
 	}
 	return &p, nil
+}
+
+func (p *Player) Serialize() *NetworkedObject {
+	return p.Hero.Serialize()
 }
 
 func (p *Player) ZIndex() int {
@@ -387,6 +414,34 @@ func (h *Hero) Examine() string {
 
 func (h *Hero) Blocking() bool {
 	return false
+}
+
+func (h *Hero) Serialize() *NetworkedObject {
+	h.Lock()
+	defer h.Unlock()
+
+	colors := []Color{h.CustomColor}
+	if colors[0] == "" {
+		colors[0] = raceInfo[h.Race].SkinTones[h.SkinToneIndex]
+	}
+	var attached []*NetworkedObject
+	if h.Feet != nil {
+		attached = append(attached, h.Feet.Serialize())
+	}
+	if h.Legs != nil {
+		attached = append(attached, h.Legs.Serialize())
+	}
+	if h.Top != nil {
+		attached = append(attached, h.Top.Serialize())
+	}
+	if h.Head != nil {
+		attached = append(attached, h.Head.Serialize())
+	}
+	return &NetworkedObject{
+		Sprite:   "body_" + raceInfo[h.Race].Name,
+		Colors:   colors,
+		Attached: attached,
+	}
 }
 
 /*func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {

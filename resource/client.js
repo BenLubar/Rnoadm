@@ -205,7 +205,11 @@ var wsonmessage = ws.onmessage = function(e) {
 		}
 	}
 	if (msg['SetHUD']) {
-		gameState.hud = huds[msg['SetHUD']['Name']](msg['SetHUD']['Data']);
+		if (msg['SetHUD']['Name']) {
+			gameState.hud = huds[msg['SetHUD']['Name']](msg['SetHUD']['Data']);
+		} else {
+			delete gameState.hud;
+		}
 		repaint();
 	}
 	if (msg['Kick']) {
@@ -487,9 +491,10 @@ huds['character_creation'] = function(data) {
 			Text:  'Accept',
 			Color: mouseX >= -1 && mouseX < 5 && mouseY >= 2 && mouseY < 2.5 ? '#fff' : '#aaa'
 		});
-		draw(w/2 - 2, h/2 - 5.25, {
+		draw(w/2 - 2.75, h/2 - 5, {
 			Text:  'Character Creation',
-			Color: '#fff'
+			Color: '#888',
+			Scale: 2
 		});
 		draw(w/2, h/2 - 4, {
 			Text:  'Race:',
@@ -569,7 +574,10 @@ huds['character_creation'] = function(data) {
 		});
 	};
 	f.click = function(x, y) {
-		if (x >= 0 && x < 6) {
+		if (x >= -1 && x < 5 && y >= 2 && y < 2.5) {
+			send({'CharacterCreation': {'Command': 'accept'}});
+			return false;
+		} else if (x >= 0 && x < 6) {
 			if (y >= -3.75 && y <= -3.25) {
 				send({'CharacterCreation': {'Command': 'race'}});
 				return false;

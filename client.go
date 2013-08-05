@@ -338,7 +338,8 @@ func websocketHandler(conn *websocket.Conn) {
 					player.CharacterCreation("")
 					continue
 				}
-				player.Kick("logging in has temporarily been disabled")
+
+				player.SetHUD("", nil)
 			}
 			if player == nil {
 				continue
