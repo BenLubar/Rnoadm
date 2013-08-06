@@ -44,10 +44,12 @@ var hatTypeInfo = [hatTypeCount]cosmeticInfo{
 		Name:    "bear riding a unicycle",
 		Examine: "russia, amirite?",
 
-		Height: 77,
+		Height: 87,
 
-		Base:      "hat_bear_riding_a_unicycle",
-		BaseColor: "#fff",
+		Base:        "hat_bear_riding_a_unicycle",
+		BaseColor:   "#ccf",
+		Layer1Color: "#ecb",
+		Layer2Color: "#fff",
 
 		AdminOnly: true,
 	},
