@@ -265,8 +265,10 @@ func (p *Player) CharacterCreation(command string) {
 		p.Hero = p.characterCreation
 		p.characterCreation = nil
 		zone := p.zone
+		tx, ty := p.TileX, p.TileY
 		tile := zone.Tile(p.TileX, p.TileY)
 		if tile == nil {
+			tx, ty = 127, 127
 			p.TileX, p.TileY = 127, 127
 			tile = zone.Tile(127, 127)
 		}
@@ -275,6 +277,13 @@ func (p *Player) CharacterCreation(command string) {
 		zone.Lock()
 		tile.Add(p)
 		zone.Unlock()
+		SendZoneTileChange(zone.X, zone.Y, TileChange{
+			ID:  p.NetworkID(),
+			X:   tx,
+			Y:   ty,
+			Obj: p.Serialize(),
+		})
+
 		p.Lock()
 		p.SetHUD("", nil)
 		return
