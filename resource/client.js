@@ -1,6 +1,6 @@
 const tileSize = 32;
 var w = 32, h = 16;
-var gameState;
+var gameState = {};
 var images = {};
 var images_resize = {};
 var images_recolor = {};
