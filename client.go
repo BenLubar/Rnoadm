@@ -89,6 +89,9 @@ type packetIn struct {
 	CharacterCreation *struct {
 		Command string
 	}
+	Walk *struct {
+		X, Y uint8
+	}
 }
 
 type packetClientHash struct {
@@ -109,11 +112,14 @@ type packetSetHUD struct {
 }
 
 type NetworkedObject struct {
-	Sprite   string             `json:"I"`
+	Name     string             `json:"N",omitempty`
+	Options  []string           `json:"O",omitempty`
+	Sprite   string             `json:"I",omitempty`
 	Colors   []Color            `json:"C"`
 	Scale    uint8              `json:"S,omitempty"`
 	Height   uint16             `json:"H,omitempty"`
 	Attached []*NetworkedObject `json:"A,omitempty"`
+	Moves    bool               `json:"M,omitempty"`
 }
 
 type TileChange struct {
@@ -366,6 +372,22 @@ func websocketHandler(conn *websocket.Conn) {
 
 			if player.Hero == nil {
 				continue
+			}
+
+			if p.Walk != nil {
+				player.Lock()
+				zone := player.zone
+				tx, ty := player.TileX, player.TileY
+				player.Unlock()
+
+				zone.Lock()
+				schedule := MoveSchedule(FindPath(zone, tx, ty, p.Walk.X, p.Walk.Y, true))
+				zone.Unlock()
+
+				player.Lock()
+				player.schedule = &schedule
+				player.Delay = 1
+				player.Unlock()
 			}
 
 		case p := <-hud:

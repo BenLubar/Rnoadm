@@ -1,5 +1,5 @@
 const tileSize = 32;
-const w = 32, h = 16;
+var w = 32, h = 16;
 var gameState;
 var images = {};
 var images_resize = {};
@@ -11,11 +11,16 @@ canvas.width = w*tileSize;
 canvas.height = h*tileSize;
 canvas = canvas.getContext('2d');
 
-var zoneBuffer = document.createElement('canvas');
-zoneBuffer.width = 256*tileSize;
-zoneBuffer.height = 256*tileSize;
-var zoneCtx = zoneBuffer.getContext('2d');
-var zoneBufferDirty = false;
+var zoneBufferStatic = document.createElement('canvas');
+var zoneBufferDynamic = document.createElement('canvas');
+zoneBufferStatic.width = 256*tileSize;
+zoneBufferDynamic.width = 256*tileSize;
+zoneBufferStatic.height = 256*tileSize;
+zoneBufferDynamic.height = 256*tileSize;
+var zoneCtxStatic = zoneBufferStatic.getContext('2d');
+var zoneCtxDynamic = zoneBufferDynamic.getContext('2d');
+var zoneBufferStaticDirty = false;
+var zoneBufferDynamicDirty = false;
 
 var frame = 0;
 setInterval(function() {
@@ -61,7 +66,8 @@ function repaint() {
 						images_resize[p.Sprite] = {};
 						images_recolor[p.Sprite] = {};
 						if (ctx != canvas) {
-							zoneBufferDirty = true;
+							zoneBufferStaticDirty = true;
+							zoneBufferDynamicDirty = true;
 						}
 						repaint();
 					};
@@ -143,21 +149,20 @@ function repaint() {
 			}
 		};
 
-		var playerX = gameState.playerX || 0;
-		var playerY = gameState.playerY || 0;
+		var playerX = getPlayerX();
+		var playerY = getPlayerY();
 
 		if (gameState.objects) {
-			if (zoneBufferDirty) {
-				zoneBufferDirty = false;
-				zoneCtx.clearRect(0, 0, zoneBuffer.width, zoneBuffer.height);
-				for (var x = 0; x < 256; x += 4) {
-					for (var y = 0; y < 256; y += 4) {
+			if (zoneBufferStaticDirty) {
+				zoneBufferStaticDirty = false;
+				zoneCtxStatic.clearRect(0, 0, 256*tileSize, 256*tileSize);
+				for (var x = 0; x < 256; x++) {
+					for (var y = 0; y < 256; y++) {
 						draw(x, y, {
 							Sprite: 'grass_r1',
 							Color:  '#268f1e',
-							Scale:  4,
-							X:      ((x + y + x*y/4) / 4) % 4
-						}, zoneCtx);
+							X:      (x + y + x*y) % 4
+						}, zoneCtxStatic);
 					}
 				}
 				for (var i in gameState.objects) {
@@ -165,22 +170,52 @@ function repaint() {
 					var drawObject = function(o) {
 						o.colors.forEach(function(color, j) {
 							if (color) {
-								draw(obj.x, obj.y, {
+								draw(animateCoord(obj.x, obj.xnext, obj.frame), animateCoord(obj.y, obj.ynext, obj.frame), {
 									Sprite: o.sprite,
 									Color:  color,
 									Scale:  o.scale,
 									Height: o.height,
 									Y:      j
-								}, zoneCtx);
+								}, zoneCtxStatic);
 							}
 						});
 						o.attach.forEach(drawObject);
 					};
 
-					drawObject(obj.object);
+					if (!obj.object.moves) {
+						drawObject(obj.object);
+					}
 				}
 			}
-			canvas.drawImage(zoneBuffer,
+			if (zoneBufferDynamicDirty) {
+				zoneBufferDynamicDirty = false;
+				zoneCtxDynamic.clearRect(0, 0, 256*tileSize, 256*tileSize);
+				for (var i in gameState.objects) {
+					var obj = gameState.objects[i];
+					var drawObject = function(o) {
+						o.colors.forEach(function(color, j) {
+							if (color) {
+								draw(animateCoord(obj.x, obj.xnext, obj.frame), animateCoord(obj.y, obj.ynext, obj.frame), {
+									Sprite: o.sprite,
+									Color:  color,
+									Scale:  o.scale,
+									Height: o.height,
+									Y:      j
+								}, zoneCtxDynamic);
+							}
+						});
+						o.attach.forEach(drawObject);
+					};
+
+					if (obj.object.moves) {
+						drawObject(obj.object);
+					}
+				}
+			}
+			canvas.drawImage(zoneBufferStatic,
+				Math.floor((w/2 - playerX) * tileSize),
+				Math.floor((h/2 - playerY) * tileSize));
+			canvas.drawImage(zoneBufferDynamic,
 				Math.floor((w/2 - playerX) * tileSize),
 				Math.floor((h/2 - playerY) * tileSize));
 		}
@@ -189,6 +224,25 @@ function repaint() {
 			gameState.hud(draw);
 		}
 	});
+}
+
+function animateCoord(start, end, anim) {
+	start = start || 0;
+	end   = isNaN(end) ? start : end;
+	anim  = frame - (anim || 0);
+	if (anim > 20) {
+		return end;
+	}
+	zoneBufferDynamicDirty = true;
+	return (start * (20 - anim) + end * anim) / 20;
+}
+
+function getPlayerX() {
+	return animateCoord(gameState.playerX, gameState.playerXNext, gameState.playerXFrame);
+}
+
+function getPlayerY() {
+	return animateCoord(gameState.playerY, gameState.playerYNext, gameState.playerYFrame);
 }
 
 var ws = new WebSocket('ws://' + location.host + '/ws');
@@ -225,42 +279,66 @@ var wsonmessage = ws.onmessage = function(e) {
 		alert('Kicked: ' + msg['Kick']);
 	}
 	if (msg['ResetZone']) {
-		zoneBufferDirty = true;
+		zoneBufferStaticDirty = true;
+		zoneBufferDynamicDirty = true;
 		gameState.objects = {};
 		repaint();
 	}
 	if ('PlayerX' in msg) {
-		gameState.playerX = msg['PlayerX'];
+		gameState.playerX = gameState.playerXNext;
+		gameState.playerXNext = msg['PlayerX'];
+		gameState.playerXFrame = frame;
 		repaint();
 	}
 	if ('PlayerY' in msg) {
-		gameState.playerY = msg['PlayerY'];
+		gameState.playerY = gameState.playerYNext;
+		gameState.playerYNext = msg['PlayerY'];
+		gameState.playerYFrame = frame;
 		repaint();
 	}
 	if (msg['TileChange']) {
-		zoneBufferDirty = true;
 		var toObject = function(o) {
 			return {
-				sprite: o['I'],
-				colors: o['C'],
-				scale:  o['S'],
-				height: o['H'],
-				attach: (o['A'] || []).map(toObject)
+				name:    o['N'],
+				options: o['O'] || [],
+				sprite:  o['I'],
+				colors:  o['C'],
+				scale:   o['S'],
+				height:  o['H'],
+				moves:   !!o['M'],
+				attach:  (o['A'] || []).map(toObject)
 			};
 		};
 		msg['TileChange'].forEach(function(tile) {
 			if (tile['R']) {
+				if (gameState.objects[tile['ID']].object.moves) {
+					zoneBufferDynamicDirty = true;
+				} else {
+					zoneBufferStaticDirty = true;
+				}
 				delete gameState.objects[tile['ID']];
 			} else {
 				if (tile['O']) {
 					gameState.objects[tile['ID']] = {
 						x:      tile['X'],
+						xnext:  tile['X'],
 						y:      tile['Y'],
+						ynext:  tile['Y'],
+						frame:  0,
 						object: toObject(tile['O'])
 					};
+					if (gameState.objects[tile['ID']].object.moves) {
+						zoneBufferDynamicDirty = true;
+					} else {
+						zoneBufferStaticDirty = true;
+					}
 				} else {
-					gameState.objects[tile['ID']].x = tile['X'];
-					gameState.objects[tile['ID']].y = tile['Y'];
+					gameState.objects[tile['ID']].x = gameState.objects[tile['ID']].xnext;
+					gameState.objects[tile['ID']].y = gameState.objects[tile['ID']].ynext;
+					gameState.objects[tile['ID']].xnext = tile['X'];
+					gameState.objects[tile['ID']].ynext = tile['Y'];
+					gameState.objects[tile['ID']].frame = frame;
+					zoneBufferDynamicDirty = true;
 				}
 			}
 		});
@@ -298,7 +376,18 @@ document.onkeypress = function(e) {
 			return;
 	}
 };
-document.querySelector('canvas').onclick = document.querySelector('canvas').oncontextmenu = function(e) {
+canvas.canvas.onclick = function(e) {
+	var x = Math.floor(e.offsetX * 4 / tileSize)/4 - w/2;
+	var y = Math.floor(e.offsetY * 4 / tileSize)/4 - h/2;
+
+	if (gameState.hud && gameState.hud.click) {
+		if (gameState.hud.click(x, y) === false)
+			return false;
+	}
+	send({'Walk': {'X': Math.floor(x + getPlayerX()), 'Y': Math.floor(y + getPlayerY())}});
+	return false;
+}
+canvas.canvas.oncontextmenu = function(e) {
 	var x = Math.floor(e.offsetX * 4 / tileSize)/4 - w/2;
 	var y = Math.floor(e.offsetY * 4 / tileSize)/4 - h/2;
 
@@ -309,12 +398,12 @@ document.querySelector('canvas').onclick = document.querySelector('canvas').onco
 	return false;
 };
 var mouseX = -w, mouseY = -h;
-document.querySelector('canvas').onmouseout = function() {
+canvas.canvas.onmouseout = function() {
 	mouseX = -w;
 	mouseY = -h;
 	repaint();
 };
-document.querySelector('canvas').onmousemove = function(e) {
+canvas.canvas.onmousemove = function(e) {
 	mouseX = Math.floor(e.offsetX * 4 / tileSize)/4 - w/2;
 	mouseY = Math.floor(e.offsetY * 4 / tileSize)/4 - h/2;
 	repaint();
@@ -322,7 +411,7 @@ document.querySelector('canvas').onmousemove = function(e) {
 
 var loginHudUsername = localStorage['login'] || '';
 var loginHudPassword = '';
-var loginHudFocus = 0;
+var loginHudFocus = loginHudUsername == '' ? 0 : 1;
 var loginHud = function(draw) {
 	for (var x = -4; x < 4; x++) {
 		for (var y = -4; y < 1; y++) {
@@ -406,10 +495,8 @@ loginHud.click = function(x, y) {
 		} else if (y >= 0.00 && y <= 0.75) {
 			loginHudSubmit();
 		}
-		if (y >= -4 && y <= 1) {
-			return false;
-		}
 	}
+	return false;
 };
 
 loginHud.keyDown = function(code) {
@@ -417,12 +504,15 @@ loginHud.keyDown = function(code) {
 	case 8: // backspace
 		switch (loginHudFocus) {
 		case 0:
-			if (loginHudUsername)
+			if (loginHudUsername) {
 				loginHudUsername = loginHudUsername.substring(0, loginHudUsername.length - 1);
+				localStorage['login'] = loginHudUsername;
+			}
 			break;
 		case 1:
-			if (loginHudPassword)
+			if (loginHudPassword) {
 				loginHudPassword = loginHudPassword.substring(0, loginHudPassword.length - 1);
+			}
 			break;
 		}
 		repaint();
@@ -470,8 +560,8 @@ var loginHudSubmit = function() {
 
 huds['character_creation'] = function(data) {
 	var f = function(draw) {
-		gameState.playerX = 127 + Math.cos(frame / 10000 * 7) * 64;
-		gameState.playerY = 127 + Math.sin(frame / 10000 * 6) * 64;
+		gameState.playerXNext = gameState.playerX = 127 + Math.cos(frame / 10000 * 7) * 64;
+		gameState.playerYNext = gameState.playerY = 127 + Math.sin(frame / 10000 * 6) * 64;
 		for (var x = -6; x < 6; x++) {
 			draw(x, -5, {
 				Sprite: 'ui_r1',
@@ -582,28 +672,22 @@ huds['character_creation'] = function(data) {
 	f.click = function(x, y) {
 		if (x >= -1 && x < 5 && y >= 2 && y < 2.5) {
 			send({'CharacterCreation': {'Command': 'accept'}});
-			return false;
 		} else if (x >= 0 && x < 6) {
 			if (y >= -3.75 && y <= -3.25) {
 				send({'CharacterCreation': {'Command': 'race'}});
-				return false;
 			} else if (y >= -2.75 && y <= -2.25) {
 				send({'CharacterCreation': {'Command': 'gender'}});
-				return false;
 			} else if (y >= -2 && y <= -1) {
 				send({'CharacterCreation': {'Command': 'skin'}});
-				return false;
 			} else if (y >= -1 && y <= 0) {
 				send({'CharacterCreation': {'Command': 'shirt'}});
-				return false;
 			} else if (y >= 0 && y <= 1) {
 				send({'CharacterCreation': {'Command': 'pants'}});
-				return false;
 			} 
 		} else if (x >= -5 && x < 0 && y >= 0.25 && y <= 0.75) {
 			send({'CharacterCreation': {'Command': 'name'}});
-			return false;
 		}
+		return false;
 	};
 	return f;
 };

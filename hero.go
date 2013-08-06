@@ -441,6 +441,7 @@ func (h *Hero) Serialize() *NetworkedObject {
 		Sprite:   "body_" + raceInfo[h.Race].Name,
 		Colors:   colors,
 		Attached: attached,
+		Moves:    true,
 	}
 }
 
