@@ -51,7 +51,11 @@ function repaint() {
 			if (p.Text) {
 				var tx = Math.floor(woff + x*tileSize + tileSize/8);
 				var ty = Math.floor(hoff + y*tileSize + tileSize*7/8);
-				ctx.font = Math.floor(scale * 16) + 'px rnoadm-expection';
+				if (p.Title) {
+					ctx.font = Math.floor(scale * 32) + 'px "Jolly Lodger"';
+				} else {
+					ctx.font = Math.floor(scale * 14) + 'px "Open Sans Condensed"';
+				}
 				ctx.fillStyle = '#000';
 				ctx.fillText(p.Text, tx, ty + 1);
 				ctx.fillStyle = p.Color;
@@ -412,6 +416,8 @@ canvas.canvas.onmousemove = function(e) {
 var loginHudUsername = localStorage['login'] || '';
 var loginHudPassword = '';
 var loginHudFocus = loginHudUsername == '' ? 0 : 1;
+var loginHudPermutations = 'ando'.split('');
+var loginHudPermutationsFrame = 0;
 var loginHud = function(draw) {
 	for (var x = -4; x < 4; x++) {
 		for (var y = -4; y < 1; y++) {
@@ -445,26 +451,34 @@ var loginHud = function(draw) {
 		});
 	}
 	draw(-1.625, -4, {
-		Text:   'R',
-		Color:  '#888',
-		Scale:  2
+		Text:  'R',
+		Color: '#888',
+		Title: true
 	});
-	var permutations = 'ando'.split('').sort(function(a, b) { return Math.random() * 2 - 1; });
-	for (var i in permutations) {
+	if (loginHudPermutationsFrame < frame - 25) {
+		for (var i in loginHudPermutations) {
+			var tmp = loginHudPermutations[i];
+			var j = Math.floor(Math.random() * loginHudPermutations.length);
+			loginHudPermutations[i] = loginHudPermutations[j];
+			loginHudPermutations[j] = tmp;
+		}
+		loginHudPermutationsFrame = frame;
+	}
+	for (var i in loginHudPermutations) {
 		draw(-1 + i/2, -4, {
-			Text:   permutations[i],
-			Color:  '#888',
-			Scale:  2
+			Text:  loginHudPermutations[i],
+			Color: '#888',
+			Title: true
 		});
 	}
 	draw(1, -4, {
 		Text:  'm',
 		Color: '#888',
-		Scale: 2
+		Title: true
 	});
 	draw(-3.75, -3.25, {
 		Text:  'Login',
-		Color: '#aaa'
+		Color: mouseX >= -4 && mouseX < 4 && mouseY >= -2.75 && mouseY <= -1.75 ? '#fff' : '#aaa'
 	});
 	draw(-3.75, -2.75, {
 		Text:  loginHudUsername + (loginHudFocus === 0 ? '_' : ''),
@@ -472,7 +486,7 @@ var loginHud = function(draw) {
 	});
 	draw(-3.75, -1.75, {
 		Text:  'Password',
-		Color: '#aaa'
+		Color: mouseX >= -4 && mouseX < 4 && mouseY >= -1.25 && mouseY <= -0.25 ? '#fff' : '#aaa'
 	});
 	draw(-3.75, -1.25, {
 		Text:  loginHudPassword.replace(/./g, '*') + (loginHudFocus === 1 ? '_' : ''),
@@ -480,7 +494,7 @@ var loginHud = function(draw) {
 	});
 	draw(-3, -0.25, {
 		Text:  'Log in or register',
-		Color: '#aaa'
+		Color: mouseX >= -4 && mouseX < 4 && mouseY >= 0.00 && mouseY <= 0.75 ? '#fff' : '#aaa'
 	});
 };
 
@@ -590,7 +604,7 @@ huds['character_creation'] = function(data) {
 		draw(-2.75, -5, {
 			Text:  'Character Creation',
 			Color: '#888',
-			Scale: 2
+			Title: true
 		});
 		draw(0, -4, {
 			Text:  'Race:',
