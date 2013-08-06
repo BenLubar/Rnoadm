@@ -121,8 +121,10 @@ func (r *Rock) Serialize() *NetworkedObject {
 		}
 	}
 	return &NetworkedObject{
-		Sprite: "rock",
-		Colors: colors,
+		Name:    r.Name(),
+		Options: []string{"mine", "quarry"},
+		Sprite:  "rock",
+		Colors:  colors,
 	}
 }
 

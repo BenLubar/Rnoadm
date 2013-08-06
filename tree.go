@@ -97,17 +97,15 @@ func (t *Tree) Serialize() *NetworkedObject {
 		colors = append(colors, leaf)
 	}
 	return &NetworkedObject{
-		Sprite: "tree",
-		Colors: colors,
+		Name:    t.Name(),
+		Options: []string{"chop down"},
+		Sprite:  "tree",
+		Colors:  colors,
 	}
 }
 
 func (t *Tree) Blocking() bool {
 	return true
-}
-
-func (t *Tree) InteractOptions() []string {
-	return []string{"chop down"}
 }
 
 func (t *Tree) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {

@@ -28,6 +28,10 @@ setInterval(function() {
 	repaint();
 }, 50);
 
+setInterval(function() {
+	inRepaint = false;
+}, 60000);
+
 var inRepaint = false;
 function repaint() {
 	if (inRepaint)
@@ -234,11 +238,11 @@ function animateCoord(start, end, anim) {
 	start = start || 0;
 	end   = isNaN(end) ? start : end;
 	anim  = frame - (anim || 0);
-	if (anim > 20) {
+	if (anim > 10) {
 		return end;
 	}
 	zoneBufferDynamicDirty = true;
-	return (start * (20 - anim) + end * anim) / 20;
+	return (start * (10 - anim) + end * anim) / 10;
 }
 
 function getPlayerX() {
@@ -288,13 +292,13 @@ var wsonmessage = ws.onmessage = function(e) {
 		gameState.objects = {};
 		repaint();
 	}
-	if ('PlayerX' in msg) {
+	if ('PlayerX' in msg && gameState.playerXNext != msg['PlayerX']) {
 		gameState.playerX = gameState.playerXNext;
 		gameState.playerXNext = msg['PlayerX'];
 		gameState.playerXFrame = frame;
 		repaint();
 	}
-	if ('PlayerY' in msg) {
+	if ('PlayerY' in msg && gameState.playerYNext != msg['PlayerY']) {
 		gameState.playerY = gameState.playerYNext;
 		gameState.playerYNext = msg['PlayerY'];
 		gameState.playerYFrame = frame;
@@ -388,7 +392,12 @@ canvas.canvas.onclick = function(e) {
 		if (gameState.hud.click(x, y) === false)
 			return false;
 	}
-	send({'Walk': {'X': Math.floor(x + getPlayerX()), 'Y': Math.floor(y + getPlayerY())}});
+
+	var wx = Math.floor(x + getPlayerX());
+	var wy = Math.floor(y + getPlayerY());
+	if (wx >= 0 && wx < 256 && wy >= 0 && wy < 256) {
+		send({'Walk': {'X': wx, 'Y': wy}});
+	}
 	return false;
 }
 canvas.canvas.oncontextmenu = function(e) {
@@ -398,6 +407,12 @@ canvas.canvas.oncontextmenu = function(e) {
 	if (gameState.hud && gameState.hud.click) {
 		if (gameState.hud.click(x, y) === false)
 			return false;
+	}
+
+	var wx = Math.floor(x + getPlayerX());
+	var wy = Math.floor(y + getPlayerY());
+	if (wx >= 0 && wx < 256 && wy >= 0 && wy < 256) {
+		gameState.hud = rightClickHud(wx, wy);
 	}
 	return false;
 };
@@ -562,7 +577,7 @@ var loginHudSubmit = function() {
 		repaint();
 		return;
 	}
-	if (!loginHudPassword) {
+	if (loginHudPassword.length < 3) {
 		loginHudFocus = 1;
 		repaint();
 		return;
@@ -571,6 +586,12 @@ var loginHudSubmit = function() {
 	loginHudPassword = '';
 	loginHudFocus = 0;
 }
+
+var rightClickHud = function(wx, wy) {
+	var f = function(draw) {
+	};
+	return f;
+};
 
 huds['character_creation'] = function(data) {
 	var f = function(draw) {

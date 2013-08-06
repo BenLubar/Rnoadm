@@ -63,6 +63,7 @@ func (f *Flora) Examine() string {
 func (f *Flora) Serialize() *NetworkedObject {
 	info := floraTypeInfo[f.Type]
 	return &NetworkedObject{
+		Name:   f.Name(),
 		Sprite: "plant",
 		Colors: []Color{info.LeafColor, info.StemColor, info.BulbColor, info.BoringPetalColor, info.CompassPetalColor, info.SuspiciousPetalColor, info.FlowerColor},
 	}

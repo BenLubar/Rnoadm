@@ -447,6 +447,7 @@ func (h *Hero) Serialize() *NetworkedObject {
 		attached = append(attached, h.Head.Serialize())
 	}
 	return &NetworkedObject{
+		Name:     h.Name(),
 		Sprite:   "body_" + raceInfo[h.Race].Name,
 		Colors:   colors,
 		Attached: attached,

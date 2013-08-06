@@ -412,10 +412,16 @@ func websocketHandler(conn *websocket.Conn) {
 				updateQueue.PlayerY = player.TileY
 				player.Unlock()
 
+				leftover := updateQueue.TileChange[:0]
+				if len(updateQueue.TileChange) > 100 {
+					leftover = updateQueue.TileChange[100:]
+					updateQueue.TileChange = updateQueue.TileChange[:100]
+				}
+
 				websocket.JSON.Send(conn, updateQueue)
 
 				updateQueue.ResetZone = false
-				updateQueue.TileChange = updateQueue.TileChange[:0]
+				updateQueue.TileChange = leftover
 			}
 		}
 	}

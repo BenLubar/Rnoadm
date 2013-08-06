@@ -208,6 +208,7 @@ func serializeCosmetic(info cosmeticInfo, custom [5]Color) *NetworkedObject {
 	}
 
 	return &NetworkedObject{
+		Name:   info.Name,
 		Sprite: info.Base,
 		Colors: colors,
 		Height: info.Height,
