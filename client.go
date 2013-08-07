@@ -143,6 +143,15 @@ type packetTileChange struct {
 	ResetZone        bool
 }
 
+type InventoryItem struct {
+	ID  uint64           `json:"I,string"`
+	Obj *NetworkedObject `json:"O"`
+}
+
+type packetInventory struct {
+	Inventory []InventoryItem
+}
+
 var bruteThrottle = make(map[string]uint8)
 var bruteThrottleLock sync.Mutex
 
@@ -212,6 +221,7 @@ func websocketHandler(conn *websocket.Conn) {
 	var player *Player
 	kick := make(chan string, 1)
 	hud := make(chan packetSetHUD, 16)
+	inventory := make(chan packetInventory, 1)
 	messages := make(chan string, 8)
 
 	var updates <-chan TileChange
@@ -297,9 +307,10 @@ func websocketHandler(conn *websocket.Conn) {
 				player.LastLogin = time.Now().UTC()
 				player.LastLoginAddr = addr
 				player.Save()
-				player.kick = kick
+				player.inventory = inventory
 				player.hud = hud
 				player.messages = messages
+				player.kick = kick
 
 				onlinePlayersLock.Lock()
 				if otherSession, ok := OnlinePlayers[player.ID]; ok {
@@ -373,6 +384,12 @@ func websocketHandler(conn *websocket.Conn) {
 					continue
 				}
 
+				player.backpackDirty = make(chan struct{}, 1)
+				select {
+				case player.backpackDirty <- struct{}{}:
+				default:
+				}
+
 				player.SetHUD("", nil)
 			}
 
@@ -435,13 +452,16 @@ func websocketHandler(conn *websocket.Conn) {
 				zone.Unlock()
 			}
 
+		case p := <-inventory:
+			websocket.JSON.Send(conn, p)
+
+		case p := <-hud:
+			websocket.JSON.Send(conn, p)
+
 		case message := <-messages:
 			websocket.JSON.Send(conn, packetMessage{
 				Message: message,
 			})
-
-		case p := <-hud:
-			websocket.JSON.Send(conn, p)
 
 		case message := <-kick:
 			websocket.JSON.Send(conn, packetKick{

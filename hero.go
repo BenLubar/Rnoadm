@@ -126,9 +126,10 @@ type Player struct {
 	Admin         bool
 	Examine_      string
 
-	messages chan<- string
-	kick     chan<- string
-	hud      chan<- packetSetHUD
+	messages  chan<- string
+	kick      chan<- string
+	hud       chan<- packetSetHUD
+	inventory chan<- packetInventory
 
 	CharacterCreation *Hero
 
@@ -274,6 +275,7 @@ func (p *Player) CharacterCreationCommand(command string) {
 		p.CharacterCreation.Lock()
 		p.Hero = p.CharacterCreation
 		p.CharacterCreation = nil
+		p.backpackDirty = make(chan struct{}, 1)
 		zone := p.zone
 		tx, ty := p.TileX, p.TileY
 		tile := zone.Tile(p.TileX, p.TileY)
@@ -413,10 +415,10 @@ type Hero struct {
 
 	Damage uint64
 
-	frame         uint8
-	tileX, tileY  uint8
 	schedule      Schedule
 	scheduleDelay uint
+
+	backpackDirty chan struct{}
 }
 
 func (h *Hero) Lock() {
@@ -485,8 +487,6 @@ func (h *Hero) Think(z *Zone, x, y uint8) {
 func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	h.Lock()
 
-	h.tileX, h.tileY = x, y
-
 	if p == nil || !p.Admin {
 		for i := 0; i < len(h.Backpack); i++ {
 			o := h.Backpack[i]
@@ -519,6 +519,33 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 			}
 			h.Toolbelt.Hatchet = nil
 		}
+	}
+
+	select {
+	case <-h.backpackDirty:
+		var obj Object = h
+		if p != nil {
+			obj = p
+			inventory := make([]InventoryItem, 0, len(h.Backpack))
+			for _, o := range h.Backpack {
+				inventory = append(inventory, InventoryItem{
+					ID:  o.NetworkID(),
+					Obj: o.Serialize(),
+				})
+			}
+			p.inventory <- packetInventory{
+				Inventory: inventory,
+			}
+		}
+		h.Unlock()
+		SendZoneTileChange(z.X, z.Y, TileChange{
+			ID:  obj.NetworkID(),
+			X:   x,
+			Y:   y,
+			Obj: obj.Serialize(),
+		})
+		h.Lock()
+	default:
 	}
 
 	if h.Delay > 0 {
@@ -578,6 +605,10 @@ func (h *Hero) ZIndex() int {
 
 func (h *Hero) GiveItem(o Object) {
 	h.Backpack = append(h.Backpack, o)
+	select {
+	case h.backpackDirty <- struct{}{}:
+	default:
+	}
 }
 
 func (h *Hero) Equip(o Object, inventoryOnly bool) {
@@ -619,6 +650,10 @@ func (h *Hero) Equip(o Object, inventoryOnly bool) {
 		h.Backpack = append(h.Backpack[:index], h.Backpack[index+1:]...)
 	} else if index != -1 && old != nil {
 		h.Backpack[index] = old
+	}
+	select {
+	case h.backpackDirty <- struct{}{}:
+	default:
 	}
 }
 

@@ -71,7 +71,7 @@ var metalTypeInfo = [metalTypeCount]struct {
 	},
 	Unobtainium: {
 		Name:     "unobtainium",
-		Color:    "#ff00ff",
+		Color:    "#cd8aff",
 		Strength: 1 << 62,
 	},
 	Copper: {

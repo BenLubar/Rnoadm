@@ -140,11 +140,19 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	Shoes: {
 		{
 			Article: "a pair of ",
-			Name:    "white sneakers",
+			Name:    "sneakers",
 			Examine: "your favorite pair.",
 
 			Sprite: "shoes_basic",
 			Colors: []Color{"#eef8f0"},
+		},
+		{
+			Article: "a pair of ",
+			Name:    "boots",
+			Examine: "forget steel toes. these are metal everywhere.",
+
+			Sprite: "shoes_boots",
+			Colors: []Color{metalColor},
 		},
 	},
 	Breastplate: {
@@ -187,8 +195,26 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 		},
 	},
-	Tassets: {},
-	Greaves: {},
+	Tassets: {
+		{
+			Article: "",
+			Name:    "tassets",
+			Examine: "didn't they ban those?",
+
+			Sprite: "tassets_basic",
+			Colors: []Color{metalColor},
+		},
+	},
+	Greaves: {
+		{
+			Article: "a pair of ",
+			Name:    "greaves",
+			Examine: "there was a joke here, but then it took an arrow to the knee.",
+
+			Sprite: "greaves_basic",
+			Colors: []Color{metalColor},
+		},
+	},
 }
 
 type Cosmetic struct {
@@ -204,7 +230,11 @@ func (c *Cosmetic) Article() string {
 }
 
 func (c *Cosmetic) Name() string {
-	return cosmetics[c.Type][c.ID].Name
+	name := cosmetics[c.Type][c.ID].Name
+	if c.Metal != 0 {
+		name = metalTypeInfo[c.Metal].Name + " " + name
+	}
+	return name
 }
 
 func (c *Cosmetic) Examine() string {
@@ -223,6 +253,9 @@ func (c *Cosmetic) Serialize() *NetworkedObject {
 	for i := range obj.Colors {
 		if obj.Colors[i] == metalColor {
 			obj.Colors[i] = metalTypeInfo[c.Metal].Color
+			if obj.Colors[i] == "" {
+				obj.Colors[i] = "#f0f"
+			}
 		}
 	}
 	for i := range obj.Colors {

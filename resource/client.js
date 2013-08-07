@@ -1,3 +1,4 @@
+var undefined;
 const tileSize = 32;
 var w = 32, h = 16;
 var gameState = {};
@@ -37,6 +38,23 @@ setInterval(function() {
 setInterval(function() {
 	inRepaint = false;
 }, 60000);
+
+function drawObject(draw, x, y, ctx, o) {
+	o.colors.forEach(function(color, j) {
+		if (color) {
+			draw(x, y, {
+				Sprite: o.sprite,
+				Color:  color,
+				Scale:  o.scale,
+				Height: o.height,
+				Y:      j
+			}, ctx);
+		}
+	});
+	o.attach.forEach(function(a) {
+		drawObject(draw, x, y, ctx, a);
+	});
+}
 
 var inRepaint = false;
 function repaint() {
@@ -181,23 +199,9 @@ function repaint() {
 				}
 				for (var i in gameState.objects) {
 					var obj = gameState.objects[i];
-					var drawObject = function(o) {
-						o.colors.forEach(function(color, j) {
-							if (color) {
-								draw(animateCoord(obj.x, obj.xnext, obj.frame), animateCoord(obj.y, obj.ynext, obj.frame), {
-									Sprite: o.sprite,
-									Color:  color,
-									Scale:  o.scale,
-									Height: o.height,
-									Y:      j
-								}, zoneCtxStatic);
-							}
-						});
-						o.attach.forEach(drawObject);
-					};
 
 					if (!obj.object.moves) {
-						drawObject(obj.object);
+						drawObject(draw, animateCoord(obj.x, obj.xnext, obj.frame), animateCoord(obj.y, obj.ynext, obj.frame), zoneCtxStatic, obj.object);
 					}
 				}
 			}
@@ -206,23 +210,9 @@ function repaint() {
 				zoneCtxDynamic.clearRect(0, 0, 256*tileSize, 256*tileSize);
 				for (var i in gameState.objects) {
 					var obj = gameState.objects[i];
-					var drawObject = function(o) {
-						o.colors.forEach(function(color, j) {
-							if (color) {
-								draw(animateCoord(obj.x, obj.xnext, obj.frame), animateCoord(obj.y, obj.ynext, obj.frame), {
-									Sprite: o.sprite,
-									Color:  color,
-									Scale:  o.scale,
-									Height: o.height,
-									Y:      j
-								}, zoneCtxDynamic);
-							}
-						});
-						o.attach.forEach(drawObject);
-					};
 
 					if (obj.object.moves) {
-						drawObject(obj.object);
+						drawObject(draw, animateCoord(obj.x, obj.xnext, obj.frame), animateCoord(obj.y, obj.ynext, obj.frame), zoneCtxDynamic, obj.object);
 					}
 				}
 			}
@@ -233,6 +223,11 @@ function repaint() {
 				Math.floor((w/2 - playerX) * tileSize),
 				Math.floor((h/2 - playerY) * tileSize));
 		}
+
+		(gameState.inventory || []).forEach(function(item, i) {
+			const cols = 8;
+			drawObject(draw, w / 2 - cols + i % cols, h / 2 - Math.ceil(gameState.inventory.length / cols) + Math.floor(i / cols), undefined, item.object);
+		});
 
 		var y = h / 2 - 1;
 		(gameState.messages || []).forEach(function(message) {
@@ -276,9 +271,22 @@ var wsonopen = ws.onopen = function() {
 	gameState = {
 		hud: loginHud
 	};
+	loginHudFocus = loginHudUsername == '' ? 0 : 1;
 	repaint();
 };
 
+function toObject(o) {
+	return {
+		name:    o['N'],
+		options: o['O'] || [],
+		sprite:  o['I'],
+		colors:  o['C'],
+		scale:   o['S'],
+		height:  o['H'],
+		moves:   !!o['M'],
+		attach:  (o['A'] || []).map(toObject)
+	};
+}
 var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
 	if (msg['ClientHash']) {
@@ -333,18 +341,6 @@ var wsonmessage = ws.onmessage = function(e) {
 		repaint();
 	}
 	if (msg['TileChange']) {
-		var toObject = function(o) {
-			return {
-				name:    o['N'],
-				options: o['O'] || [],
-				sprite:  o['I'],
-				colors:  o['C'],
-				scale:   o['S'],
-				height:  o['H'],
-				moves:   !!o['M'],
-				attach:  (o['A'] || []).map(toObject)
-			};
-		};
 		msg['TileChange'].forEach(function(tile) {
 			if (tile['R']) {
 				if (gameState.objects[tile['ID']].object.moves) {
@@ -380,7 +376,16 @@ var wsonmessage = ws.onmessage = function(e) {
 		});
 		repaint();
 	}
-	console.log(msg);
+	if (msg['Inventory']) {
+		gameState.inventory = [];
+		msg['Inventory'].forEach(function(item) {
+			gameState.inventory.push({
+				id:     item['I'],
+				object: toObject(item['O'])
+			});
+		});
+		repaint();
+	}
 };
 var wsonclose = ws.onclose = function() {
 	setTimeout(function() {
@@ -472,7 +477,7 @@ canvas.canvas.onmousemove = function(e) {
 
 var loginHudUsername = localStorage['login'] || '';
 var loginHudPassword = '';
-var loginHudFocus = loginHudUsername == '' ? 0 : 1;
+var loginHudFocus = 0;
 var loginHudPermutations = 'ando'.split('');
 var loginHudPermutationsFrame = 0;
 var loginHud = function(draw) {
