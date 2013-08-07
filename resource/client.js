@@ -22,6 +22,12 @@ var zoneCtxDynamic = zoneBufferDynamic.getContext('2d');
 var zoneBufferStaticDirty = false;
 var zoneBufferDynamicDirty = false;
 
+const color_222 = '#222';
+const color_444 = '#444';
+const color_888 = '#888';
+const color_aaa = '#aaa';
+const color_fff = '#fff';
+
 var frame = 0;
 setInterval(function() {
 	frame = +new Date() / 50;
@@ -235,7 +241,7 @@ function repaint() {
 			lines.forEach(function(line, i) {
 				draw(-w / 2, y + i / 2, {
 					Text:  line,
-					Color: '#fff'
+					Color: color_fff
 				});
 			});
 		});
@@ -474,18 +480,18 @@ var loginHud = function(draw) {
 		for (var y = -4; y < 1; y++) {
 			draw(x, y, {
 				Sprite: 'ui_r1',
-				Color:  y == -4 ? '#444' : '#222',
+				Color:  y == -4 ? color_444 : color_222,
 				X:      y == -4 ? x == -4 ? 3 : x == 3 ? 4 : 0 : 0
 			});
 		}
 		draw(x, 0.5, {
 			Sprite: 'ui_r1',
-			Color:  '#444',
+			Color:  color_444,
 			Y:      1
 		});
 		draw(x + 0.5, 0.5, {
 			Sprite: 'ui_r1',
-			Color:  '#444',
+			Color:  color_444,
 			Y:      1
 		});
 	}
@@ -503,7 +509,7 @@ var loginHud = function(draw) {
 	}
 	draw(-1.625, -4, {
 		Text:  'R',
-		Color: '#888',
+		Color: color_888,
 		Title: true
 	});
 	if (loginHudPermutationsFrame < frame - 25) {
@@ -518,34 +524,34 @@ var loginHud = function(draw) {
 	for (var i in loginHudPermutations) {
 		draw(-1 + i/2, -4, {
 			Text:  loginHudPermutations[i],
-			Color: '#888',
+			Color: color_888,
 			Title: true
 		});
 	}
 	draw(1, -4, {
 		Text:  'm',
-		Color: '#888',
+		Color: color_888,
 		Title: true
 	});
 	draw(-3.75, -3.25, {
 		Text:  'Login',
-		Color: mouseX >= -4 && mouseX < 4 && mouseY >= -2.75 && mouseY <= -1.75 ? '#fff' : '#aaa'
+		Color: mouseX >= -4 && mouseX < 4 && mouseY >= -2.75 && mouseY <= -1.75 ? color_fff : color_aaa
 	});
 	draw(-3.75, -2.75, {
 		Text:  loginHudUsername + (loginHudFocus === 0 ? '_' : ''),
-		Color: '#fff'
+		Color: color_fff
 	});
 	draw(-3.75, -1.75, {
 		Text:  'Password',
-		Color: mouseX >= -4 && mouseX < 4 && mouseY >= -1.25 && mouseY <= -0.25 ? '#fff' : '#aaa'
+		Color: mouseX >= -4 && mouseX < 4 && mouseY >= -1.25 && mouseY <= -0.25 ? color_fff : color_aaa
 	});
 	draw(-3.75, -1.25, {
 		Text:  loginHudPassword.replace(/./g, '*') + (loginHudFocus === 1 ? '_' : ''),
-		Color: '#fff'
+		Color: color_fff
 	});
 	draw(-3, -0.25, {
 		Text:  'Log in or register',
-		Color: mouseX >= -4 && mouseX < 4 && mouseY >= 0.00 && mouseY <= 0.75 ? '#fff' : '#aaa'
+		Color: mouseX >= -4 && mouseX < 4 && mouseY >= 0.00 && mouseY <= 0.75 ? color_fff : color_aaa
 	});
 };
 
@@ -651,13 +657,13 @@ var rightClickHud = function(wx, wy, sx, sy) {
 			for (var x = 0; x < 10; x++) {
 				draw(sx + x / 2, sy + (y - 1) / 2, {
 					Sprite: 'ui_r1',
-					Color:  mouseX >= sx && mouseX < sx + 5 && mouseY >= sy + y / 2 && mouseY < sy + (y + 1) / 2 ? '#444' : '#222',
+					Color:  mouseX >= sx && mouseX < sx + 5 && mouseY >= sy + y / 2 && mouseY < sy + (y + 1) / 2 ? color_444 : color_222,
 					Y:      1
 				});
 			}
 			draw(sx, sy + (y - 1) / 2, {
 				Text:  option.cmd + ' ' + option.name,
-				Color: mouseX >= sx && mouseX < sx + 5 && mouseY >= sy + y / 2 && mouseY < sy + (y + 1) / 2 ? '#fff' : '#aaa'
+				Color: mouseX >= sx && mouseX < sx + 5 && mouseY >= sy + y / 2 && mouseY < sy + (y + 1) / 2 ? color_fff : color_aaa
 			});
 		});
 	};
@@ -688,52 +694,52 @@ huds['character_creation'] = function(data) {
 		for (var x = -6; x < 6; x++) {
 			draw(x, -5, {
 				Sprite: 'ui_r1',
-				Color:  '#444',
+				Color:  color_444,
 				X:      x == -6 ? 3 : x == 5 ? 4 : 0
 			});
 			for (var y = -4; y < 2; y++) {
 				draw(x, y, {
 					Sprite: 'ui_r1',
-					Color:  x >= -5 && x < -1 && y < 0 ? '#ccc' : '#222'
+					Color:  x >= -5 && x < -1 && y < 0 ? '#ccc' : color_222
 				});
 			}
 		}
 		for (var x = 1; x < 5; x += 0.5) {
 			draw(x, 1.5, {
 				Sprite: 'ui_r1',
-				Color:  '#444',
+				Color:  color_444,
 				X:      x == 1 ? 1 : x == 4.5 ? 2 : 0,
 				Y:      1
 			});
 		}
 		draw(2.25, 1.5, {
 			Text:  'Accept',
-			Color: mouseX >= -1 && mouseX < 5 && mouseY >= 2 && mouseY < 2.5 ? '#fff' : '#aaa'
+			Color: mouseX >= -1 && mouseX < 5 && mouseY >= 2 && mouseY < 2.5 ? color_fff : color_aaa
 		});
 		draw(-2.75, -5, {
 			Text:  'Character Creation',
-			Color: '#888',
+			Color: color_888,
 			Title: true
 		});
 		draw(0, -4, {
 			Text:  'Race:',
-			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -3.75 && mouseY <= -3.25 ? '#fff' : '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -3.75 && mouseY <= -3.25 ? color_fff : color_aaa
 		});
 		draw(2, -4, {
 			Text:  data['race'],
-			Color: '#fff'
+			Color: color_fff
 		});
 		draw(0, -3, {
 			Text:  'Gender:',
-			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2.75 && mouseY <= -2.25 ? '#fff' : '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2.75 && mouseY <= -2.25 ? color_fff : color_aaa
 		});
 		draw(2, -3, {
 			Text:  data['gender'],
-			Color: '#fff'
+			Color: color_fff
 		});
 		draw(0, -2, {
 			Text:  'Skin:',
-			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2 && mouseY <= -1 ? '#fff' : '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2 && mouseY <= -1 ? color_fff : color_aaa
 		});
 		draw(2.125, -2.125, {
 			Sprite: 'ui_r1',
@@ -742,7 +748,7 @@ huds['character_creation'] = function(data) {
 		});
 		draw(0, -1, {
 			Text:  'Shirt:',
-			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -1 && mouseY <= 0 ? '#fff' : '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -1 && mouseY <= 0 ? color_fff : color_aaa
 		});
 		draw(2.125, -1.125, {
 			Sprite: 'ui_r1',
@@ -751,7 +757,7 @@ huds['character_creation'] = function(data) {
 		});
 		draw(0, 0, {
 			Text:  'Pants:',
-			Color: mouseX >= 0 && mouseX < 6 && mouseY >= 0 && mouseY <= 1 ? '#fff' : '#aaa'
+			Color: mouseX >= 0 && mouseX < 6 && mouseY >= 0 && mouseY <= 1 ? color_fff : color_aaa
 		});
 		draw(2.125, -0.125, {
 			Sprite: 'ui_r1',
@@ -785,11 +791,11 @@ huds['character_creation'] = function(data) {
 		});
 		draw(-5, 0, {
 			Text:  'Name:',
-			Color: mouseX >= -5 && mouseX < 0 && mouseY >= 0.25 && mouseY <= 0.75 ? '#fff' : '#aaa'
+			Color: mouseX >= -5 && mouseX < 0 && mouseY >= 0.25 && mouseY <= 0.75 ? color_fff : color_aaa
 		});
 		draw(-3.5, 0, {
 			Text:  data['name'],
-			Color: '#fff'
+			Color: color_fff
 		});
 	};
 	f.click = function(x, y) {
@@ -819,7 +825,7 @@ var lostConnectionHud = function(draw) {
 	for (var x = -4; x < 4; x++) {
 		draw(x, 0, {
 			Sprite: 'ui_r1',
-			Color:  '#fff'
+			Color:  color_fff
 		});
 	}
 	draw(-2, -0.25, {
