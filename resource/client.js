@@ -228,6 +228,13 @@ function repaint() {
 				Math.floor((h/2 - playerY) * tileSize));
 		}
 
+		(gameState.messages || []).forEach(function(message, i) {
+			draw(-w / 2, (h - i) / 2 - 1, {
+				Text:  message,
+				Color: '#fff'
+			});
+		});
+
 		if (gameState.hud) {
 			gameState.hud(draw);
 		}
@@ -287,7 +294,14 @@ var wsonmessage = ws.onmessage = function(e) {
 		alert('Kicked: ' + msg['Kick']);
 	}
 	if (msg['Message']) {
-		console.log(msg['Message']); // TODO
+		if (!gameState.messages) {
+			gameState.messages = [];
+		}
+		if (gameState.messages.length >= 8) {
+			gameState.messages.pop();
+		}
+		gameState.messages.unshift(msg['Message']);
+		repaint();
 	}
 	if (msg['ResetZone']) {
 		zoneBufferStaticDirty = true;
@@ -640,6 +654,7 @@ var rightClickHud = function(wx, wy, sx, sy) {
 			}
 		});
 		delete gameState.hud;
+		repaint();
 		return false;
 	};
 	return f;
