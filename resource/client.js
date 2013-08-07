@@ -286,6 +286,9 @@ var wsonmessage = ws.onmessage = function(e) {
 		repaint();
 		alert('Kicked: ' + msg['Kick']);
 	}
+	if (msg['Message']) {
+		console.log(msg['Message']); // TODO
+	}
 	if (msg['ResetZone']) {
 		zoneBufferStaticDirty = true;
 		zoneBufferDynamicDirty = true;
@@ -412,7 +415,7 @@ canvas.canvas.oncontextmenu = function(e) {
 	var wx = Math.floor(x + getPlayerX());
 	var wy = Math.floor(y + getPlayerY());
 	if (wx >= 0 && wx < 256 && wy >= 0 && wy < 256) {
-		gameState.hud = rightClickHud(wx, wy);
+		gameState.hud = rightClickHud(wx, wy, x, y);
 	}
 	return false;
 };
@@ -587,7 +590,7 @@ var loginHudSubmit = function() {
 	loginHudFocus = 0;
 }
 
-var rightClickHud = function(wx, wy) {
+var rightClickHud = function(wx, wy, sx, sy) {
 	var options = [];
 	for (var i in gameState.objects) {
 		var o = gameState.objects[i];
@@ -610,8 +613,34 @@ var rightClickHud = function(wx, wy) {
 			});
 		}
 	}
-	console.log(options);
 	var f = function(draw) {
+		options.forEach(function(option, y) {
+			for (var x = 0; x < 10; x++) {
+				draw(sx + x / 2, sy + (y - 1) / 2, {
+					Sprite: 'ui_r1',
+					Color:  mouseX >= sx && mouseX < sx + 5 && mouseY >= sy + y / 2 && mouseY < sy + (y + 1) / 2 ? '#444' : '#222',
+					Y:      1
+				});
+			}
+			draw(sx, sy + (y - 1) / 2, {
+				Text:  option.cmd + ' ' + option.name,
+				Color: mouseX >= sx && mouseX < sx + 5 && mouseY >= sy + y / 2 && mouseY < sy + (y + 1) / 2 ? '#fff' : '#aaa'
+			});
+		});
+	};
+	f.click = function(x, y) {
+		options.forEach(function(option, i) {
+			if (x >= sx && x < sx + 5 && y >= sy + i / 2 && y < sy + (i + 1) / 2) {
+				send({'Interact': {
+					'I': option.id,
+					'O': option.oid,
+					'X': wx,
+					'Y': wy
+				}});
+			}
+		});
+		delete gameState.hud;
+		return false;
 	};
 	return f;
 };

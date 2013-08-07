@@ -8,6 +8,7 @@ import (
 	"encoding/gob"
 	"encoding/hex"
 	"github.com/BenLubar/Rnoadm/resource"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -89,6 +90,11 @@ type packetIn struct {
 	Walk *struct {
 		X, Y uint8
 	}
+	Interact *struct {
+		ID     uint64 `json:"I,string"`
+		Option int    `json:"O"`
+		X, Y   uint8
+	}
 }
 
 type packetClientHash struct {
@@ -97,6 +103,10 @@ type packetClientHash struct {
 
 type packetKick struct {
 	Kick string
+}
+
+type packetMessage struct {
+	Message string
 }
 
 type _SetHUD struct {
@@ -120,7 +130,7 @@ type NetworkedObject struct {
 }
 
 type TileChange struct {
-	ID      uint64
+	ID      uint64 `json:",string"`
 	X, Y    uint8
 	Removed bool             `json:"R,omitempty"`
 	Obj     *NetworkedObject `json:"O,omitempty"`
@@ -184,6 +194,9 @@ func websocketHandler(conn *websocket.Conn) {
 			var p packetIn
 			err := websocket.JSON.Receive(conn, &p)
 			if err != nil {
+				if err != io.EOF {
+					log.Printf("[%s] %v", addr, err)
+				}
 				close(packets)
 				return
 			}
@@ -198,6 +211,8 @@ func websocketHandler(conn *websocket.Conn) {
 	var player *Player
 	kick := make(chan string, 1)
 	hud := make(chan packetSetHUD, 16)
+	messages := make(chan string, 8)
+
 	var updates <-chan TileChange
 	var updateQueue packetTileChange
 	updateTimer := time.NewTicker(5 * time.Millisecond)
@@ -284,6 +299,7 @@ func websocketHandler(conn *websocket.Conn) {
 				player.Save()
 				player.kick = kick
 				player.hud = hud
+				player.messages = messages
 
 				onlinePlayersLock.Lock()
 				if otherSession, ok := OnlinePlayers[player.ID]; ok {
@@ -386,6 +402,39 @@ func websocketHandler(conn *websocket.Conn) {
 				player.Delay = 1
 				player.Unlock()
 			}
+
+			if p.Interact != nil {
+				player.Lock()
+				zone := player.zone
+				player.Unlock()
+
+				tile := zone.Tile(p.Interact.X, p.Interact.Y)
+				if tile == nil {
+					continue
+				}
+				zone.Lock()
+				for _, o := range tile.Objects {
+					if o.NetworkID() == p.Interact.ID {
+						if p.Interact.Option < 0 {
+							switch p.Interact.Option {
+							case -1:
+								player.SendMessage(o.Examine())
+							}
+							break
+						}
+						zone.Unlock()
+						o.Interact(p.Interact.X, p.Interact.Y, player, zone, p.Interact.Option)
+						zone.Lock()
+						break
+					}
+				}
+				zone.Unlock()
+			}
+
+		case message := <-messages:
+			websocket.JSON.Send(conn, packetMessage{
+				Message: message,
+			})
 
 		case p := <-hud:
 			websocket.JSON.Send(conn, p)

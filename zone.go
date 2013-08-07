@@ -35,6 +35,8 @@ func (id *networkID) Serialize() *NetworkedObject {
 	}
 }
 
+func (id *networkID) Interact(x, y uint8, player *Player, zone *Zone, opt int) {}
+
 const root3 = 1.7320508075688772935274463415058723669428052538103806
 const zoneTiles = 46872
 
@@ -447,6 +449,8 @@ type Object interface {
 
 	NetworkID() uint64
 	Serialize() *NetworkedObject
+
+	Interact(uint8, uint8, *Player, *Zone, int)
 }
 
 type Item interface {

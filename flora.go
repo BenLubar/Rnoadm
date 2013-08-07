@@ -73,16 +73,6 @@ func (f *Flora) Blocking() bool {
 	return false
 }
 
-func (f *Flora) InteractOptions() []string {
-	return []string{"pick"}
-}
-
-func (f *Flora) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
-	switch opt {
-	case 0: // pick
-	}
-}
-
 func (f *Flora) ZIndex() int {
 	return 0
 }

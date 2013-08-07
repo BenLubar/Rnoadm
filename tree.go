@@ -108,7 +108,7 @@ func (t *Tree) Blocking() bool {
 	return true
 }
 
-func (t *Tree) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
+func (t *Tree) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // chop down
 		player.Lock()

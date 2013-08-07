@@ -128,37 +128,11 @@ func (r *Rock) Serialize() *NetworkedObject {
 	}
 }
 
-/*func (r *Rock) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	setcell(x, y, PaintCell{
-		Sprite: "rock_base",
-		Color:  rockTypeInfo[r.Type].Color,
-		ZIndex: 51,
-	})
-	if r.Ore != 0 {
-		setcell(x, y, PaintCell{
-			Sprite: "rock_ore_small",
-			Color:  metalTypeInfo[r.Ore].Color,
-			ZIndex: 52,
-		})
-		if r.Big {
-			setcell(x, y, PaintCell{
-				Sprite: "rock_ore_big",
-				Color:  metalTypeInfo[r.Ore].Color,
-				ZIndex: 53,
-			})
-		}
-	}
-}*/
-
 func (r *Rock) Blocking() bool {
 	return true
 }
 
-func (r *Rock) InteractOptions() []string {
-	return []string{"mine", "quarry"}
-}
-
-func (r *Rock) Interact(x uint8, y uint8, player *Player, zone *Zone, opt int) {
+func (r *Rock) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // mine
 		player.Lock()
