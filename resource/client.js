@@ -293,13 +293,13 @@ var wsonmessage = ws.onmessage = function(e) {
 		repaint();
 	}
 	if ('PlayerX' in msg && gameState.playerXNext != msg['PlayerX']) {
-		gameState.playerX = gameState.playerXNext;
+		gameState.playerX = gameState.playerXNext || msg['PlayerX'];
 		gameState.playerXNext = msg['PlayerX'];
 		gameState.playerXFrame = frame;
 		repaint();
 	}
 	if ('PlayerY' in msg && gameState.playerYNext != msg['PlayerY']) {
-		gameState.playerY = gameState.playerYNext;
+		gameState.playerY = gameState.playerYNext || msg['PlayerY'];
 		gameState.playerYNext = msg['PlayerY'];
 		gameState.playerYFrame = frame;
 		repaint();
@@ -588,6 +588,29 @@ var loginHudSubmit = function() {
 }
 
 var rightClickHud = function(wx, wy) {
+	var options = [];
+	for (var i in gameState.objects) {
+		var o = gameState.objects[i];
+		if (o.xnext == wx && o.ynext == wy) {
+			o.object.options.forEach(function(option, j) {
+				options.push({
+					id:   i,
+					obj:  o,
+					name: o.object.name,
+					cmd:  option,
+					oid:  j
+				});
+			});
+			options.push({
+				id:   i,
+				obj:  o,
+				name: o.object.name,
+				cmd:  'examine',
+				oid:  -1
+			});
+		}
+	}
+	console.log(options);
 	var f = function(draw) {
 	};
 	return f;
