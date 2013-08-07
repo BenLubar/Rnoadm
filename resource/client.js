@@ -827,3 +827,8 @@ var lostConnectionHud = function(draw) {
 		Color: '#666'
 	});
 };
+
+function admin(cmd) {
+	send({'Admin': cmd});
+}
+window['admin'] = admin;

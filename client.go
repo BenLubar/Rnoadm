@@ -80,7 +80,8 @@ type userLogin struct {
 }
 
 type packetIn struct {
-	Auth *struct {
+	Admin *string
+	Auth  *struct {
 		Login    string
 		Password string
 	}
@@ -232,7 +233,6 @@ func websocketHandler(conn *websocket.Conn) {
 				if p.Auth.Login == "" || p.Auth.Password == "" {
 					return
 				}
-				// TODO: throttling
 				filename := filepath.Join(seedFilename(), "login"+Base32Encode([]byte(strings.ToLower(p.Auth.Login)))+".gz")
 				var login userLogin
 
@@ -375,8 +375,13 @@ func websocketHandler(conn *websocket.Conn) {
 
 				player.SetHUD("", nil)
 			}
+
 			if player == nil {
 				continue
+			}
+
+			if p.Admin != nil {
+				AdminCommand(addr, player, *p.Admin)
 			}
 
 			if p.CharacterCreation != nil {

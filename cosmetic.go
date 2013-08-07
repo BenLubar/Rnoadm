@@ -57,6 +57,8 @@ var CosmeticSlotOrder [cosmeticTypeCount]CosmeticType = [...]CosmeticType{
 	Headwear,
 }
 
+const metalColor = "metal"
+
 var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	Headwear: {
 		{
@@ -106,6 +108,14 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			AdminOnly: true,
 		},
+		{
+			Article: "a ",
+			Name:    "helmet",
+			Examine: "this will protect me from space aliens!",
+
+			Sprite: "hat_helmet",
+			Colors: []Color{metalColor},
+		},
 	},
 	Shirt: {
 		{
@@ -137,12 +147,48 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{"#eef8f0"},
 		},
 	},
-	Breastplate: {},
-	Pauldrons:   {},
-	Vambraces:   {},
-	Gauntlets:   {},
-	Tassets:     {},
-	Greaves:     {},
+	Breastplate: {
+		{
+			Article: "a ",
+			Name:    "breastplate",
+			Examine: "this should protect me from backstabbers. and frontstabbers.",
+
+			Sprite: "breastplate_basic",
+			Colors: []Color{metalColor},
+		},
+	},
+	Pauldrons: {
+		{
+			Article: "a pair of ",
+			Name:    "pauldrons",
+			Examine: "posh.",
+
+			Sprite: "pauldrons_basic",
+			Colors: []Color{metalColor},
+		},
+	},
+	Vambraces: {
+		{
+			Article: "a pair of ",
+			Name:    "vambraces",
+			Examine: "metal wristbands.",
+
+			Sprite: "vambraces_basic",
+			Colors: []Color{metalColor},
+		},
+	},
+	Gauntlets: {
+		{
+			Article: "a pair of ",
+			Name:    "gauntlets",
+			Examine: "metal gloves? sounds like a recipe for disaster.",
+
+			Sprite: "gauntlets_basic",
+			Colors: []Color{metalColor},
+		},
+	},
+	Tassets: {},
+	Greaves: {},
 }
 
 type Cosmetic struct {
@@ -150,6 +196,7 @@ type Cosmetic struct {
 	Type   CosmeticType
 	ID     uint64
 	Custom []Color
+	Metal  MetalType
 }
 
 func (c *Cosmetic) Article() string {
@@ -173,6 +220,11 @@ func (c *Cosmetic) Serialize() *NetworkedObject {
 		Colors: make([]Color, len(info.Colors)),
 	}
 	copy(obj.Colors, info.Colors)
+	for i := range obj.Colors {
+		if obj.Colors[i] == metalColor {
+			obj.Colors[i] = metalTypeInfo[c.Metal].Color
+		}
+	}
 	for i := range obj.Colors {
 		if len(c.Custom) <= i {
 			break
