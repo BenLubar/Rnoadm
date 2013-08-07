@@ -399,7 +399,6 @@ func websocketHandler(conn *websocket.Conn) {
 
 				player.Lock()
 				player.schedule = &schedule
-				player.Delay = 1
 				player.Unlock()
 			}
 

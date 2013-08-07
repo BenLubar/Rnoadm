@@ -394,6 +394,20 @@ document.onkeydown = function(e) {
 		if (gameState.hud.keyDown(e.keyCode) === false)
 			return;
 	}
+	switch (e.keyCode) {
+	case 38: // up
+		send({'Walk': {'X': gameState.playerXNext, 'Y': gameState.playerYNext - 1}});
+		break;
+	case 40: // down
+		send({'Walk': {'X': gameState.playerXNext, 'Y': gameState.playerYNext + 1}});
+		break;
+	case 37: // left
+		send({'Walk': {'X': gameState.playerXNext - 1, 'Y': gameState.playerYNext}});
+		break;
+	case 39: // right
+		send({'Walk': {'X': gameState.playerXNext + 1, 'Y': gameState.playerYNext}});
+		break;
+	}
 };
 document.onkeypress = function(e) {
 	if (gameState.hud && gameState.hud.keyPress) {
@@ -643,6 +657,7 @@ var rightClickHud = function(wx, wy, sx, sy) {
 		});
 	};
 	f.click = function(x, y) {
+		var found = false;
 		options.forEach(function(option, i) {
 			if (x >= sx && x < sx + 5 && y >= sy + i / 2 && y < sy + (i + 1) / 2) {
 				send({'Interact': {
@@ -651,11 +666,12 @@ var rightClickHud = function(wx, wy, sx, sy) {
 					'X': wx,
 					'Y': wy
 				}});
+				found = true;
 			}
 		});
 		delete gameState.hud;
 		repaint();
-		return false;
+		return !found;
 	};
 	return f;
 };
