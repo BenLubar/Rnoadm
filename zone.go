@@ -486,10 +486,7 @@ func init() {
 	gob.Register(Item(&Logs{}))
 	gob.Register(Item(&Stone{}))
 	gob.Register(Item(&Ore{}))
-	gob.Register(Item(&Hat{}))
-	gob.Register(Item(&Shirt{}))
-	gob.Register(Item(&Pants{}))
-	gob.Register(Item(&Shoes{}))
+	gob.Register(Item(&Cosmetic{}))
 	gob.Register(Item(&Pickaxe{}))
 	gob.Register(Item(&Hatchet{}))
 }

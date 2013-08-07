@@ -369,7 +369,7 @@ func websocketHandler(conn *websocket.Conn) {
 				updateQueue.TileChange = zone.AllTileChange()
 
 				if player.Hero == nil {
-					player.CharacterCreation("")
+					player.CharacterCreationCommand("")
 					continue
 				}
 
@@ -380,7 +380,7 @@ func websocketHandler(conn *websocket.Conn) {
 			}
 
 			if p.CharacterCreation != nil {
-				player.CharacterCreation(p.CharacterCreation.Command)
+				player.CharacterCreationCommand(p.CharacterCreation.Command)
 			}
 
 			if player.Hero == nil {

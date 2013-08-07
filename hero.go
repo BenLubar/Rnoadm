@@ -41,14 +41,16 @@ const (
 )
 
 var raceInfo = [raceCount]struct {
-	Name      string
-	Genders   []Gender
-	SkinTones []Color
+	Name       string
+	Genders    []Gender
+	SkinTones  []Color
+	BaseHealth uint64
 }{
 	Human: {
-		Name:      "human",
-		Genders:   []Gender{Male, Female},
-		SkinTones: []Color{"#ffe3cc", "#ffdbbd", "#ffcda3", "#f7e9dc", "#edd0b7", "#e8d1be", "#e5c298", "#e3c3a8", "#c9a281", "#c2a38a", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948", "#635041", "#4f3f33"},
+		Name:       "human",
+		Genders:    []Gender{Male, Female},
+		SkinTones:  []Color{"#ffe3cc", "#ffdbbd", "#ffcda3", "#f7e9dc", "#edd0b7", "#e8d1be", "#e5c298", "#e3c3a8", "#c9a281", "#c2a38a", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948", "#635041", "#4f3f33"},
+		BaseHealth: 10000,
 	},
 }
 
@@ -119,7 +121,7 @@ type Player struct {
 	kick     chan<- string
 	hud      chan<- packetSetHUD
 
-	characterCreation *Hero
+	CharacterCreation *Hero
 
 	lock sync.Mutex
 
@@ -166,74 +168,73 @@ func (p *Player) SetHUD(name string, data map[string]interface{}) {
 	}
 }
 
-func (p *Player) CharacterCreation(command string) {
+func (p *Player) CharacterCreationCommand(command string) {
 	p.Lock()
 	defer p.Unlock()
 
-	if p.Hero != nil {
-		// TODO: change this when health is implemented
+	if p.Hero != nil && p.Hero.Health() > 0 {
 		return
 	}
 
 	r := rand.New(&p.Seed)
 
-	if p.characterCreation == nil {
+	if p.CharacterCreation == nil {
 		if p.Hero != nil {
-			p.characterCreation = GenerateHero(p.Hero.Race, r)
-			p.characterCreation.Last1 = p.Hero.Last1
-			p.characterCreation.Last1T = p.Hero.Last1T
-			p.characterCreation.Last2 = p.Hero.Last2
-			p.characterCreation.Last2T = p.Hero.Last2T
-			p.characterCreation.Last3 = p.Hero.Last3
-			p.characterCreation.Last3T = p.Hero.Last3T
-			p.characterCreation.SkinToneIndex = p.Hero.SkinToneIndex
+			p.CharacterCreation = GenerateHero(p.Hero.Race, r)
+			p.CharacterCreation.Last1 = p.Hero.Last1
+			p.CharacterCreation.Last1T = p.Hero.Last1T
+			p.CharacterCreation.Last2 = p.Hero.Last2
+			p.CharacterCreation.Last2T = p.Hero.Last2T
+			p.CharacterCreation.Last3 = p.Hero.Last3
+			p.CharacterCreation.Last3T = p.Hero.Last3T
+			p.CharacterCreation.SkinToneIndex = p.Hero.SkinToneIndex
 		} else {
-			p.characterCreation = GenerateHero(Human, r)
+			p.CharacterCreation = GenerateHero(Human, r)
 		}
 	}
 
-	race := raceInfo[p.characterCreation.Race]
+	race := raceInfo[p.CharacterCreation.Race]
 	switch command {
 	case "race":
-		p.characterCreation.Race = Human // TODO: more races
-		race = raceInfo[p.characterCreation.Race]
+		p.CharacterCreation.Race = Human // TODO: more races
+		race = raceInfo[p.CharacterCreation.Race]
 		found := false
 		for _, g := range race.Genders {
-			if p.characterCreation.Gender == g {
+			if p.CharacterCreation.Gender == g {
 				found = true
 				break
 			}
 		}
 		if !found {
-			p.characterCreation.Gender = race.Genders[r.Intn(len(race.Genders))]
+			p.CharacterCreation.Gender = race.Genders[r.Intn(len(race.Genders))]
 		}
-		if p.characterCreation.SkinToneIndex >= uint8(len(race.SkinTones)) {
-			p.characterCreation.SkinToneIndex = uint8(r.Intn(len(race.SkinTones)))
+		if p.CharacterCreation.SkinToneIndex >= uint8(len(race.SkinTones)) {
+			p.CharacterCreation.SkinToneIndex = uint8(r.Intn(len(race.SkinTones)))
 		}
 	case "gender":
 		found := false
 		changed := false
 		for _, g := range race.Genders {
 			if found {
-				p.characterCreation.Gender = g
+				p.CharacterCreation.Gender = g
 				changed = true
 				break
 			}
-			if p.characterCreation.Gender == g {
+			if p.CharacterCreation.Gender == g {
 				found = true
 			}
 		}
 		if !changed {
-			p.characterCreation.Gender = race.Genders[0]
+			p.CharacterCreation.Gender = race.Genders[0]
 		}
 		fallthrough
 	case "name":
-		switch p.characterCreation.Race {
+		switch p.CharacterCreation.Race {
 		case Human:
-			p.characterCreation.HeroName = GenerateHumanName(r, p.characterCreation.Gender)
+			p.CharacterCreation.HeroName = GenerateHumanName(r, p.CharacterCreation.Gender)
 		}
 	case "skin":
-		p.characterCreation.SkinToneIndex = (p.characterCreation.SkinToneIndex + 1) % uint8(len(race.SkinTones))
+		p.CharacterCreation.SkinToneIndex = (p.CharacterCreation.SkinToneIndex + 1) % uint8(len(race.SkinTones))
 	case "shirt":
 		const pastels = "abcde"
 		const earthy = "34567"
@@ -241,12 +242,12 @@ func (p *Player) CharacterCreation(command string) {
 		if r.Intn(2) == 0 {
 			palette = earthy
 		}
-		p.characterCreation.Top.CustomColor[0] = Color([]byte{
+		p.CharacterCreation.Worn[Shirt].Custom = []Color{Color([]byte{
 			'#',
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
-		})
+		})}
 	case "pants":
 		const pastels = "abcde"
 		const earthy = "34567"
@@ -254,16 +255,16 @@ func (p *Player) CharacterCreation(command string) {
 		if r.Intn(2) == 0 {
 			palette = earthy
 		}
-		p.characterCreation.Legs.CustomColor[0] = Color([]byte{
+		p.CharacterCreation.Worn[Pants].Custom = []Color{Color([]byte{
 			'#',
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
-		})
+		})}
 	case "accept":
-		p.characterCreation.Lock()
-		p.Hero = p.characterCreation
-		p.characterCreation = nil
+		p.CharacterCreation.Lock()
+		p.Hero = p.CharacterCreation
+		p.CharacterCreation = nil
 		zone := p.zone
 		tx, ty := p.TileX, p.TileY
 		tile := zone.Tile(p.TileX, p.TileY)
@@ -291,11 +292,11 @@ func (p *Player) CharacterCreation(command string) {
 
 	p.SetHUD("character_creation", map[string]interface{}{
 		"race":   race.Name,
-		"gender": genderInfo[p.characterCreation.Gender].Name,
-		"skin":   race.SkinTones[p.characterCreation.SkinToneIndex],
-		"shirt":  p.characterCreation.Top.CustomColor[0],
-		"pants":  p.characterCreation.Legs.CustomColor[0],
-		"name":   p.characterCreation.Name(),
+		"gender": genderInfo[p.CharacterCreation.Gender].Name,
+		"skin":   race.SkinTones[p.CharacterCreation.SkinToneIndex],
+		"shirt":  p.CharacterCreation.Worn[Shirt].Custom[0],
+		"pants":  p.CharacterCreation.Worn[Pants].Custom[0],
+		"name":   p.CharacterCreation.Name(),
 	})
 }
 
@@ -394,14 +395,13 @@ type Hero struct {
 	Delay uint
 
 	Backpack []Object
-	Head     *Hat
-	Top      *Shirt
-	Legs     *Pants
-	Feet     *Shoes
+	Worn     [cosmeticTypeCount]*Cosmetic
 	Toolbelt struct {
 		*Hatchet
 		*Pickaxe
 	}
+
+	Damage uint64
 
 	frame         uint8
 	tileX, tileY  uint8
@@ -421,6 +421,18 @@ func (h *Hero) Examine() string {
 	return "a hero."
 }
 
+func (h *Hero) Health() uint64 {
+	health := h.MaxHealth() - h.Damage
+	if health > h.MaxHealth() {
+		return 0
+	}
+	return health
+}
+
+func (h *Hero) MaxHealth() uint64 {
+	return raceInfo[h.Race].BaseHealth
+}
+
 func (h *Hero) Blocking() bool {
 	return false
 }
@@ -434,17 +446,10 @@ func (h *Hero) Serialize() *NetworkedObject {
 		colors[0] = raceInfo[h.Race].SkinTones[h.SkinToneIndex]
 	}
 	var attached []*NetworkedObject
-	if h.Feet != nil {
-		attached = append(attached, h.Feet.Serialize())
-	}
-	if h.Legs != nil {
-		attached = append(attached, h.Legs.Serialize())
-	}
-	if h.Top != nil {
-		attached = append(attached, h.Top.Serialize())
-	}
-	if h.Head != nil {
-		attached = append(attached, h.Head.Serialize())
+	for _, slot := range CosmeticSlotOrder {
+		if h.Worn[slot] != nil {
+			attached = append(attached, h.Worn[slot].Serialize())
+		}
 	}
 	return &NetworkedObject{
 		Name:     h.Name(),
@@ -454,79 +459,6 @@ func (h *Hero) Serialize() *NetworkedObject {
 		Moves:    true,
 	}
 }
-
-/*func (h *Hero) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	h.Lock()
-	defer h.Unlock()
-
-	frame := h.frame
-	var offsetX, offsetY int8
-	if h.schedule != nil {
-		cx, cy := h.tileX, h.tileY
-		nx, ny := h.schedule.NextMove(cx, cy)
-		switch h.scheduleDelay {
-		case 3, 1:
-			if cx > nx {
-				frame = 6
-			} else if cx < nx {
-				frame = 9
-			} else if cy > ny {
-				frame = 3
-			} else if cy < ny {
-				frame = 0
-			}
-		case 2, 0:
-			if cy > ny {
-				frame = 3
-			} else if cy < ny {
-				frame = 0
-			} else if cx > nx {
-				frame = 6
-			} else if cy > ny {
-				frame = 9
-			}
-		}
-		if h.scheduleDelay&1 == 1 {
-			frame = frame%3 + uint8(h.scheduleDelay/2+1)
-		}
-		h.frame = frame
-		offsetX = int8(nx-cx) * 16 * int8(4-h.scheduleDelay) / 4
-		offsetY = int8(ny-cy) * 16 * int8(4-h.scheduleDelay) / 4
-	} else {
-		frame -= frame % 3
-	}
-
-	color := h.CustomColor
-	if color == "" {
-		color = raceInfo[h.Race].SkinTones[h.SkinToneIndex]
-	}
-	setcell(x, y, PaintCell{
-		Sprite: "body_human",
-		Color:  color,
-		SheetX: frame,
-		X:      offsetX,
-		Y:      offsetY,
-		ZIndex: 500,
-	})
-	if h.Feet != nil {
-		h.Feet.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
-	}
-	if h.Legs != nil {
-		h.Legs.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
-	}
-	if h.Top != nil {
-		h.Top.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
-	}
-	if h.Head != nil {
-		h.Head.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
-	}
-	if h.Toolbelt.Pickaxe != nil {
-		h.Toolbelt.Pickaxe.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
-	}
-	if h.Toolbelt.Hatchet != nil {
-		h.Toolbelt.Hatchet.PaintWorn(x, y, setcell, frame, offsetX, offsetY)
-	}
-}*/
 
 func (h *Hero) Think(z *Zone, x, y uint8) {
 	h.think(z, x, y, nil)
@@ -548,29 +480,13 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 				i--
 			}
 		}
-		if o := h.Head; o != nil && o.AdminOnly() {
-			if p != nil {
-				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+		for i, o := range h.Worn {
+			if o != nil && o.AdminOnly() {
+				if p != nil {
+					AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
+				}
+				h.Worn[i] = nil
 			}
-			h.Head = nil
-		}
-		if o := h.Top; o != nil && o.AdminOnly() {
-			if p != nil {
-				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
-			}
-			h.Top = nil
-		}
-		if o := h.Legs; o != nil && o.AdminOnly() {
-			if p != nil {
-				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
-			}
-			h.Legs = nil
-		}
-		if o := h.Feet; o != nil && o.AdminOnly() {
-			if p != nil {
-				AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
-			}
-			h.Feet = nil
 		}
 		if o := h.Toolbelt.Pickaxe; o != nil && o.AdminOnly() {
 			if p != nil {
@@ -658,26 +574,11 @@ func (h *Hero) Equip(o Object, inventoryOnly bool) {
 	}
 	var old Object
 	switch i := o.(type) {
-	case *Hat:
-		if h.Head != nil {
-			old = h.Head
+	case *Cosmetic:
+		if h.Worn[i.Type] != nil {
+			old = h.Worn[i.Type]
 		}
-		h.Head = i
-	case *Shirt:
-		if h.Top != nil {
-			old = h.Top
-		}
-		h.Top = i
-	case *Pants:
-		if h.Legs != nil {
-			old = h.Legs
-		}
-		h.Legs = i
-	case *Shoes:
-		if h.Feet != nil {
-			old = h.Feet
-		}
-		h.Feet = i
+		h.Worn[i.Type] = i
 	case *Pickaxe:
 		if h.Toolbelt.Pickaxe != nil {
 			old = h.Toolbelt.Pickaxe
@@ -817,9 +718,10 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 	if r.Intn(2) == 0 {
 		palette = earthy
 	}
-	h.Top = &Shirt{
-		Type: HipHopTeeShirt,
-		CustomColor: [5]Color{Color([]byte{
+	h.Worn[Shirt] = &Cosmetic{
+		Type: Shirt,
+		ID:   0,
+		Custom: []Color{Color([]byte{
 			'#',
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
@@ -830,17 +732,19 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 	if r.Intn(3) == 0 {
 		palette = pastels
 	}
-	h.Legs = &Pants{
-		Type: OffBrandJeans,
-		CustomColor: [5]Color{Color([]byte{
+	h.Worn[Pants] = &Cosmetic{
+		Type: Pants,
+		ID:   0,
+		Custom: []Color{Color([]byte{
 			'#',
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
 			palette[r.Intn(len(palette))],
 		})},
 	}
-	h.Feet = &Shoes{
-		Type: WhiteSneakers,
+	h.Worn[Shoes] = &Cosmetic{
+		Type: Shoes,
+		ID:   0,
 	}
 	return h
 }
