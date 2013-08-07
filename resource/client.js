@@ -228,10 +228,15 @@ function repaint() {
 				Math.floor((h/2 - playerY) * tileSize));
 		}
 
-		(gameState.messages || []).forEach(function(message, i) {
-			draw(-w / 2, (h - i) / 2 - 1, {
-				Text:  message,
-				Color: '#fff'
+		var y = h / 2 - 1;
+		(gameState.messages || []).forEach(function(message) {
+			var lines = message.split(/\n/g);
+			y -= lines.length / 2;
+			lines.forEach(function(line, i) {
+				draw(-w / 2, y + i / 2, {
+					Text:  line,
+					Color: '#fff'
+				});
 			});
 		});
 

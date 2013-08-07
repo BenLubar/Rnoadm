@@ -22,13 +22,22 @@ const (
 )
 
 var genderInfo = [genderCount]struct {
-	Name string
+	Name             string
+	PronounSubject   string
+	PronounObject    string
+	PronounPosessive string
 }{
 	Male: {
-		Name: "male",
+		Name:             "male",
+		PronounSubject:   "he",
+		PronounObject:    "him",
+		PronounPosessive: "his",
 	},
 	Female: {
-		Name: "female",
+		Name:             "female",
+		PronounSubject:   "she",
+		PronounObject:    "her",
+		PronounPosessive: "her",
 	},
 }
 
@@ -395,7 +404,7 @@ type Hero struct {
 	Delay uint
 
 	Backpack []Object
-	Worn     [cosmeticTypeCount]*Cosmetic
+	Worn     [cosmeticTypeCount]Cosmetic
 	Toolbelt struct {
 		*Hatchet
 		*Pickaxe
@@ -418,7 +427,15 @@ func (h *Hero) Unlock() {
 }
 
 func (h *Hero) Examine() string {
-	return "a hero."
+	text := append(append(append([]byte(h.Name()), " is a "...), raceInfo[h.Race].Name...), " hero."...)
+	for i := range h.Worn {
+		if h.Worn[i].Exists() {
+			text = append(append(append(text, '\n'), genderInfo[h.Gender].PronounSubject...), " is wearing "...)
+			text = append(append(append(text, h.Worn[i].Article()...), h.Worn[i].Name()...), " on "...)
+			text = append(append(append(append(text, genderInfo[h.Gender].PronounPosessive...), ' '), CosmeticSlotName[h.Worn[i].Type]...), '.')
+		}
+	}
+	return string(text)
 }
 
 func (h *Hero) Health() uint64 {
@@ -447,7 +464,7 @@ func (h *Hero) Serialize() *NetworkedObject {
 	}
 	var attached []*NetworkedObject
 	for _, slot := range CosmeticSlotOrder {
-		if h.Worn[slot] != nil {
+		if h.Worn[slot].Exists() {
 			attached = append(attached, h.Worn[slot].Serialize())
 		}
 	}
@@ -480,12 +497,13 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 				i--
 			}
 		}
-		for i, o := range h.Worn {
-			if o != nil && o.AdminOnly() {
+		for i := range h.Worn {
+			o := &h.Worn[i]
+			if o.Exists() && o.AdminOnly() {
 				if p != nil {
 					AdminLog.Printf("AUTOREMOVE ADMIN ITEM [%d:%q] (%d:%d %d:%d) %q %q", p.ID, p.Name(), p.ZoneX, p.TileX, p.ZoneY, p.TileY, o.Name(), o.Examine())
 				}
-				h.Worn[i] = nil
+				h.Worn[i] = Cosmetic{}
 			}
 		}
 		if o := h.Toolbelt.Pickaxe; o != nil && o.AdminOnly() {
@@ -575,10 +593,11 @@ func (h *Hero) Equip(o Object, inventoryOnly bool) {
 	var old Object
 	switch i := o.(type) {
 	case *Cosmetic:
-		if h.Worn[i.Type] != nil {
-			old = h.Worn[i.Type]
+		if h.Worn[i.Type].Exists() {
+			tmp := h.Worn[i.Type]
+			old = &tmp
 		}
-		h.Worn[i.Type] = i
+		h.Worn[i.Type] = *i
 	case *Pickaxe:
 		if h.Toolbelt.Pickaxe != nil {
 			old = h.Toolbelt.Pickaxe
@@ -718,7 +737,7 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 	if r.Intn(2) == 0 {
 		palette = earthy
 	}
-	h.Worn[Shirt] = &Cosmetic{
+	h.Worn[Shirt] = Cosmetic{
 		Type: Shirt,
 		ID:   0,
 		Custom: []Color{Color([]byte{
@@ -732,7 +751,7 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 	if r.Intn(3) == 0 {
 		palette = pastels
 	}
-	h.Worn[Pants] = &Cosmetic{
+	h.Worn[Pants] = Cosmetic{
 		Type: Pants,
 		ID:   0,
 		Custom: []Color{Color([]byte{
@@ -742,7 +761,7 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 			palette[r.Intn(len(palette))],
 		})},
 	}
-	h.Worn[Shoes] = &Cosmetic{
+	h.Worn[Shoes] = Cosmetic{
 		Type: Shoes,
 		ID:   0,
 	}

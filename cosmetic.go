@@ -1,6 +1,7 @@
 package main
 
 type cosmeticInfo struct {
+	Article string
 	Name    string
 	Examine string
 
@@ -30,6 +31,19 @@ const (
 	cosmeticTypeCount
 )
 
+var CosmeticSlotName [cosmeticTypeCount]string = [...]string{
+	"head",
+	"top",
+	"legs",
+	"feet",
+	"chest",
+	"shoulders",
+	"wrists",
+	"hands",
+	"waist",
+	"ankles",
+}
+
 var CosmeticSlotOrder [cosmeticTypeCount]CosmeticType = [...]CosmeticType{
 	Pants,
 	Shirt,
@@ -46,6 +60,12 @@ var CosmeticSlotOrder [cosmeticTypeCount]CosmeticType = [...]CosmeticType{
 var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	Headwear: {
 		{
+			Article: "the ",
+			Name:    "nonexistent hat",
+			Examine: "this hat doesn't actually exist.",
+		},
+		{
+			Article: "a ",
 			Name:    "novelty foam chicken hat",
 			Examine: "when you need to go in style, go in a novelty foam chicken's decapitated head.",
 
@@ -55,6 +75,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			AdminOnly: true,
 		},
 		{
+			Article: "a ",
 			Name:    "bear riding a unicycle",
 			Examine: "russia, amirite?",
 
@@ -66,6 +87,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			AdminOnly: true,
 		},
 		{
+			Article: "an ",
 			Name:    "unusual strange vintage hound dog",
 			Examine: "your opponents will be all shook up when they see these sweet shades and coif. kills: 72",
 
@@ -75,6 +97,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			AdminOnly: true,
 		},
 		{
+			Article: "a ",
 			Name:    "spanish war mask",
 			Examine: "many Pedros have worn this mask before you.",
 
@@ -86,6 +109,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	},
 	Shirt: {
 		{
+			Article: "a ",
 			Name:    "hip hop tee shirt",
 			Examine: "$120. by fruit, feat. the loom.",
 
@@ -95,6 +119,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	},
 	Pants: {
 		{
+			Article: "a pair of ",
 			Name:    "off-brand jeans",
 			Examine: "these have seen some use.",
 
@@ -104,6 +129,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	},
 	Shoes: {
 		{
+			Article: "a pair of ",
 			Name:    "white sneakers",
 			Examine: "your favorite pair.",
 
@@ -124,6 +150,10 @@ type Cosmetic struct {
 	Type   CosmeticType
 	ID     uint64
 	Custom []Color
+}
+
+func (c *Cosmetic) Article() string {
+	return cosmetics[c.Type][c.ID].Article
 }
 
 func (c *Cosmetic) Name() string {
@@ -173,4 +203,8 @@ func (c *Cosmetic) AdminOnly() bool {
 
 func (c *Cosmetic) ZIndex() int {
 	return 25
+}
+
+func (c *Cosmetic) Exists() bool {
+	return c.Type != 0 || c.ID != 0
 }
