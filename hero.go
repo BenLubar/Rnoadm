@@ -373,15 +373,16 @@ func (p *Player) ZIndex() int {
 }
 
 func (p *Player) Examine() string {
+	examine := p.Hero.Examine()
 	if p.Admin {
 		p.Lock()
 		defer p.Unlock()
+		examine += "\n" + p.Name() + " is an admin."
 		if p.Examine_ != "" {
-			return p.Examine_
+			examine += "\n\"" + p.Examine_ + "\""
 		}
-		return "an admin."
 	}
-	return p.Hero.Examine()
+	return examine
 }
 
 func (p *Player) Think(z *Zone, x, y uint8) {

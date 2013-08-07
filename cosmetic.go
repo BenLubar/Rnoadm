@@ -258,5 +258,5 @@ func (c *Cosmetic) ZIndex() int {
 }
 
 func (c *Cosmetic) Exists() bool {
-	return c.Type != 0 || c.ID != 0
+	return (c.Type != 0 || c.ID != 0) && c.Type < cosmeticTypeCount && c.ID < uint64(len(cosmetics[c.Type]))
 }
