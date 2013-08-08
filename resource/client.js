@@ -395,26 +395,26 @@ var wsonmessage = ws.onmessage = function(e) {
 				delete gameState.objects[tile['ID']];
 			} else {
 				if (tile['O']) {
-					gameState.objects[tile['ID']] = {
-						x:      tile['X'],
-						xnext:  tile['X'],
-						y:      tile['Y'],
-						ynext:  tile['Y'],
-						frame:  0,
-						object: toObject(tile['O'])
-					};
-					if (gameState.objects[tile['ID']].object.moves) {
-						zoneBufferDynamicDirty = true;
-					} else {
-						zoneBufferStaticDirty = true;
+					if (!gameState.objects[tile['ID']]) {
+						gameState.objects[tile['ID']] = {
+							x:      tile['X'],
+							xnext:  tile['X'],
+							y:      tile['Y'],
+							ynext:  tile['Y'],
+							frame:  0
+						};
 					}
-				} else {
-					gameState.objects[tile['ID']].x = gameState.objects[tile['ID']].xnext;
-					gameState.objects[tile['ID']].y = gameState.objects[tile['ID']].ynext;
-					gameState.objects[tile['ID']].xnext = tile['X'];
-					gameState.objects[tile['ID']].ynext = tile['Y'];
-					gameState.objects[tile['ID']].frame = frame;
+					gameState.objects[tile['ID']].object = toObject(tile['O']);
+				}
+				gameState.objects[tile['ID']].x = gameState.objects[tile['ID']].xnext;
+				gameState.objects[tile['ID']].y = gameState.objects[tile['ID']].ynext;
+				gameState.objects[tile['ID']].xnext = tile['X'];
+				gameState.objects[tile['ID']].ynext = tile['Y'];
+				gameState.objects[tile['ID']].frame = frame;
+				if (gameState.objects[tile['ID']].object.moves) {
 					zoneBufferDynamicDirty = true;
+				} else {
+					zoneBufferStaticDirty = true;
 				}
 			}
 		});
