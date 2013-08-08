@@ -350,6 +350,16 @@ func (z *Zone) Think() {
 	z.Unlock()
 }
 
+func (z *Zone) Chat(p *Player, msg string) {
+	msg = "‹" + p.Name() + "› says, “" + msg + "”"
+
+	loadedZoneLock.Lock()
+	for p := range loadedZones[[2]int64{z.X, z.Y}].ref {
+		go p.SendMessage(msg)
+	}
+	loadedZoneLock.Unlock()
+}
+
 func (z *Zone) AllTileChange() []TileChange {
 	z.Lock()
 	defer z.Unlock()
@@ -425,21 +435,6 @@ func (t *Tile) Blocked() bool {
 }
 
 type Color string
-
-/*func (t *Tile) Paint(z *Zone, i, j int, setcell func(int, int, PaintCell)) {
-	if t.Sprite == 0 {
-		t.Sprite = uint8(rand.Intn(4) + 1)
-	}
-	setcell(i, j, PaintCell{
-		Sprite: "grass_r1",
-		Color:  "#268f1e",
-		SheetX: t.Sprite - 1,
-		ZIndex: -50,
-	})
-	for k := len(t.Objects) - 1; k >= 0; k-- {
-		t.Objects[k].Paint(i, j, setcell)
-	}
-}*/
 
 type Object interface {
 	Name() string

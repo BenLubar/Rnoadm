@@ -112,6 +112,7 @@ type packetIn struct {
 		Option int    `json:"O"`
 		X, Y   uint8
 	}
+	Chat *string
 }
 
 type packetClientHash struct {
@@ -467,6 +468,17 @@ func websocketHandler(conn *websocket.Conn) {
 					}
 				}
 				zone.Unlock()
+			}
+
+			if p.Chat != nil {
+				msg := strings.Join(strings.Fields(*p.Chat), " ")
+				if msg != "" {
+					player.Lock()
+					zone := player.zone
+					player.Unlock()
+
+					zone.Chat(player, msg)
+				}
 			}
 
 		case p := <-inventory:

@@ -25,10 +25,12 @@ var zoneCtxDynamic = zoneBufferDynamic.getContext('2d');
 var zoneBufferStaticDirty = false;
 var zoneBufferDynamicDirty = false;
 
+const color_111 = '#111';
 const color_222 = '#222';
 const color_444 = '#444';
 const color_888 = '#888';
 const color_aaa = '#aaa';
+const color_ccc = '#ccc';
 const color_fff = '#fff';
 
 var frame = 0;
@@ -42,20 +44,6 @@ setInterval(function() {
 }, 60000);
 
 function drawObject(draw, x, y, ctx, o, frame) {
-	if (o.health) {
-		draw(x, y, {
-			Sprite: 'ui_bar',
-			Color:  '#800',
-			Scale:  o.scale,
-			X:      0
-		}, ctx);
-		draw(x, y, {
-			Sprite: 'ui_bar',
-			Color:  '#080',
-			Scale:  o.scale,
-			X:      26 - Math.ceil(o.health * 26)
-		}, ctx);
-	}
 	o.colors.forEach(function(color, j) {
 		if (color) {
 			draw(x, y, {
@@ -71,6 +59,20 @@ function drawObject(draw, x, y, ctx, o, frame) {
 	o.attach.forEach(function(a) {
 		drawObject(draw, x, y, ctx, a, frame);
 	});
+	if (o.health) {
+		draw(x, y, {
+			Sprite: 'ui_bar',
+			Color:  '#800',
+			Scale:  o.scale,
+			X:      0
+		}, ctx);
+		draw(x, y, {
+			Sprite: 'ui_bar',
+			Color:  '#080',
+			Scale:  o.scale,
+			X:      26 - Math.ceil(o.health * 26)
+		}, ctx);
+	}
 }
 
 var inRepaint = false;
@@ -451,6 +453,9 @@ document.onkeydown = function(e) {
 			return;
 	}
 	switch (e.keyCode) {
+	case 13: // enter
+		gameState.hud = chatHud();
+		break;
 	case 38: // up
 		send({'Walk': {'X': gameState.playerXNext, 'Y': gameState.playerYNext - 1}});
 		break;
@@ -543,12 +548,12 @@ var loginHud = function(draw) {
 	for (var x = -3.75; x < 3.75; x += 0.5) {
 		draw(x, -2.75, {
 			Sprite: 'ui_r1',
-			Color:  '#111',
+			Color:  color_111,
 			Y:      1
 		});
 		draw(x, -1.25, {
 			Sprite: 'ui_r1',
-			Color:  '#111',
+			Color:  color_111,
 			Y:      1
 		});
 	}
@@ -674,6 +679,39 @@ var loginHudSubmit = function() {
 	loginHudFocus = 0;
 }
 
+var chatHud = function() {
+	var message = '';
+	var f = function(draw) {
+		draw(-w / 2, h / 2 - 1, {
+			Text:  message + '_',
+			Color: color_fff
+		});
+	};
+	f.keyDown = function(code) {
+		switch (code) {
+		case 8: // backspace
+			if (message.length) {
+				message = message.substring(0, message.length - 1);
+			}
+			repaint();
+			return false;
+		case 13: // enter
+			send({'Chat': message});
+			gameState.hud = null;
+			return false;
+		case 27: // esc
+			gameState.hud = null;
+			return false;
+		}
+	};
+	f.keyPress = function(code) {
+		message += String.fromCharCode(code);
+		repaint();
+		return false;
+	};
+	return f;
+};
+
 var rightClickHud = function(wx, wy, sx, sy) {
 	var options = [];
 	for (var i in gameState.objects) {
@@ -747,7 +785,7 @@ huds['character_creation'] = function(data) {
 			for (var y = -4; y < 2; y++) {
 				draw(x, y, {
 					Sprite: 'ui_r1',
-					Color:  x >= -5 && x < -1 && y < 0 ? '#ccc' : color_222
+					Color:  x >= -5 && x < -1 && y < 0 ? color_ccc : color_222
 				});
 			}
 		}
@@ -865,6 +903,9 @@ huds['character_creation'] = function(data) {
 		}
 		return false;
 	};
+	f.keyPress = f.keyDown = function(code) {
+		return false;
+	};
 	return f;
 };
 
@@ -877,8 +918,11 @@ var lostConnectionHud = function(draw) {
 	}
 	draw(-2, -0.25, {
 		Text:  'Lost connection.',
-		Color: '#666'
+		Color: color_888
 	});
+};
+lostConnectionHud.click = lostConnectionHud.keyPress = lostConnectionHud.keyDown = function() {
+	return false;
 };
 
 function admin(cmd) {
