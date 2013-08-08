@@ -658,6 +658,10 @@ var rightClickHud = function(wx, wy, sx, sy) {
 		}
 	}
 	var f = function(draw) {
+		if (mouseX < sx - 1 || mouseX > sx + 6 || mouseY < sy - 1 || mouseY > sy + options.length / 2 + 0.5) {
+			delete gameState.hud;
+			return;
+		}
 		options.forEach(function(option, y) {
 			for (var x = 0; x < 10; x++) {
 				draw(sx + x / 2, sy + (y - 1) / 2, {
@@ -673,7 +677,6 @@ var rightClickHud = function(wx, wy, sx, sy) {
 		});
 	};
 	f.click = function(x, y) {
-		var found = false;
 		options.forEach(function(option, i) {
 			if (x >= sx && x < sx + 5 && y >= sy + i / 2 && y < sy + (i + 1) / 2) {
 				send({'Interact': {
@@ -682,12 +685,11 @@ var rightClickHud = function(wx, wy, sx, sy) {
 					'X': wx,
 					'Y': wy
 				}});
-				found = true;
 			}
 		});
 		delete gameState.hud;
 		repaint();
-		return !found;
+		return false;
 	};
 	return f;
 };
