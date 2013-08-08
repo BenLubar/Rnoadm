@@ -559,6 +559,11 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 	r := z.Rand()
 	pickaxeScore := uint64(r.Int63n(int64(pickaxeMax-pickaxeMin+1))) + pickaxeMin
 	rockScore := uint64(r.Int63n(int64(rockMax-rockMin+1))) + rockMin
+
+	if pickaxeScore < rockScore && r.Int63n(int64(rockScore-pickaxeScore)) == 0 {
+		pickaxeScore = rockScore
+	}
+
 	if p != nil {
 		switch {
 		case pickaxeScore < rockScore/5:

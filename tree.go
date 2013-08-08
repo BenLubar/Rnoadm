@@ -375,6 +375,11 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 	r := z.Rand()
 	hatchetScore := uint64(r.Int63n(int64(hatchetMax-hatchetMin+1))) + hatchetMin
 	treeScore := uint64(r.Int63n(int64(treeMax-treeMin+1))) + treeMin
+
+	if hatchetScore < treeScore && r.Int63n(int64(treeScore-hatchetScore)) == 0 {
+		hatchetScore = treeScore
+	}
+
 	if p != nil {
 		switch {
 		case hatchetScore < treeScore/5:
