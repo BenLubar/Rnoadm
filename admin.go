@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"math/rand"
+	"strconv"
 	"strings"
 )
 
@@ -29,6 +30,9 @@ func AdminCommand(addr string, p *Player, cmd string) {
 		for _, o := range objects {
 			p.Equip(o, true)
 		}
+
+	case "health":
+		p.SendMessage(strconv.FormatUint(p.Health(), 10) + "/" + strconv.FormatUint(p.MaxHealth(), 10))
 
 	case "clear":
 		if len(parts) < 2 {

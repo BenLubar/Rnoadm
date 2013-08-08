@@ -115,6 +115,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "hat_helmet",
 			Colors: []Color{metalColor},
+
+			HealthBonus: 5,
 		},
 	},
 	Shirt: {
@@ -153,6 +155,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "shoes_boots",
 			Colors: []Color{metalColor},
+
+			HealthBonus: 1,
 		},
 	},
 	Breastplate: {
@@ -163,6 +167,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "breastplate_basic",
 			Colors: []Color{metalColor},
+
+			HealthBonus: 10,
 		},
 	},
 	Pauldrons: {
@@ -173,6 +179,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "pauldrons_basic",
 			Colors: []Color{metalColor},
+
+			HealthBonus: 1,
 		},
 	},
 	Vambraces: {
@@ -183,6 +191,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "vambraces_basic",
 			Colors: []Color{metalColor},
+
+			HealthBonus: 2,
 		},
 	},
 	Gauntlets: {
@@ -193,6 +203,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "gauntlets_basic",
 			Colors: []Color{metalColor},
+
+			HealthBonus: 1,
 		},
 	},
 	Tassets: {
@@ -203,6 +215,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "tassets_basic",
 			Colors: []Color{metalColor},
+
+			HealthBonus: 5,
 		},
 	},
 	Greaves: {
@@ -213,6 +227,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "greaves_basic",
 			Colors: []Color{metalColor},
+
+			HealthBonus: 2,
 		},
 	},
 }
@@ -283,7 +299,7 @@ func (c *Cosmetic) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (c *Cosmetic) AdminOnly() bool {
-	return cosmetics[c.Type][c.ID].AdminOnly
+	return cosmetics[c.Type][c.ID].AdminOnly || metalTypeInfo[c.Metal].Strength >= 1<<60
 }
 
 func (c *Cosmetic) ZIndex() int {
@@ -292,4 +308,17 @@ func (c *Cosmetic) ZIndex() int {
 
 func (c *Cosmetic) Exists() bool {
 	return (c.Type != 0 || c.ID != 0) && c.Type < cosmeticTypeCount && c.ID < uint64(len(cosmetics[c.Type]))
+}
+
+func (c *Cosmetic) HealthBonus() uint64 {
+	base := cosmetics[c.Type][c.ID].HealthBonus
+	bonus := base * 100
+	if c.Metal != 0 {
+		if metalTypeInfo[c.Metal].Strength > 100000 {
+			bonus += metalTypeInfo[c.Metal].Strength / 1000 * base
+		} else {
+			bonus += metalTypeInfo[c.Metal].Strength * base / 1000
+		}
+	}
+	return bonus
 }

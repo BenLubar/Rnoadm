@@ -450,7 +450,13 @@ func (h *Hero) Health() uint64 {
 }
 
 func (h *Hero) MaxHealth() uint64 {
-	return raceInfo[h.Race].BaseHealth
+	health := raceInfo[h.Race].BaseHealth
+	for i := range h.Worn {
+		if h.Worn[i].Exists() {
+			health += h.Worn[i].HealthBonus()
+		}
+	}
+	return health
 }
 
 func (h *Hero) Blocking() bool {
