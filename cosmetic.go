@@ -269,9 +269,6 @@ func (c *Cosmetic) Serialize() *NetworkedObject {
 	for i := range obj.Colors {
 		if obj.Colors[i] == metalColor {
 			obj.Colors[i] = metalTypeInfo[c.Metal].Color
-			if obj.Colors[i] == "" {
-				obj.Colors[i] = "#f0f"
-			}
 		}
 	}
 	for i := range obj.Colors {

@@ -38,6 +38,7 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 		if b, ok := resource.Resource[r.URL.Path[1:]]; ok {
 			if strings.HasSuffix(r.URL.Path, ".png") {
 				w.Header().Set("Content-Type", "image/png")
+				w.Header().Set("Expires", time.Now().UTC().AddDate(1, 0, 0).Format(http.TimeFormat))
 			} else if strings.HasSuffix(r.URL.Path, ".js") {
 				w.Header().Set("Content-Type", "application/javascript")
 			}

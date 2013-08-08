@@ -1,3 +1,5 @@
+const GRAPHICS_REVISION = 1;
+
 var undefined;
 const tileSize = 32;
 var w = 32, h = 16;
@@ -104,7 +106,7 @@ function repaint() {
 						}
 						repaint();
 					};
-					img.src = p.Sprite + '.png';
+					img.src = p.Sprite + '.png?' + GRAPHICS_REVISION;
 				}
 				if (images[p.Sprite] === true)
 					return;
