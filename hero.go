@@ -610,12 +610,25 @@ func (h *Hero) ZIndex() int {
 	return 50
 }
 
-func (h *Hero) GiveItem(o Object) {
+func (h *Hero) GiveItem(o Object) bool {
 	h.Backpack = append(h.Backpack, o)
 	select {
 	case h.backpackDirty <- struct{}{}:
 	default:
 	}
+	return true
+}
+
+func (h *Hero) RemoveItem(slot int, o Object) bool {
+	if slot < 0 || slot >= len(h.Backpack) || h.Backpack[slot] != o {
+		return false
+	}
+	h.Backpack = append(h.Backpack[:slot], h.Backpack[slot+1:]...)
+	select {
+	case h.backpackDirty <- struct{}{}:
+	default:
+	}
+	return true
 }
 
 func (h *Hero) Equip(o Object, inventoryOnly bool) {
@@ -755,7 +768,10 @@ func (s *TakeSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 		h.Lock()
 		h.GiveItem(s.Item)
 		h.Unlock()
-		// TODO: zone tile update
+		SendZoneTileChange(z.X, z.Y, TileChange{
+			ID:      s.Item.NetworkID(),
+			Removed: true,
+		})
 	}
 	return false
 }

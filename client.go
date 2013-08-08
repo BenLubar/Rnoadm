@@ -108,9 +108,10 @@ type packetIn struct {
 		X, Y uint8
 	}
 	Interact *struct {
-		ID     uint64 `json:"I,string"`
-		Option int    `json:"O"`
-		X, Y   uint8
+		ID        uint64 `json:"I,string"`
+		Option    int    `json:"O"`
+		X, Y      uint8
+		Inventory int `json:"N"`
 	}
 	Chat *string
 }
@@ -137,15 +138,16 @@ type packetSetHUD struct {
 }
 
 type NetworkedObject struct {
-	Name     string             `json:"N",omitempty`
-	Options  []string           `json:"O",omitempty`
-	Sprite   string             `json:"I",omitempty`
-	Colors   []Color            `json:"C"`
+	Name     string             `json:"N,omitempty"`
+	Options  []string           `json:"O,omitempty"`
+	Sprite   string             `json:"I,omitempty"`
+	Colors   []Color            `json:"C,omitempty"`
 	Scale    uint8              `json:"S,omitempty"`
 	Height   uint16             `json:"H,omitempty"`
 	Attached []*NetworkedObject `json:"A,omitempty"`
 	Moves    bool               `json:"M,omitempty"`
 	Health   float64            `json:"L,omitempty"`
+	Item     bool               `json:"T,omitempty"`
 }
 
 type TileChange struct {
@@ -447,27 +449,81 @@ func websocketHandler(conn *websocket.Conn) {
 				zone := player.zone
 				player.Unlock()
 
-				tile := zone.Tile(p.Interact.X, p.Interact.Y)
-				if tile == nil {
-					continue
-				}
-				zone.Lock()
-				for _, o := range tile.Objects {
-					if o.NetworkID() == p.Interact.ID {
-						if p.Interact.Option < 0 {
-							switch p.Interact.Option {
-							case -1:
-								player.SendMessage(o.Examine())
-							}
+				var object Object
+
+				if p.Interact.Inventory < 0 {
+					tile := zone.Tile(p.Interact.X, p.Interact.Y)
+					if tile == nil {
+						continue
+					}
+					zone.Lock()
+					for _, o := range tile.Objects {
+						if o.NetworkID() == p.Interact.ID {
+							object = o
 							break
 						}
-						zone.Unlock()
-						o.Interact(p.Interact.X, p.Interact.Y, player, zone, p.Interact.Option)
-						zone.Lock()
-						break
+					}
+					zone.Unlock()
+				} else if p.Interact.Inventory < len(player.Backpack) {
+					player.Lock()
+					object = player.Backpack[p.Interact.Inventory]
+					player.Unlock()
+					if object.NetworkID() != p.Interact.ID {
+						continue
 					}
 				}
-				zone.Unlock()
+
+				if object == nil {
+					continue
+				}
+
+				if p.Interact.Option < 0 {
+					switch p.Interact.Option {
+					case -1: // examine
+						player.SendMessage(object.Examine())
+					case -2: // drop
+						if p.Interact.Inventory < 0 {
+							continue
+						}
+						player.Lock()
+						if player.RemoveItem(p.Interact.Inventory, object) {
+							tx, ty := player.TileX, player.TileY
+							tile := zone.Tile(tx, ty)
+							player.Unlock()
+
+							zone.Lock()
+							tile.Add(object)
+							zone.Unlock()
+							SendZoneTileChange(zone.X, zone.Y, TileChange{
+								ID:  object.NetworkID(),
+								Obj: object.Serialize(),
+								X:   tx,
+								Y:   ty,
+							})
+						} else {
+							player.Unlock()
+						}
+
+					case -3: // take
+						if p.Interact.Inventory >= 0 {
+							continue
+						}
+						if _, ok := object.(Item); !ok {
+							continue
+						}
+						player.Lock()
+						move := MoveSchedule(FindPath(zone, player.TileX, player.TileY, p.Interact.X, p.Interact.Y, true))
+						player.schedule = &ScheduleSchedule{
+							&move,
+							&TakeSchedule{
+								Item: object,
+							},
+						}
+						player.Unlock()
+					}
+					continue
+				}
+				object.Interact(p.Interact.X, p.Interact.Y, player, zone, p.Interact.Option)
 			}
 
 			if p.Chat != nil {

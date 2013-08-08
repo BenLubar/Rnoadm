@@ -260,10 +260,12 @@ func (c *Cosmetic) Examine() string {
 func (c *Cosmetic) Serialize() *NetworkedObject {
 	info := cosmetics[c.Type][c.ID]
 	obj := &NetworkedObject{
-		Name:   info.Name,
-		Sprite: info.Sprite,
-		Height: info.Height,
-		Colors: make([]Color, len(info.Colors)),
+		Name:    c.Name(),
+		Sprite:  info.Sprite,
+		Height:  info.Height,
+		Colors:  make([]Color, len(info.Colors)),
+		Options: []string{"wear"},
+		Item:    true,
 	}
 	copy(obj.Colors, info.Colors)
 	for i := range obj.Colors {

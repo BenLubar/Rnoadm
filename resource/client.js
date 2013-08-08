@@ -3,6 +3,8 @@ const GRAPHICS_REVISION = 1;
 var undefined;
 const tileSize = 32;
 var w = 32, h = 16;
+const inventoryCols = 8;
+
 var gameState = {};
 var images = {};
 var images_resize = {};
@@ -265,8 +267,7 @@ function repaint() {
 		}
 
 		(gameState.inventory || []).forEach(function(item, i) {
-			const cols = 8;
-			drawObject(draw, w / 2 - cols + i % cols, h / 2 - Math.ceil(gameState.inventory.length / cols) + Math.floor(i / cols), undefined, item.object);
+			drawObject(draw, w / 2 - inventoryCols + i % inventoryCols, h / 2 - Math.ceil(gameState.inventory.length / inventoryCols) + Math.floor(i / inventoryCols), undefined, item.object);
 		});
 
 		var y = h / 2 - 1;
@@ -325,7 +326,8 @@ function toObject(o) {
 		height:  o['H'],
 		moves:   !!o['M'],
 		attach:  (o['A'] || []).map(toObject),
-		health:  o['L']
+		health:  o['L'],
+		item:    !!o['T']
 	};
 }
 var wsonmessage = ws.onmessage = function(e) {
@@ -717,23 +719,84 @@ var rightClickHud = function(wx, wy, sx, sy) {
 	for (var i in gameState.objects) {
 		var o = gameState.objects[i];
 		if (o.xnext == wx && o.ynext == wy) {
-			o.object.options.forEach(function(option, j) {
+			if (o.object.item) {
 				options.push({
 					id:   i,
 					obj:  o,
 					name: o.object.name,
-					cmd:  option,
-					oid:  j
+					cmd:  'take',
+					oid:  -3,
+
+					inventory: -1
 				});
-			});
+			} else {
+				o.object.options.forEach(function(option, j) {
+					options.push({
+						id:   i,
+						obj:  o,
+						name: o.object.name,
+						cmd:  option,
+						oid:  j,
+
+						inventory: -1
+					});
+				});
+			}
 			options.push({
 				id:   i,
 				obj:  o,
 				name: o.object.name,
 				cmd:  'examine',
-				oid:  -1
+				oid:  -1,
+
+				inventory: -1
 			});
 		}
+	}
+	if (gameState.inventory) {
+		var ix = Math.floor(sx - w/2 + inventoryCols);
+		var iy = Math.floor(sy - h/2 + Math.ceil(gameState.inventory.length / inventoryCols));
+		var inventorySlot = ix + iy * inventoryCols;
+		if (ix >= 0 && ix < inventoryCols && iy >= 0 && inventorySlot < gameState.inventory.length) {
+			var o = gameState.inventory[inventorySlot];
+			if (o.object.item) {
+				o.object.options.forEach(function(option, j) {
+					options.push({
+						id:   o.id,
+						obj:  o,
+						name: o.object.name,
+						cmd:  option,
+						oid:  j,
+
+						inventory: inventorySlot
+					});
+				});
+			}
+			options.push({
+				id:   o.id,
+				obj:  o,
+				name: o.object.name,
+				cmd:  'drop',
+				oid:  -2,
+
+				inventory: inventorySlot
+			});
+			options.push({
+				id:   o.id,
+				obj:  o,
+				name: o.object.name,
+				cmd:  'examine',
+				oid:  -1,
+
+				inventory: inventorySlot
+			});
+		}
+	}
+	if (sx > w/4) {
+		sx -= 5;
+	}
+	if (sy > h/4) {
+		sy -= options.length / 2;
 	}
 	var f = function(draw) {
 		if (mouseX < sx - 1 || mouseX > sx + 6 || mouseY < sy - 1 || mouseY > sy + options.length / 2 + 0.5) {
@@ -761,7 +824,8 @@ var rightClickHud = function(wx, wy, sx, sy) {
 					'I': option.id,
 					'O': option.oid,
 					'X': wx,
-					'Y': wy
+					'Y': wy,
+					'N': option.inventory
 				}});
 			}
 		});
