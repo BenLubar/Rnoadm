@@ -368,19 +368,18 @@ func (s *Stone) Examine() string {
 	return "a " + rockTypeInfo[s.Type].Name + " stone."
 }
 
-/*func (s *Stone) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	setcell(x, y, PaintCell{
-		Sprite: "item_stone",
-		Color:  rockTypeInfo[s.Type].Color,
-		ZIndex: 75,
-	})
-}*/
-
 func (s *Stone) Blocking() bool {
 	return false
 }
 
-func (s *Stone) IsItem() {}
+func (s *Stone) Serialize() *NetworkedObject {
+	return &NetworkedObject{
+		Name:   s.Name(),
+		Sprite: "item_stone",
+		Colors: []Color{rockTypeInfo[s.Type].Color},
+		Item:   true,
+	}
+}
 
 func (s *Stone) AdminOnly() bool {
 	return rockTypeInfo[s.Type].Strength >= 1<<60
@@ -403,19 +402,18 @@ func (o *Ore) Examine() string {
 	return "some " + metalTypeInfo[o.Type].Name + " ore."
 }
 
-/*func (o *Ore) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	setcell(x, y, PaintCell{
-		Sprite: "item_ore",
-		Color:  metalTypeInfo[o.Type].Color,
-		ZIndex: 75,
-	})
-}*/
-
 func (o *Ore) Blocking() bool {
 	return false
 }
 
-func (o *Ore) IsItem() {}
+func (o *Ore) Serialize() *NetworkedObject {
+	return &NetworkedObject{
+		Name:   o.Name(),
+		Sprite: "item_ore",
+		Colors: []Color{metalTypeInfo[o.Type].Color},
+		Item:   true,
+	}
+}
 
 func (o *Ore) AdminOnly() bool {
 	return metalTypeInfo[o.Type].Strength >= 1<<60
@@ -439,44 +437,18 @@ func (p *Pickaxe) Examine() string {
 	return "a pickaxe made from " + metalTypeInfo[p.Head].Name + " and " + woodTypeInfo[p.Handle].Name + "."
 }
 
-/*func (p *Pickaxe) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	setcell(x, y, PaintCell{
-		Sprite: "item_tool_handle",
-		Color:  woodTypeInfo[p.Handle].Color,
-		ZIndex: 75,
-	})
-	setcell(x, y, PaintCell{
-		Sprite: "item_tool_pickaxe",
-		Color:  metalTypeInfo[p.Head].Color,
-		ZIndex: 76,
-	})
-}
-
-func (p *Pickaxe) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uint8, offsetX, offsetY int8) {
-	setcell(x, y, PaintCell{
-		Sprite: "tiny_pick_stick",
-		Color:  woodTypeInfo[p.Handle].Color,
-		SheetX: frame,
-		X:      offsetX,
-		Y:      offsetY,
-		ZIndex: 506,
-	})
-	setcell(x, y, PaintCell{
-		Sprite: "tiny_pick_head",
-		Color:  metalTypeInfo[p.Head].Color,
-		SheetX: frame,
-		X:      offsetX,
-		Y:      offsetY,
-		ZIndex: 507,
-	})
-}*/
-
 func (p *Pickaxe) Blocking() bool {
 	return false
 }
 
-func (p *Pickaxe) InteractOptions() []string {
-	return []string{"add to toolbelt"}
+func (p *Pickaxe) Serialize() *NetworkedObject {
+	return &NetworkedObject{
+		Name:    p.Name(),
+		Sprite:  "item_tools",
+		Colors:  []Color{woodTypeInfo[p.Handle].Color, metalTypeInfo[p.Head].Color},
+		Options: []string{"add to toolbelt"},
+		Item:    true,
+	}
 }
 
 func (p *Pickaxe) Interact(x, y uint8, player *Player, zone *Zone, opt int) {

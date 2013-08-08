@@ -160,6 +160,12 @@ func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 					continue
 				}
 			}
+			if !woodOk {
+				wood, woodOk = ParseWoodType(c)
+				if woodOk {
+					continue
+				}
+			}
 
 			leftover = strings.Join(cmd[i:], " ")
 			break
@@ -176,6 +182,14 @@ func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 			if !metalOk && stoneOk && !woodOk {
 				item = &Stone{
 					Type: stone,
+				}
+			}
+		case "rich rock":
+			if metalOk && stoneOk && !woodOk {
+				item = &Rock{
+					Type: stone,
+					Ore:  metal,
+					Big:  true,
 				}
 			}
 		case "rock":
@@ -195,6 +209,20 @@ func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 			if !metalOk && !stoneOk && woodOk {
 				item = &Tree{
 					Type: wood,
+				}
+			}
+		case "pickaxe":
+			if metalOk && !stoneOk && woodOk {
+				item = &Pickaxe{
+					Handle: wood,
+					Head:   metal,
+				}
+			}
+		case "hatchet":
+			if metalOk && !stoneOk && woodOk {
+				item = &Hatchet{
+					Handle: wood,
+					Head:   metal,
 				}
 			}
 		case "armor set":

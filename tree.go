@@ -237,19 +237,18 @@ func (l *Logs) Examine() string {
 	return "some " + woodTypeInfo[l.Type].Name + " logs."
 }
 
-/*func (l *Logs) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	setcell(x, y, PaintCell{
-		Sprite: "item_logs",
-		Color:  woodTypeInfo[l.Type].Color,
-		ZIndex: 75,
-	})
-}*/
-
 func (l *Logs) Blocking() bool {
 	return false
 }
 
-func (l *Logs) IsItem() {}
+func (l *Logs) Serialize() *NetworkedObject {
+	return &NetworkedObject{
+		Name:   l.Name(),
+		Sprite: "item_logs",
+		Colors: []Color{woodTypeInfo[l.Type].Color},
+		Item:   true,
+	}
+}
 
 func (l *Logs) AdminOnly() bool {
 	return woodTypeInfo[l.Type].Strength >= 1<<60
@@ -273,44 +272,18 @@ func (h *Hatchet) Examine() string {
 	return "a hatchet made from " + metalTypeInfo[h.Head].Name + " and " + woodTypeInfo[h.Handle].Name + "."
 }
 
-/*func (h *Hatchet) Paint(x, y int, setcell func(int, int, PaintCell)) {
-	setcell(x, y, PaintCell{
-		Sprite: "item_tool_handle",
-		Color:  woodTypeInfo[h.Handle].Color,
-		ZIndex: 75,
-	})
-	setcell(x, y, PaintCell{
-		Sprite: "item_tool_hatchet",
-		Color:  metalTypeInfo[h.Head].Color,
-		ZIndex: 76,
-	})
-}
-
-func (h *Hatchet) PaintWorn(x, y int, setcell func(int, int, PaintCell), frame uint8, offsetX, offsetY int8) {
-	setcell(x, y, PaintCell{
-		Sprite: "tiny_hatchet_stick",
-		Color:  woodTypeInfo[h.Handle].Color,
-		SheetX: frame,
-		X:      offsetX,
-		Y:      offsetY,
-		ZIndex: 506,
-	})
-	setcell(x, y, PaintCell{
-		Sprite: "tiny_hatchet_head",
-		Color:  metalTypeInfo[h.Head].Color,
-		SheetX: frame,
-		X:      offsetX,
-		Y:      offsetY,
-		ZIndex: 507,
-	})
-}*/
-
 func (h *Hatchet) Blocking() bool {
 	return false
 }
 
-func (h *Hatchet) InteractOptions() []string {
-	return []string{"add to toolbelt"}
+func (h *Hatchet) Serialize() *NetworkedObject {
+	return &NetworkedObject{
+		Name:    h.Name(),
+		Sprite:  "item_tools",
+		Colors:  []Color{woodTypeInfo[h.Handle].Color, "", metalTypeInfo[h.Head].Color},
+		Options: []string{"add to toolbelt"},
+		Item:    true,
+	}
 }
 
 func (h *Hatchet) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
