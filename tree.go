@@ -14,6 +14,22 @@ const (
 	Birch
 	Willow
 	Juniper
+	Wood0
+	Wood1
+	Wood2
+	Wood3
+	Wood4
+	Wood5
+	Wood6
+	Wood7
+	Wood8
+	Wood9
+	Wood10
+	Wood11
+	Wood12
+	Wood13
+	Wood14
+	Wood15
 
 	woodTypeCount
 )
@@ -23,6 +39,7 @@ var woodTypeInfo = [woodTypeCount]struct {
 	Color     Color
 	LeafColor Color
 	Strength  uint64
+	lowStr    uint64
 	sqrtStr   uint64
 }{
 	Oak: {
@@ -66,14 +83,95 @@ var woodTypeInfo = [woodTypeCount]struct {
 		LeafColor: "#3e4506",
 		Strength:  50,
 	},
+	Wood0: {
+		Name:     "wood0",
+		Color:    "#000",
+		Strength: 5,
+	},
+	Wood1: {
+		Name:     "wood1",
+		Color:    "#111",
+		Strength: 20,
+	},
+	Wood2: {
+		Name:     "wood2",
+		Color:    "#222",
+		Strength: 80,
+	},
+	Wood3: {
+		Name:     "wood3",
+		Color:    "#333",
+		Strength: 300,
+	},
+	Wood4: {
+		Name:     "wood4",
+		Color:    "#444",
+		Strength: 1000,
+	},
+	Wood5: {
+		Name:     "wood5",
+		Color:    "#555",
+		Strength: 5000,
+	},
+	Wood6: {
+		Name:     "wood6",
+		Color:    "#666",
+		Strength: 20000,
+	},
+	Wood7: {
+		Name:     "wood7",
+		Color:    "#777",
+		Strength: 80000,
+	},
+	Wood8: {
+		Name:     "wood8",
+		Color:    "#888",
+		Strength: 300000,
+	},
+	Wood9: {
+		Name:     "wood9",
+		Color:    "#999",
+		Strength: 1000000,
+	},
+	Wood10: {
+		Name:     "wood10",
+		Color:    "#aaa",
+		Strength: 5000000,
+	},
+	Wood11: {
+		Name:     "wood11",
+		Color:    "#bbb",
+		Strength: 20000000,
+	},
+	Wood12: {
+		Name:     "wood12",
+		Color:    "#ccc",
+		Strength: 80000000,
+	},
+	Wood13: {
+		Name:     "wood13",
+		Color:    "#ddd",
+		Strength: 300000000,
+	},
+	Wood14: {
+		Name:     "wood14",
+		Color:    "#eee",
+		Strength: 1000000000,
+	},
+	Wood15: {
+		Name:     "wood15",
+		Color:    "#fff",
+		Strength: 5000000000,
+	},
 }
 
 func init() {
 	for t := range woodTypeInfo {
+		woodTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(woodTypeInfo[t].Strength)))
 		if woodTypeInfo[t].Strength >= 1<<60 {
-			woodTypeInfo[t].sqrtStr = woodTypeInfo[t].Strength - 1
+			woodTypeInfo[t].lowStr = woodTypeInfo[t].Strength - 1
 		} else {
-			woodTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(woodTypeInfo[t].Strength)))
+			woodTypeInfo[t].lowStr = woodTypeInfo[t].sqrtStr
 		}
 	}
 }
@@ -268,10 +366,10 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 	}
 
 	hatchetMax := metalTypeInfo[hatchet.Head].Strength + woodTypeInfo[hatchet.Handle].Strength
-	hatchetMin := metalTypeInfo[hatchet.Head].sqrtStr + woodTypeInfo[hatchet.Handle].sqrtStr
+	hatchetMin := metalTypeInfo[hatchet.Head].lowStr + woodTypeInfo[hatchet.Handle].lowStr
 
 	treeMax := woodTypeInfo[s.T.Type].Strength
-	treeMin := woodTypeInfo[s.T.Type].sqrtStr
+	treeMin := woodTypeInfo[s.T.Type].lowStr
 
 	z.Lock()
 	r := z.Rand()

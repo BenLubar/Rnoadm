@@ -42,10 +42,39 @@ func AdminCommand(addr string, p *Player, cmd string) {
 		switch parts[1] {
 		case "inventory":
 			p.Backpack = nil
-			select {
-			case p.backpackDirty <- struct{}{}:
-			default:
-			}
+		case "hat", "helmet", "headwear", "headgear":
+			p.Worn[Headwear] = Cosmetic{}
+		case "shirt":
+			p.Worn[Shirt] = Cosmetic{}
+		case "pants":
+			p.Worn[Pants] = Cosmetic{}
+		case "shoes", "boots":
+			p.Worn[Shoes] = Cosmetic{}
+		case "pauldrons":
+			p.Worn[Pauldrons] = Cosmetic{}
+		case "breastplate":
+			p.Worn[Breastplate] = Cosmetic{}
+		case "vambraces":
+			p.Worn[Vambraces] = Cosmetic{}
+		case "gauntlets":
+			p.Worn[Gauntlets] = Cosmetic{}
+		case "tassets":
+			p.Worn[Tassets] = Cosmetic{}
+		case "greaves":
+			p.Worn[Greaves] = Cosmetic{}
+		case "armor":
+			p.Worn[Headwear] = Cosmetic{}
+			p.Worn[Shoes] = Cosmetic{}
+			p.Worn[Pauldrons] = Cosmetic{}
+			p.Worn[Breastplate] = Cosmetic{}
+			p.Worn[Vambraces] = Cosmetic{}
+			p.Worn[Gauntlets] = Cosmetic{}
+			p.Worn[Tassets] = Cosmetic{}
+			p.Worn[Greaves] = Cosmetic{}
+		}
+		select {
+		case p.backpackDirty <- struct{}{}:
+		default:
 		}
 	case "spawn":
 		AdminCommandSpawn(addr, p, parts[1:])
@@ -167,6 +196,19 @@ func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 				item = &Tree{
 					Type: wood,
 				}
+			}
+		case "armor set":
+			if metalOk && !stoneOk && !woodOk {
+				cmd = cmd[:len(cmd)-2]
+				AdminCommandSpawn(addr, p, append(cmd, "helmet"))
+				AdminCommandSpawn(addr, p, append(cmd, "breastplate"))
+				AdminCommandSpawn(addr, p, append(cmd, "pauldrons"))
+				AdminCommandSpawn(addr, p, append(cmd, "vambraces"))
+				AdminCommandSpawn(addr, p, append(cmd, "gauntlets"))
+				AdminCommandSpawn(addr, p, append(cmd, "tassets"))
+				AdminCommandSpawn(addr, p, append(cmd, "greaves"))
+				AdminCommandSpawn(addr, p, append(cmd, "boots"))
+				return
 			}
 		}
 		if item == nil && !stoneOk && !woodOk {

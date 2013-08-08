@@ -10,6 +10,22 @@ const (
 	Granite RockType = iota
 	Adminstone
 	Limestone
+	Stone0
+	Stone1
+	Stone2
+	Stone3
+	Stone4
+	Stone5
+	Stone6
+	Stone7
+	Stone8
+	Stone9
+	Stone10
+	Stone11
+	Stone12
+	Stone13
+	Stone14
+	Stone15
 
 	rockTypeCount
 )
@@ -18,6 +34,7 @@ var rockTypeInfo = [rockTypeCount]struct {
 	Name     string
 	Color    Color
 	Strength uint64
+	lowStr   uint64
 	sqrtStr  uint64
 }{
 	Granite: {
@@ -35,14 +52,95 @@ var rockTypeInfo = [rockTypeCount]struct {
 		Color:    "#bebd8f",
 		Strength: 50,
 	},
+	Stone0: {
+		Name:     "stone0",
+		Color:    "#000",
+		Strength: 5,
+	},
+	Stone1: {
+		Name:     "stone1",
+		Color:    "#111",
+		Strength: 20,
+	},
+	Stone2: {
+		Name:     "stone2",
+		Color:    "#222",
+		Strength: 80,
+	},
+	Stone3: {
+		Name:     "stone3",
+		Color:    "#333",
+		Strength: 300,
+	},
+	Stone4: {
+		Name:     "stone4",
+		Color:    "#444",
+		Strength: 1000,
+	},
+	Stone5: {
+		Name:     "stone5",
+		Color:    "#555",
+		Strength: 5000,
+	},
+	Stone6: {
+		Name:     "stone6",
+		Color:    "#666",
+		Strength: 20000,
+	},
+	Stone7: {
+		Name:     "stone7",
+		Color:    "#777",
+		Strength: 80000,
+	},
+	Stone8: {
+		Name:     "stone8",
+		Color:    "#888",
+		Strength: 300000,
+	},
+	Stone9: {
+		Name:     "stone9",
+		Color:    "#999",
+		Strength: 1000000,
+	},
+	Stone10: {
+		Name:     "stone10",
+		Color:    "#aaa",
+		Strength: 5000000,
+	},
+	Stone11: {
+		Name:     "stone11",
+		Color:    "#bbb",
+		Strength: 20000000,
+	},
+	Stone12: {
+		Name:     "stone12",
+		Color:    "#ccc",
+		Strength: 80000000,
+	},
+	Stone13: {
+		Name:     "stone13",
+		Color:    "#ddd",
+		Strength: 300000000,
+	},
+	Stone14: {
+		Name:     "stone14",
+		Color:    "#eee",
+		Strength: 1000000000,
+	},
+	Stone15: {
+		Name:     "stone15",
+		Color:    "#fff",
+		Strength: 5000000000,
+	},
 }
 
 func init() {
 	for t := range rockTypeInfo {
+		rockTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(rockTypeInfo[t].Strength)))
 		if rockTypeInfo[t].Strength >= 1<<60 {
-			rockTypeInfo[t].sqrtStr = rockTypeInfo[t].Strength - 1
+			rockTypeInfo[t].lowStr = rockTypeInfo[t].Strength - 1
 		} else {
-			rockTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(rockTypeInfo[t].Strength)))
+			rockTypeInfo[t].lowStr = rockTypeInfo[t].sqrtStr
 		}
 	}
 }
@@ -54,6 +152,22 @@ const (
 	Iron
 	Unobtainium
 	Copper
+	Metal0
+	Metal1
+	Metal2
+	Metal3
+	Metal4
+	Metal5
+	Metal6
+	Metal7
+	Metal8
+	Metal9
+	Metal10
+	Metal11
+	Metal12
+	Metal13
+	Metal14
+	Metal15
 
 	metalTypeCount
 )
@@ -62,6 +176,7 @@ var metalTypeInfo = [metalTypeCount]struct {
 	Name     string
 	Color    Color
 	Strength uint64
+	lowStr   uint64
 	sqrtStr  uint64
 }{
 	Iron: {
@@ -79,14 +194,95 @@ var metalTypeInfo = [metalTypeCount]struct {
 		Color:    "#af633e",
 		Strength: 50,
 	},
+	Metal0: {
+		Name:     "metal0",
+		Color:    "#000",
+		Strength: 5,
+	},
+	Metal1: {
+		Name:     "metal1",
+		Color:    "#111",
+		Strength: 20,
+	},
+	Metal2: {
+		Name:     "metal2",
+		Color:    "#222",
+		Strength: 80,
+	},
+	Metal3: {
+		Name:     "metal3",
+		Color:    "#333",
+		Strength: 300,
+	},
+	Metal4: {
+		Name:     "metal4",
+		Color:    "#444",
+		Strength: 1000,
+	},
+	Metal5: {
+		Name:     "metal5",
+		Color:    "#555",
+		Strength: 5000,
+	},
+	Metal6: {
+		Name:     "metal6",
+		Color:    "#666",
+		Strength: 20000,
+	},
+	Metal7: {
+		Name:     "metal7",
+		Color:    "#777",
+		Strength: 80000,
+	},
+	Metal8: {
+		Name:     "metal8",
+		Color:    "#888",
+		Strength: 300000,
+	},
+	Metal9: {
+		Name:     "metal9",
+		Color:    "#999",
+		Strength: 1000000,
+	},
+	Metal10: {
+		Name:     "metal10",
+		Color:    "#aaa",
+		Strength: 5000000,
+	},
+	Metal11: {
+		Name:     "metal11",
+		Color:    "#bbb",
+		Strength: 20000000,
+	},
+	Metal12: {
+		Name:     "metal12",
+		Color:    "#ccc",
+		Strength: 80000000,
+	},
+	Metal13: {
+		Name:     "metal13",
+		Color:    "#ddd",
+		Strength: 300000000,
+	},
+	Metal14: {
+		Name:     "metal14",
+		Color:    "#eee",
+		Strength: 1000000000,
+	},
+	Metal15: {
+		Name:     "metal15",
+		Color:    "#fff",
+		Strength: 5000000000,
+	},
 }
 
 func init() {
 	for t := range metalTypeInfo {
+		metalTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(metalTypeInfo[t].Strength)))
 		if metalTypeInfo[t].Strength >= 1<<60 {
-			metalTypeInfo[t].sqrtStr = metalTypeInfo[t].Strength - 1
+			metalTypeInfo[t].lowStr = metalTypeInfo[t].Strength - 1
 		} else {
-			metalTypeInfo[t].sqrtStr = uint64(math.Sqrt(float64(metalTypeInfo[t].Strength)))
+			metalTypeInfo[t].lowStr = metalTypeInfo[t].sqrtStr
 		}
 	}
 }
@@ -348,15 +544,15 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 	}
 
 	pickaxeMax := metalTypeInfo[pickaxe.Head].Strength + woodTypeInfo[pickaxe.Handle].Strength
-	pickaxeMin := metalTypeInfo[pickaxe.Head].sqrtStr + woodTypeInfo[pickaxe.Handle].sqrtStr
+	pickaxeMin := metalTypeInfo[pickaxe.Head].lowStr + woodTypeInfo[pickaxe.Handle].lowStr
 
 	var rockMax, rockMin uint64
 	if s.Mine {
 		rockMax = metalTypeInfo[s.R.Ore].Strength
-		rockMin = metalTypeInfo[s.R.Ore].sqrtStr
+		rockMin = metalTypeInfo[s.R.Ore].lowStr
 	} else {
 		rockMax = rockTypeInfo[s.R.Type].Strength
-		rockMin = rockTypeInfo[s.R.Type].sqrtStr
+		rockMin = rockTypeInfo[s.R.Type].lowStr
 	}
 
 	z.Lock()

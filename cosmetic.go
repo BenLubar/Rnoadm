@@ -116,7 +116,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "hat_helmet",
 			Colors: []Color{metalColor},
 
-			HealthBonus: 5,
+			HealthBonus: 500,
 		},
 	},
 	Shirt: {
@@ -156,7 +156,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "shoes_boots",
 			Colors: []Color{metalColor},
 
-			HealthBonus: 1,
+			HealthBonus: 100,
 		},
 	},
 	Breastplate: {
@@ -168,7 +168,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "breastplate_basic",
 			Colors: []Color{metalColor},
 
-			HealthBonus: 10,
+			HealthBonus: 1000,
 		},
 	},
 	Pauldrons: {
@@ -180,7 +180,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "pauldrons_basic",
 			Colors: []Color{metalColor},
 
-			HealthBonus: 1,
+			HealthBonus: 100,
 		},
 	},
 	Vambraces: {
@@ -192,7 +192,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "vambraces_basic",
 			Colors: []Color{metalColor},
 
-			HealthBonus: 2,
+			HealthBonus: 200,
 		},
 	},
 	Gauntlets: {
@@ -204,7 +204,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "gauntlets_basic",
 			Colors: []Color{metalColor},
 
-			HealthBonus: 1,
+			HealthBonus: 100,
 		},
 	},
 	Tassets: {
@@ -216,7 +216,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "tassets_basic",
 			Colors: []Color{metalColor},
 
-			HealthBonus: 5,
+			HealthBonus: 500,
 		},
 	},
 	Greaves: {
@@ -228,7 +228,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "greaves_basic",
 			Colors: []Color{metalColor},
 
-			HealthBonus: 2,
+			HealthBonus: 200,
 		},
 	},
 }
@@ -312,13 +312,7 @@ func (c *Cosmetic) Exists() bool {
 
 func (c *Cosmetic) HealthBonus() uint64 {
 	base := cosmetics[c.Type][c.ID].HealthBonus
-	bonus := base * 100
-	if c.Metal != 0 {
-		if metalTypeInfo[c.Metal].Strength > 100000 {
-			bonus += metalTypeInfo[c.Metal].Strength / 1000 * base
-		} else {
-			bonus += metalTypeInfo[c.Metal].Strength * base / 1000
-		}
-	}
+	bonus := base
+	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
 	return bonus
 }
