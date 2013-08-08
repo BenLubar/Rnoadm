@@ -39,7 +39,7 @@ setInterval(function() {
 	inRepaint = false;
 }, 60000);
 
-function drawObject(draw, x, y, ctx, o) {
+function drawObject(draw, x, y, ctx, o, frame) {
 	o.colors.forEach(function(color, j) {
 		if (color) {
 			draw(x, y, {
@@ -47,12 +47,13 @@ function drawObject(draw, x, y, ctx, o) {
 				Color:  color,
 				Scale:  o.scale,
 				Height: o.height,
+				X:      frame || 0,
 				Y:      j
 			}, ctx);
 		}
 	});
 	o.attach.forEach(function(a) {
-		drawObject(draw, x, y, ctx, a);
+		drawObject(draw, x, y, ctx, a, frame);
 	});
 }
 
@@ -212,7 +213,28 @@ function repaint() {
 					var obj = gameState.objects[i];
 
 					if (obj.object.moves) {
-						drawObject(draw, animateCoord(obj.x, obj.xnext, obj.frame), animateCoord(obj.y, obj.ynext, obj.frame), zoneCtxDynamic, obj.object);
+						var x = animateCoord(obj.x, obj.xnext, obj.frame);
+						var y = animateCoord(obj.y, obj.ynext, obj.frame);
+						var dx = obj.xnext - x;
+						var dy = obj.ynext - y;
+						var f = obj.currentFrame || 0;
+						if (dx < 0) {
+							f = 6;
+						} else if (dx > 0) {
+							f = 9;
+						} else if (dy > 0) {
+							f = 0;
+						} else if (dy < 0) {
+							f = 3;
+						} else {
+							f -= f % 3;
+						}
+						if (dx != 0 || dy != 0) {
+							f += Math.floor(frame) % 3;
+							zoneBufferDynamicDirty = true;
+						}
+						obj.currentFrame = f;
+						drawObject(draw, x, y, zoneCtxDynamic, obj.object, f);
 					}
 				}
 			}
