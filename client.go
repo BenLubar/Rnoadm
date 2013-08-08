@@ -144,6 +144,7 @@ type NetworkedObject struct {
 	Height   uint16             `json:"H,omitempty"`
 	Attached []*NetworkedObject `json:"A,omitempty"`
 	Moves    bool               `json:"M,omitempty"`
+	Health   float64            `json:"L,omitempty"`
 }
 
 type TileChange struct {

@@ -42,6 +42,20 @@ setInterval(function() {
 }, 60000);
 
 function drawObject(draw, x, y, ctx, o, frame) {
+	if (o.health) {
+		draw(x, y, {
+			Sprite: 'ui_bar',
+			Color:  '#800',
+			Scale:  o.scale,
+			X:      0
+		}, ctx);
+		draw(x, y, {
+			Sprite: 'ui_bar',
+			Color:  '#080',
+			Scale:  o.scale,
+			X:      26 - Math.ceil(o.health * 26)
+		}, ctx);
+	}
 	o.colors.forEach(function(color, j) {
 		if (color) {
 			draw(x, y, {
@@ -308,7 +322,8 @@ function toObject(o) {
 		scale:   o['S'],
 		height:  o['H'],
 		moves:   !!o['M'],
-		attach:  (o['A'] || []).map(toObject)
+		attach:  (o['A'] || []).map(toObject),
+		health:  o['L']
 	};
 }
 var wsonmessage = ws.onmessage = function(e) {

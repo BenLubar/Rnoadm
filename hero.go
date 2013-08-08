@@ -483,6 +483,7 @@ func (h *Hero) Serialize() *NetworkedObject {
 		Colors:   colors,
 		Attached: attached,
 		Moves:    true,
+		Health:   float64(h.Health()) / float64(h.MaxHealth()),
 	}
 }
 
