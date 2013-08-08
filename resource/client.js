@@ -340,11 +340,12 @@ var wsonmessage = ws.onmessage = function(e) {
 		if (!gameState.messages) {
 			gameState.messages = [];
 		}
-		if (gameState.messages.length >= 8) {
-			gameState.messages.pop();
-		}
 		gameState.messages.unshift(msg['Message']);
 		repaint();
+		setTimeout(function() {
+			gameState.messages.pop();
+			repaint();
+		}, 60000);
 	}
 	if (msg['ResetZone']) {
 		zoneBufferStaticDirty = true;

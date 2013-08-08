@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"code.google.com/p/go.crypto/bcrypt"
 	"code.google.com/p/go.net/websocket"
 	"compress/gzip"
@@ -23,6 +24,7 @@ var OnlinePlayers = make(map[uint64]*Player)
 var onlinePlayersLock sync.Mutex
 
 var clientHash string
+var clientGzip []byte
 
 func init() {
 	http.HandleFunc("/", httpHandler)
@@ -31,6 +33,15 @@ func init() {
 	h := sha1.New()
 	h.Write(resource.Resource["client.js"])
 	clientHash = hex.EncodeToString(h.Sum(nil))
+
+	var buf bytes.Buffer
+	g, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
+	if err != nil {
+		panic(err)
+	}
+	g.Write(resource.Resource["client.js"])
+	g.Close()
+	clientGzip = buf.Bytes()
 }
 
 func httpHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +52,10 @@ func httpHandler(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Expires", time.Now().UTC().AddDate(1, 0, 0).Format(http.TimeFormat))
 			} else if strings.HasSuffix(r.URL.Path, ".js") {
 				w.Header().Set("Content-Type", "application/javascript")
+				if r.URL.Path == "/client.js" && strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+					w.Header().Set("Content-Encoding", "gzip")
+					b = clientGzip
+				}
 			}
 			w.Header().Set("Content-Length", strconv.FormatInt(int64(len(b)), 10))
 			w.Header().Set("Cache-Control", "public")
