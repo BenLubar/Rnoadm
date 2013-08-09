@@ -23,6 +23,7 @@ var zoneCtxStatic = zoneBufferStatic.getContext('2d');
 var zoneBufferStaticDirty = false;
 var zoneBufferStaticX = -64, zoneBufferStaticY = -64;
 
+const ui_r1 = 'ui_r1';
 const color_111 = '#111';
 const color_222 = '#222';
 const color_444 = '#444';
@@ -40,13 +41,13 @@ setInterval(function() {
 	inRepaint = false;
 }, 60000);
 
-function drawObject(draw, x, y, ctx, o, frame) {
+function drawObject(draw, x, y, ctx, o, frame, scale) {
 	o.colors.forEach(function(color, j) {
 		if (color) {
 			draw(x, y, {
 				Sprite: o.sprite,
 				Color:  color,
-				Scale:  o.scale,
+				Scale:  (o.scale || 1) * (scale || 1),
 				Height: o.height,
 				X:      frame || 0,
 				Y:      j
@@ -54,19 +55,19 @@ function drawObject(draw, x, y, ctx, o, frame) {
 		}
 	});
 	o.attach.forEach(function(a) {
-		drawObject(draw, x, y, ctx, a, frame);
+		drawObject(draw, x, y, ctx, a, frame, scale);
 	});
 	if (o.health) {
 		draw(x, y, {
 			Sprite: 'ui_bar',
 			Color:  '#800',
-			Scale:  o.scale,
+			Scale:  (o.scale || 1) * (scale || 1),
 			X:      0
 		}, ctx);
 		draw(x, y, {
 			Sprite: 'ui_bar',
 			Color:  '#080',
-			Scale:  o.scale,
+			Scale:  (o.scale || 1) * (scale || 1),
 			X:      26 - Math.ceil(o.health * 26)
 		}, ctx);
 	}
@@ -517,30 +518,30 @@ var loginHud = function(draw) {
 	for (var x = -4; x < 4; x++) {
 		for (var y = -4; y < 1; y++) {
 			draw(x, y, {
-				Sprite: 'ui_r1',
+				Sprite: ui_r1,
 				Color:  y == -4 ? color_444 : color_222,
 				X:      y == -4 ? x == -4 ? 3 : x == 3 ? 4 : 0 : 0
 			});
 		}
 		draw(x, 0.5, {
-			Sprite: 'ui_r1',
+			Sprite: ui_r1,
 			Color:  color_444,
 			Y:      1
 		});
 		draw(x + 0.5, 0.5, {
-			Sprite: 'ui_r1',
+			Sprite: ui_r1,
 			Color:  color_444,
 			Y:      1
 		});
 	}
 	for (var x = -3.75; x < 3.75; x += 0.5) {
 		draw(x, -2.75, {
-			Sprite: 'ui_r1',
+			Sprite: ui_r1,
 			Color:  color_111,
 			Y:      1
 		});
 		draw(x, -1.25, {
-			Sprite: 'ui_r1',
+			Sprite: ui_r1,
 			Color:  color_111,
 			Y:      1
 		});
@@ -792,7 +793,7 @@ var rightClickHud = function(wx, wy, sx, sy) {
 		options.forEach(function(option, y) {
 			for (var x = 0; x < 10; x++) {
 				draw(sx + x / 2, sy + (y - 1) / 2, {
-					Sprite: 'ui_r1',
+					Sprite: ui_r1,
 					Color:  mouseX >= sx && mouseX < sx + 5 && mouseY >= sy + y / 2 && mouseY < sy + (y + 1) / 2 ? color_444 : color_222,
 					Y:      1
 				});
@@ -826,22 +827,23 @@ huds['character_creation'] = function(data) {
 	var f = function(draw) {
 		gameState.playerXNext = gameState.playerX = 127 + Math.cos(frame / 10000 * 7) * 64;
 		gameState.playerYNext = gameState.playerY = 127 + Math.sin(frame / 10000 * 6) * 64;
+		repaint();
 		for (var x = -6; x < 6; x++) {
 			draw(x, -5, {
-				Sprite: 'ui_r1',
+				Sprite: ui_r1,
 				Color:  color_444,
 				X:      x == -6 ? 3 : x == 5 ? 4 : 0
 			});
 			for (var y = -4; y < 2; y++) {
 				draw(x, y, {
-					Sprite: 'ui_r1',
+					Sprite: ui_r1,
 					Color:  x >= -5 && x < -1 && y < 0 ? color_ccc : color_222
 				});
 			}
 		}
 		for (var x = 1; x < 5; x += 0.5) {
 			draw(x, 1.5, {
-				Sprite: 'ui_r1',
+				Sprite: ui_r1,
 				Color:  color_444,
 				X:      x == 1 ? 1 : x == 4.5 ? 2 : 0,
 				Y:      1
@@ -877,7 +879,7 @@ huds['character_creation'] = function(data) {
 			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -2 && mouseY <= -1 ? color_fff : color_aaa
 		});
 		draw(2.125, -2.125, {
-			Sprite: 'ui_r1',
+			Sprite: ui_r1,
 			Color:  data['skin'],
 			Y:      1
 		});
@@ -886,7 +888,7 @@ huds['character_creation'] = function(data) {
 			Color: mouseX >= 0 && mouseX < 6 && mouseY >= -1 && mouseY <= 0 ? color_fff : color_aaa
 		});
 		draw(2.125, -1.125, {
-			Sprite: 'ui_r1',
+			Sprite: ui_r1,
 			Color:  data['shirt'],
 			Y:      1
 		});
@@ -895,7 +897,7 @@ huds['character_creation'] = function(data) {
 			Color: mouseX >= 0 && mouseX < 6 && mouseY >= 0 && mouseY <= 1 ? color_fff : color_aaa
 		});
 		draw(2.125, -0.125, {
-			Sprite: 'ui_r1',
+			Sprite: ui_r1,
 			Color:  data['pants'],
 			Y:      1
 		});
@@ -959,10 +961,42 @@ huds['character_creation'] = function(data) {
 	return f;
 };
 
+huds['examine'] = function(data) {
+	var o = toObject(data['O']);
+	var f = function(draw) {
+		for (var x = -8; x < 8; x++) {
+			for (var y = -4; y < 4; y++) {
+				draw(x, y, {
+					Sprite: ui_r1,
+					Color:  (x < -4 && y < 0) || y == -4 ? color_222 : 'rgba(0,0,0,.7)'
+				});
+			}
+		}
+		drawObject(draw, -8, -4, undefined, o, 0, 4);
+		draw(-4, -4, {
+			Text:  o.name,
+			Color: color_ccc,
+			Title: true
+		});
+		data['T'].split(/\n/g).forEach(function(line, i) {
+			draw(-4, -3.5 + i / 2, {
+				Text:  line,
+				Color: color_ccc
+			});
+		});
+	};
+	f.click = f.keyPress = f.keyDown = function() {
+		delete gameState.hud;
+		repaint();
+		return false;
+	};
+	return f;
+};
+
 var lostConnectionHud = function(draw) {
 	for (var x = -4; x < 4; x++) {
 		draw(x, 0, {
-			Sprite: 'ui_r1',
+			Sprite: ui_r1,
 			Color:  color_fff
 		});
 	}

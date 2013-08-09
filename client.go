@@ -480,7 +480,10 @@ func websocketHandler(conn *websocket.Conn) {
 				if p.Interact.Option < 0 {
 					switch p.Interact.Option {
 					case -1: // examine
-						player.SendMessage(object.Examine())
+						player.SetHUD("examine", map[string]interface{}{
+							"T": object.Examine(),
+							"O": object.Serialize(),
+						})
 					case -2: // drop
 						if p.Interact.Inventory < 0 {
 							continue
