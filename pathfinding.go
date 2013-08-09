@@ -18,6 +18,8 @@ func FindPath(z *Zone, startX, startY, endX, endY uint8, allowDiagonal bool) [][
 				if uint8(x) == endX && uint8(y) == endY {
 					spaceBlocked = true
 					mapData[x][y] = astar.LAND
+				} else if uint8(x) == startX && uint8(y) == startY {
+					mapData[x][y] = astar.LAND
 				} else {
 					mapData[x][y] = astar.WALL
 				}
@@ -31,6 +33,9 @@ func FindPath(z *Zone, startX, startY, endX, endY uint8, allowDiagonal bool) [][
 	for i, n := range nodes {
 		path[i][0] = uint8(n.X)
 		path[i][1] = uint8(n.Y)
+	}
+	if len(path) > 1 && path[0][0] == startX && path[0][1] == startY {
+		path = path[1:]
 	}
 	if spaceBlocked && len(path) > 0 {
 		path = path[:len(path)-1]
