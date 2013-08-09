@@ -265,12 +265,12 @@ function repaint() {
 
 		var y = h / 2 - 1;
 		(gameState.messages || []).forEach(function(message) {
-			var lines = message.split(/\n/g);
+			var lines = message.Text.split(/\n/g);
 			y -= lines.length / 2;
 			lines.forEach(function(line, i) {
 				draw(-w / 2, y + i / 2, {
 					Text:  line,
-					Color: color_fff
+					Color: message.Color || color_ccc
 				});
 			});
 		});
@@ -324,59 +324,63 @@ function toObject(o) {
 }
 var wsonmessage = ws.onmessage = function(e) {
 	var msg = JSON.parse(e.data);
-	if (msg['ClientHash']) {
+	var p;
+	if (p = msg['ClientHash']) {
 		if (clientHash) {
-			if (clientHash != msg['ClientHash']) {
+			if (clientHash != p) {
 				location.reload(true);
 			}
 		} else {
-			clientHash = msg['ClientHash'];
+			clientHash = p;
 		}
 	}
-	if (msg['SetHUD']) {
-		if (msg['SetHUD']['Name']) {
-			gameState.hud = huds[msg['SetHUD']['Name']](msg['SetHUD']['Data']);
+	if (p = msg['SetHUD']) {
+		if (p['N']) {
+			gameState.hud = huds[p['N']](p['D']);
 		} else {
 			delete gameState.hud;
 		}
 		repaint();
 	}
-	if (msg['Kick']) {
+	if (p = msg['Kick']) {
 		ws.onclose = wsonclose = function() {};
 		gameState = {};
 		repaint();
-		alert('Kicked: ' + msg['Kick']);
+		alert('Kicked: ' + p);
 	}
-	if (msg['Message']) {
+	if (p = msg['Message']) {
 		if (!gameState.messages) {
 			gameState.messages = [];
 		}
-		gameState.messages.unshift(msg['Message']);
+		gameState.messages.unshift({
+			Text:  p['T'],
+			Color: p['C']
+		});
 		repaint();
 		setTimeout(function() {
 			gameState.messages.pop();
 			repaint();
 		}, 60000);
 	}
-	if (msg['ResetZone']) {
+	if (p = msg['ResetZone']) {
 		zoneBufferStaticDirty = true;
 		gameState.objects = {};
 		repaint();
 	}
-	if ('PlayerX' in msg && gameState.playerXNext != msg['PlayerX']) {
-		gameState.playerX = gameState.playerXNext || msg['PlayerX'];
-		gameState.playerXNext = msg['PlayerX'];
+	if ('PlayerX' in msg && gameState.playerXNext != (p = msg['PlayerX'])) {
+		gameState.playerX = gameState.playerXNext || p;
+		gameState.playerXNext = p;
 		gameState.playerXFrame = frame;
 		repaint();
 	}
-	if ('PlayerY' in msg && gameState.playerYNext != msg['PlayerY']) {
-		gameState.playerY = gameState.playerYNext || msg['PlayerY'];
-		gameState.playerYNext = msg['PlayerY'];
+	if ('PlayerY' in msg && gameState.playerYNext != (p = msg['PlayerY'])) {
+		gameState.playerY = gameState.playerYNext || p;
+		gameState.playerYNext = p;
 		gameState.playerYFrame = frame;
 		repaint();
 	}
-	if (msg['TileChange']) {
-		msg['TileChange'].forEach(function(tile) {
+	if (p = msg['TileChange']) {
+		p.forEach(function(tile) {
 			if (tile['R']) {
 				if (!gameState.objects[tile['ID']].object.moves) {
 					zoneBufferStaticDirty = true;
@@ -407,9 +411,9 @@ var wsonmessage = ws.onmessage = function(e) {
 		});
 		repaint();
 	}
-	if (msg['Inventory']) {
+	if (p = msg['Inventory']) {
 		gameState.inventory = [];
-		msg['Inventory'].forEach(function(item) {
+		p.forEach(function(item) {
 			gameState.inventory.push({
 				id:     item['I'],
 				object: toObject(item['O'])
@@ -444,6 +448,7 @@ document.onkeydown = function(e) {
 	switch (e.keyCode) {
 	case 13: // enter
 		gameState.hud = chatHud();
+		repaint();
 		break;
 	case 38: // up
 		send({'Walk': {'X': gameState.playerXNext, 'Y': gameState.playerYNext - 1}});
@@ -494,6 +499,7 @@ canvas.canvas.oncontextmenu = function(e) {
 	var wy = Math.floor(y + getPlayerY());
 	if (wx >= 0 && wx < 256 && wy >= 0 && wy < 256) {
 		gameState.hud = rightClickHud(wx, wy, x, y);
+		repaint();
 	}
 	return false;
 };
@@ -686,10 +692,10 @@ var chatHud = function() {
 			return false;
 		case 13: // enter
 			send({'Chat': message});
-			gameState.hud = null;
-			return false;
+			// fallthrough
 		case 27: // esc
-			gameState.hud = null;
+			delete gameState.hud;
+			repaint();
 			return false;
 		}
 	};
@@ -788,6 +794,7 @@ var rightClickHud = function(wx, wy, sx, sy) {
 	var f = function(draw) {
 		if (mouseX < sx - 1 || mouseX > sx + 6 || mouseY < sy - 1 || mouseY > sy + options.length / 2 + 0.5) {
 			delete gameState.hud;
+			repaint();
 			return;
 		}
 		options.forEach(function(option, y) {

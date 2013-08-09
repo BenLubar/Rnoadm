@@ -350,12 +350,16 @@ func (z *Zone) Think() {
 	z.Unlock()
 }
 
-func (z *Zone) Chat(p *Player, msg string) {
-	msg = "‹" + p.Name() + "› says, “" + msg + "”"
+func (z *Zone) Chat(player *Player, msg string) {
+	msg = "‹" + player.Name() + "› says, “" + msg + "”"
+	color := Color("#fff")
+	if player.Admin {
+		color = Color("#fea")
+	}
 
 	loadedZoneLock.Lock()
 	for p := range loadedZones[[2]int64{z.X, z.Y}].ref {
-		go p.SendMessage(msg)
+		go p.SendMessageColor(msg, color)
 	}
 	loadedZoneLock.Unlock()
 }

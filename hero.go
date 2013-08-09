@@ -126,9 +126,9 @@ type Player struct {
 	Admin         bool
 	Examine_      string
 
-	messages  chan<- string
+	messages  chan<- _Message
 	kick      chan<- string
-	hud       chan<- packetSetHUD
+	hud       chan packetSetHUD
 	inventory chan<- packetInventory
 
 	CharacterCreation *Hero
@@ -153,8 +153,15 @@ func (p *Player) Unlock() {
 }
 
 func (p *Player) SendMessage(message string) {
+	p.SendMessageColor(message, "")
+}
+
+func (p *Player) SendMessageColor(message string, color Color) {
 	select {
-	case p.messages <- message:
+	case p.messages <- _Message{
+		Text:  message,
+		Color: color,
+	}:
 	case <-time.After(time.Minute):
 	}
 }
@@ -167,14 +174,17 @@ func (p *Player) Kick(message string) {
 }
 
 func (p *Player) SetHUD(name string, data map[string]interface{}) {
-	select {
-	case p.hud <- packetSetHUD{
-		SetHUD: _SetHUD{
-			Name: name,
-			Data: data,
-		},
-	}:
-	case <-time.After(time.Minute):
+	for {
+		select {
+		case p.hud <- packetSetHUD{
+			SetHUD: _SetHUD{
+				Name: name,
+				Data: data,
+			},
+		}:
+			return
+		case <-p.hud:
+		}
 	}
 }
 

@@ -124,13 +124,18 @@ type packetKick struct {
 	Kick string
 }
 
+type _Message struct {
+	Text  string `json:"T"`
+	Color Color  `json:"C"`
+}
+
 type packetMessage struct {
-	Message string
+	Message _Message
 }
 
 type _SetHUD struct {
-	Name string
-	Data map[string]interface{}
+	Name string                 `json:"N"`
+	Data map[string]interface{} `json:"D"`
 }
 
 type packetSetHUD struct {
@@ -240,9 +245,9 @@ func websocketHandler(conn *websocket.Conn) {
 
 	var player *Player
 	kick := make(chan string, 1)
-	hud := make(chan packetSetHUD, 16)
+	hud := make(chan packetSetHUD, 1)
 	inventory := make(chan packetInventory, 1)
-	messages := make(chan string, 8)
+	messages := make(chan _Message, 8)
 
 	var updates <-chan TileChange
 	var updateQueue packetTileChange
