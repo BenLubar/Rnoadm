@@ -832,8 +832,8 @@ var rightClickHud = function(wx, wy, sx, sy) {
 				send({'Interact': {
 					'I': option.id,
 					'O': option.oid,
-					'X': wx,
-					'Y': wy,
+					'X': option.obj.xnext,
+					'Y': option.obj.ynext,
 					'N': option.inventory
 				}});
 			}
