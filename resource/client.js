@@ -17,15 +17,11 @@ canvas.height = h*tileSize;
 canvas = canvas.getContext('2d');
 
 var zoneBufferStatic = document.createElement('canvas');
-var zoneBufferDynamic = document.createElement('canvas');
-zoneBufferStatic.width = 256*tileSize;
-zoneBufferDynamic.width = 256*tileSize;
-zoneBufferStatic.height = 256*tileSize;
-zoneBufferDynamic.height = 256*tileSize;
+zoneBufferStatic.width = 64*tileSize;
+zoneBufferStatic.height = 64*tileSize;
 var zoneCtxStatic = zoneBufferStatic.getContext('2d');
-var zoneCtxDynamic = zoneBufferDynamic.getContext('2d');
 var zoneBufferStaticDirty = false;
-var zoneBufferDynamicDirty = false;
+var zoneBufferStaticX = -64, zoneBufferStaticY = -64;
 
 const color_111 = '#111';
 const color_222 = '#222';
@@ -38,7 +34,6 @@ const color_fff = '#fff';
 var frame = 0;
 setInterval(function() {
 	frame = +new Date() / 50;
-	repaint();
 }, 50);
 
 setInterval(function() {
@@ -120,7 +115,6 @@ function repaint() {
 						images_recolor[p.Sprite] = {};
 						if (ctx != canvas) {
 							zoneBufferStaticDirty = true;
-							zoneBufferDynamicDirty = true;
 						}
 						repaint();
 					};
@@ -206,64 +200,62 @@ function repaint() {
 		var playerY = getPlayerY();
 
 		if (gameState.objects) {
-			if (zoneBufferStaticDirty) {
+			if (zoneBufferStaticDirty || zoneBufferStaticX > playerX || zoneBufferStaticX + 64 <= playerX + w || zoneBufferStaticY > playerY || zoneBufferStaticY + 64 <= playerY + h) {
 				zoneBufferStaticDirty = false;
-				zoneCtxStatic.clearRect(0, 0, 256*tileSize, 256*tileSize);
-				for (var x = 0; x < 256; x++) {
-					for (var y = 0; y < 256; y++) {
+				zoneCtxStatic.clearRect(0, 0, zoneBufferStatic.width, zoneBufferStatic.height);
+				zoneCtxStatic.save();
+				zoneBufferStaticX = Math.floor(playerX - 64/2);
+				zoneBufferStaticY = Math.floor(playerY - 64/2);
+				zoneCtxStatic.translate(-zoneBufferStaticX*tileSize, -zoneBufferStaticY*tileSize);
+				for (var x = Math.max(0, zoneBufferStaticX); x < Math.min(zoneBufferStaticX + 64, 256); x++) {
+					for (var y = Math.max(0, zoneBufferStaticY); y < Math.min(zoneBufferStaticY + 64, 256); y++) {
 						draw(x, y, {
 							Sprite: 'grass_r1',
 							Color:  '#268f1e',
-							X:      (x + y + x*y) % 4
+							X:      (x*2 + y*3 + x*y) % 4
 						}, zoneCtxStatic);
 					}
 				}
 				for (var i in gameState.objects) {
 					var obj = gameState.objects[i];
 
-					if (!obj.object.moves) {
+					if (!obj.object.moves && obj.xnext >= zoneBufferStaticX && obj.ynext >= zoneBufferStaticY && obj.xnext < zoneBufferStaticX + 64 && obj.ynext < zoneBufferStaticY + 70) {
 						drawObject(draw, animateCoord(obj.x, obj.xnext, obj.frame), animateCoord(obj.y, obj.ynext, obj.frame), zoneCtxStatic, obj.object);
 					}
 				}
-			}
-			if (zoneBufferDynamicDirty) {
-				zoneBufferDynamicDirty = false;
-				zoneCtxDynamic.clearRect(0, 0, 256*tileSize, 256*tileSize);
-				for (var i in gameState.objects) {
-					var obj = gameState.objects[i];
-
-					if (obj.object.moves) {
-						var x = animateCoord(obj.x, obj.xnext, obj.frame);
-						var y = animateCoord(obj.y, obj.ynext, obj.frame);
-						var dx = obj.xnext - x;
-						var dy = obj.ynext - y;
-						var f = obj.currentFrame || 0;
-						if (dx < 0) {
-							f = 6;
-						} else if (dx > 0) {
-							f = 9;
-						} else if (dy > 0) {
-							f = 0;
-						} else if (dy < 0) {
-							f = 3;
-						} else {
-							f -= f % 3;
-						}
-						if (dx != 0 || dy != 0) {
-							f += Math.floor(frame) % 3;
-							zoneBufferDynamicDirty = true;
-						}
-						obj.currentFrame = f;
-						drawObject(draw, x, y, zoneCtxDynamic, obj.object, f);
-					}
-				}
+				zoneCtxStatic.restore();
 			}
 			canvas.drawImage(zoneBufferStatic,
-				Math.floor((w/2 - playerX) * tileSize),
-				Math.floor((h/2 - playerY) * tileSize));
-			canvas.drawImage(zoneBufferDynamic,
-				Math.floor((w/2 - playerX) * tileSize),
-				Math.floor((h/2 - playerY) * tileSize));
+				Math.floor((zoneBufferStaticX + w/2 - playerX) * tileSize),
+				Math.floor((zoneBufferStaticY + h/2 - playerY) * tileSize));
+			for (var i in gameState.objects) {
+				var obj = gameState.objects[i];
+
+				if (obj.object.moves) {
+					var x = animateCoord(obj.x, obj.xnext, obj.frame);
+					var y = animateCoord(obj.y, obj.ynext, obj.frame);
+					var dx = obj.xnext - x;
+					var dy = obj.ynext - y;
+					var f = obj.currentFrame || 0;
+					if (dx < 0) {
+						f = 6;
+					} else if (dx > 0) {
+						f = 9;
+					} else if (dy > 0) {
+						f = 0;
+					} else if (dy < 0) {
+						f = 3;
+					} else {
+						f -= f % 3;
+					}
+					if (dx != 0 || dy != 0) {
+						f += Math.floor(frame) % 3;
+						repaint();
+					}
+					obj.currentFrame = f;
+					drawObject(draw, x - playerX, y - playerY, canvas, obj.object, f);
+				}
+			}
 		}
 
 		(gameState.inventory || []).forEach(function(item, i) {
@@ -295,7 +287,6 @@ function animateCoord(start, end, anim) {
 	if (anim > 10) {
 		return end;
 	}
-	zoneBufferDynamicDirty = true;
 	return (start * (10 - anim) + end * anim) / 10;
 }
 
@@ -368,7 +359,6 @@ var wsonmessage = ws.onmessage = function(e) {
 	}
 	if (msg['ResetZone']) {
 		zoneBufferStaticDirty = true;
-		zoneBufferDynamicDirty = true;
 		gameState.objects = {};
 		repaint();
 	}
@@ -387,9 +377,7 @@ var wsonmessage = ws.onmessage = function(e) {
 	if (msg['TileChange']) {
 		msg['TileChange'].forEach(function(tile) {
 			if (tile['R']) {
-				if (gameState.objects[tile['ID']].object.moves) {
-					zoneBufferDynamicDirty = true;
-				} else {
+				if (!gameState.objects[tile['ID']].object.moves) {
 					zoneBufferStaticDirty = true;
 				}
 				delete gameState.objects[tile['ID']];
@@ -411,9 +399,7 @@ var wsonmessage = ws.onmessage = function(e) {
 				gameState.objects[tile['ID']].xnext = tile['X'];
 				gameState.objects[tile['ID']].ynext = tile['Y'];
 				gameState.objects[tile['ID']].frame = frame;
-				if (gameState.objects[tile['ID']].object.moves) {
-					zoneBufferDynamicDirty = true;
-				} else {
+				if (!gameState.objects[tile['ID']].object.moves) {
 					zoneBufferStaticDirty = true;
 				}
 			}
