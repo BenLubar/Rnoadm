@@ -655,11 +655,15 @@ func (h *Hero) Equip(o Object, inventoryOnly bool) {
 	var old Object
 	switch i := o.(type) {
 	case *Cosmetic:
+		oldMax := h.MaxHealth()
 		if h.Worn[i.Type].Exists() {
 			tmp := h.Worn[i.Type]
 			old = &tmp
 		}
 		h.Worn[i.Type] = *i
+
+		// keep health at the same percent when switching armor
+		h.Damage = h.Damage * h.MaxHealth() / oldMax
 	case *Pickaxe:
 		if h.Toolbelt.Pickaxe != nil {
 			old = h.Toolbelt.Pickaxe
