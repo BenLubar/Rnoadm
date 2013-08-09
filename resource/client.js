@@ -201,7 +201,7 @@ function repaint() {
 		var playerY = getPlayerY();
 
 		if (gameState.objects) {
-			if (zoneBufferStaticDirty || zoneBufferStaticX > playerX || zoneBufferStaticX + 64 <= playerX + w || zoneBufferStaticY > playerY || zoneBufferStaticY + 64 <= playerY + h) {
+			if (zoneBufferStaticDirty || zoneBufferStaticX > playerX - w/2 || zoneBufferStaticX + 64 <= playerX + w/2 || zoneBufferStaticY > playerY - h/2 || zoneBufferStaticY + 64 <= playerY + h/2) {
 				zoneBufferStaticDirty = false;
 				zoneCtxStatic.clearRect(0, 0, zoneBufferStatic.width, zoneBufferStatic.height);
 				zoneCtxStatic.save();
