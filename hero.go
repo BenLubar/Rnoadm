@@ -766,12 +766,18 @@ func (s *TakeSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 
 	if removed {
 		h.Lock()
-		h.GiveItem(s.Item)
+		success := h.GiveItem(s.Item)
 		h.Unlock()
-		SendZoneTileChange(z.X, z.Y, TileChange{
-			ID:      s.Item.NetworkID(),
-			Removed: true,
-		})
+		if success {
+			SendZoneTileChange(z.X, z.Y, TileChange{
+				ID:      s.Item.NetworkID(),
+				Removed: true,
+			})
+		} else {
+			z.Lock()
+			tile.Add(s.Item)
+			z.Unlock()
+		}
 	}
 	return false
 }

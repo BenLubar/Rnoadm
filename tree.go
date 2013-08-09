@@ -374,13 +374,19 @@ func (s *ChopTreeSchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) bo
 	if treeScore <= hatchetScore {
 		if z.Tile(s.X, s.Y).Remove(s.T) {
 			z.Unlock()
-			SendZoneTileChange(z.X, z.Y, TileChange{
-				ID:      s.T.NetworkID(),
-				Removed: true,
-			})
 			h.Lock()
-			h.GiveItem(&Logs{Type: s.T.Type})
+			success := h.GiveItem(&Logs{Type: s.T.Type})
 			h.Unlock()
+			if success {
+				SendZoneTileChange(z.X, z.Y, TileChange{
+					ID:      s.T.NetworkID(),
+					Removed: true,
+				})
+			} else {
+				z.Lock()
+				z.Tile(s.X, s.Y).Add(s.T)
+				z.Unlock()
+			}
 			return false
 		}
 	}

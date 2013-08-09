@@ -557,17 +557,24 @@ func (s *MineQuarrySchedule) Act(z *Zone, x uint8, y uint8, h *Hero, p *Player) 
 	if rockScore <= pickaxeScore {
 		if z.Tile(s.X, s.Y).Remove(s.R) {
 			z.Unlock()
-			SendZoneTileChange(z.X, z.Y, TileChange{
-				ID:      s.R.NetworkID(),
-				Removed: true,
-			})
 			h.Lock()
+			var success bool
 			if s.Mine {
-				h.GiveItem(&Ore{Type: s.R.Ore})
+				success = h.GiveItem(&Ore{Type: s.R.Ore})
 			} else {
-				h.GiveItem(&Stone{Type: s.R.Type})
+				success = h.GiveItem(&Stone{Type: s.R.Type})
 			}
 			h.Unlock()
+			if success {
+				SendZoneTileChange(z.X, z.Y, TileChange{
+					ID:      s.R.NetworkID(),
+					Removed: true,
+				})
+			} else {
+				z.Lock()
+				z.Tile(s.X, s.Y).Add(s.R)
+				z.Unlock()
+			}
 			return false
 		}
 	}
