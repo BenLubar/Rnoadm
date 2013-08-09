@@ -32,10 +32,9 @@ const color_aaa = '#aaa';
 const color_ccc = '#ccc';
 const color_fff = '#fff';
 
-var frame = 0;
-setInterval(function() {
-	frame = +new Date() / 50;
-}, 50);
+function frame() {
+       return +new Date() / 50;
+}
 
 setInterval(function() {
 	inRepaint = false;
@@ -199,6 +198,9 @@ function repaint() {
 
 		var playerX = getPlayerX();
 		var playerY = getPlayerY();
+		if (playerX != gameState.playerXNext || playerY != gameState.playerYNext) {
+			repaint();
+		}
 
 		if (gameState.objects) {
 			if (zoneBufferStaticDirty || zoneBufferStaticX > playerX - w/2 || zoneBufferStaticX + 64 <= playerX + w/2 || zoneBufferStaticY > playerY - h/2 || zoneBufferStaticY + 64 <= playerY + h/2) {
@@ -250,7 +252,7 @@ function repaint() {
 						f -= f % 3;
 					}
 					if (dx != 0 || dy != 0) {
-						f += Math.floor(frame) % 3;
+						f += Math.floor(frame()) % 3;
 						repaint();
 					}
 					obj.currentFrame = f;
@@ -284,7 +286,7 @@ function repaint() {
 function animateCoord(start, end, anim) {
 	start = start || 0;
 	end   = isNaN(end) ? start : end;
-	anim  = frame - (anim || 0);
+	anim  = frame() - (anim || 0);
 	if (anim > 10) {
 		return end;
 	}
@@ -370,26 +372,30 @@ var wsonmessage = ws.onmessage = function(e) {
 	if ('PlayerX' in msg && gameState.playerXNext != (p = msg['PlayerX'])) {
 		gameState.playerX = gameState.playerXNext || p;
 		gameState.playerXNext = p;
-		gameState.playerXFrame = frame;
+		gameState.playerXFrame = frame();
 		repaint();
 	}
 	if ('PlayerY' in msg && gameState.playerYNext != (p = msg['PlayerY'])) {
 		gameState.playerY = gameState.playerYNext || p;
 		gameState.playerYNext = p;
-		gameState.playerYFrame = frame;
+		gameState.playerYFrame = frame();
 		repaint();
 	}
 	if (p = msg['TileChange']) {
 		p.forEach(function(tile) {
+			var id = tile['ID'];
 			if (tile['R']) {
-				if (!gameState.objects[tile['ID']].object.moves) {
-					zoneBufferStaticDirty = true;
+				if (gameState.objects[id].xnext > getPlayerX() - 64/2 && gameState.objects[id].xnext < getPlayerX() + 64/2 && gameState.objects[id].ynext > getPlayerY() - 64/2 && gameState.objects[id].ynext < getPlayerY() + 64/2) {
+					if (!gameState.objects[id].object.moves) {
+						zoneBufferStaticDirty = true;
+					}
+					repaint();
 				}
-				delete gameState.objects[tile['ID']];
+				delete gameState.objects[id];
 			} else {
 				if (tile['O']) {
-					if (!gameState.objects[tile['ID']]) {
-						gameState.objects[tile['ID']] = {
+					if (!gameState.objects[id]) {
+						gameState.objects[id] = {
 							x:      tile['X'],
 							xnext:  tile['X'],
 							y:      tile['Y'],
@@ -397,19 +403,21 @@ var wsonmessage = ws.onmessage = function(e) {
 							frame:  0
 						};
 					}
-					gameState.objects[tile['ID']].object = toObject(tile['O']);
+					gameState.objects[id].object = toObject(tile['O']);
 				}
-				gameState.objects[tile['ID']].x = gameState.objects[tile['ID']].xnext;
-				gameState.objects[tile['ID']].y = gameState.objects[tile['ID']].ynext;
-				gameState.objects[tile['ID']].xnext = tile['X'];
-				gameState.objects[tile['ID']].ynext = tile['Y'];
-				gameState.objects[tile['ID']].frame = frame;
-				if (!gameState.objects[tile['ID']].object.moves) {
-					zoneBufferStaticDirty = true;
+				gameState.objects[id].x = gameState.objects[tile['ID']].xnext;
+				gameState.objects[id].y = gameState.objects[tile['ID']].ynext;
+				gameState.objects[id].xnext = tile['X'];
+				gameState.objects[id].ynext = tile['Y'];
+				gameState.objects[id].frame = frame();
+				if (gameState.objects[id].xnext > getPlayerX() - 64/2 && gameState.objects[id].xnext < getPlayerX() + 64/2 && gameState.objects[id].ynext > getPlayerY() - 64/2 && gameState.objects[id].ynext < getPlayerY() + 64/2) {
+					if (!gameState.objects[id].object.moves) {
+						zoneBufferStaticDirty = true;
+					}
+					repaint();
 				}
 			}
 		});
-		repaint();
 	}
 	if (p = msg['Inventory']) {
 		gameState.inventory = [];
@@ -520,7 +528,14 @@ var loginHudPassword = '';
 var loginHudFocus = 0;
 var loginHudPermutations = 'ando'.split('');
 var loginHudPermutationsFrame = 0;
+var loginHudRepaint = 0;
 var loginHud = function(draw) {
+	if (!loginHudRepaint) {
+		loginHudRepaint = setTimeout(function() {
+			repaint();
+			loginHudRepaint = 0;
+		}, 200);
+	}
 	for (var x = -4; x < 4; x++) {
 		for (var y = -4; y < 1; y++) {
 			draw(x, y, {
@@ -557,14 +572,14 @@ var loginHud = function(draw) {
 		Color: color_888,
 		Title: true
 	});
-	if (loginHudPermutationsFrame < frame - 25) {
+	if (loginHudPermutationsFrame < frame() - 25) {
 		for (var i in loginHudPermutations) {
 			var tmp = loginHudPermutations[i];
 			var j = Math.floor(Math.random() * loginHudPermutations.length);
 			loginHudPermutations[i] = loginHudPermutations[j];
 			loginHudPermutations[j] = tmp;
 		}
-		loginHudPermutationsFrame = frame;
+		loginHudPermutationsFrame = frame();
 	}
 	for (var i in loginHudPermutations) {
 		draw(-1 + i/2, -4, {
@@ -832,8 +847,8 @@ var rightClickHud = function(wx, wy, sx, sy) {
 
 huds['character_creation'] = function(data) {
 	var f = function(draw) {
-		gameState.playerXNext = gameState.playerX = 127 + Math.cos(frame / 10000 * 7) * 64;
-		gameState.playerYNext = gameState.playerY = 127 + Math.sin(frame / 10000 * 6) * 64;
+		gameState.playerXNext = gameState.playerX = 127 + Math.cos(frame() / 10000 * 7) * 64;
+		gameState.playerYNext = gameState.playerY = 127 + Math.sin(frame() / 10000 * 6) * 64;
 		repaint();
 		for (var x = -6; x < 6; x++) {
 			draw(x, -5, {
@@ -912,25 +927,25 @@ huds['character_creation'] = function(data) {
 		draw(-5, -4, {
 			Sprite: 'body_' + data['race'],
 			Color:  data['skin'],
-			X:      rotate[Math.floor(frame/10) % 4],
+			X:      rotate[Math.floor(frame()/10) % 4],
 			Scale:  4
 		});
 		draw(-5, -4, {
 			Sprite: 'shoes_basic',
 			Color:  '#eef8f0',
-			X:      rotate[Math.floor(frame/10) % 4],
+			X:      rotate[Math.floor(frame()/10) % 4],
 			Scale:  4
 		});
 		draw(-5, -4, {
 			Sprite: 'pants_basic',
 			Color:  data['pants'],
-			X:      rotate[Math.floor(frame/10) % 4],
+			X:      rotate[Math.floor(frame()/10) % 4],
 			Scale:  4
 		});
 		draw(-5, -4, {
 			Sprite: 'shirt_basic',
 			Color:  data['shirt'],
-			X:      rotate[Math.floor(frame/10) % 4],
+			X:      rotate[Math.floor(frame()/10) % 4],
 			Scale:  4
 		});
 		draw(-5, 0, {
