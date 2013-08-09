@@ -642,6 +642,9 @@ func (h *Hero) RemoveItem(slot int, o Object) bool {
 }
 
 func (h *Hero) Equip(o Object, inventoryOnly bool) {
+	h.Lock()
+	defer h.Unlock()
+
 	index := -1
 	for i, io := range h.Backpack {
 		if io == o {

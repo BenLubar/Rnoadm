@@ -24,13 +24,6 @@ func AdminCommand(addr string, p *Player, cmd string) {
 		return
 	}
 	switch parts[0] {
-	case "equip":
-		objects := make([]Object, len(p.Backpack))
-		copy(objects, p.Backpack)
-		for _, o := range objects {
-			p.Equip(o, true)
-		}
-
 	case "health":
 		p.SendMessage(strconv.FormatUint(p.Health(), 10) + "/" + strconv.FormatUint(p.MaxHealth(), 10))
 

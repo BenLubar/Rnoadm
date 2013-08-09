@@ -295,9 +295,7 @@ func (c *Cosmetic) Blocking() bool {
 func (c *Cosmetic) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // wear
-		player.Lock()
 		player.Equip(c, true)
-		player.Unlock()
 	}
 }
 

@@ -490,9 +490,7 @@ func (p *Pickaxe) Serialize() *NetworkedObject {
 func (p *Pickaxe) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // add to toolbelt
-		player.Lock()
 		player.Equip(p, true)
-		player.Unlock()
 	}
 }
 

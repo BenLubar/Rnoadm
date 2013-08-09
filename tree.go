@@ -301,9 +301,7 @@ func (h *Hatchet) Serialize() *NetworkedObject {
 func (h *Hatchet) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	switch opt {
 	case 0: // add to toolbelt
-		player.Lock()
 		player.Equip(h, true)
-		player.Unlock()
 	}
 }
 
