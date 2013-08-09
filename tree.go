@@ -34,131 +34,147 @@ const (
 	woodTypeCount
 )
 
-var woodTypeInfo = [woodTypeCount]struct {
-	Name      string
-	Color     Color
-	LeafColor Color
-	Strength  uint64
-	lowStr    uint64
-	sqrtStr   uint64
-}{
+var woodTypeInfo = [woodTypeCount]resourceInfo{
 	Oak: {
-		Name:      "oak",
-		Color:     "#dab583",
-		LeafColor: "#919a2a",
-		Strength:  50,
+		Article:    "an ",
+		Name:       "oak",
+		Color:      "#dab583",
+		ExtraColor: "#919a2a",
+		Strength:   50,
 	},
 	Beonetwon: {
-		Name:      "beonetwon",
-		Color:     "#00b120",
-		LeafColor: "#b120ee",
-		Strength:  1 << 62,
+		Article:    "a ",
+		Name:       "beonetwon",
+		Color:      "#00b120",
+		ExtraColor: "#b120ee",
+		Strength:   1 << 62,
 	},
 	DeadTree: {
+		Article:  "a ",
 		Name:     "rotting",
 		Color:    "#5f5143",
 		Strength: 50,
 	},
 	Maple: {
-		Name:      "maple",
-		Color:     "#ffb963",
-		LeafColor: "#aa5217",
-		Strength:  50,
+		Article:    "a ",
+		Name:       "maple",
+		Color:      "#ffb963",
+		ExtraColor: "#aa5217",
+		Strength:   50,
 	},
 	Birch: {
-		Name:      "birch",
-		Color:     "#d0ddd0",
-		LeafColor: "#29995c",
-		Strength:  50,
+		Article:    "a ",
+		Name:       "birch",
+		Color:      "#d0ddd0",
+		ExtraColor: "#29995c",
+		Strength:   50,
 	},
 	Willow: {
-		Name:      "willow",
-		Color:     "#9e9067",
-		LeafColor: "#4e6b2c",
-		Strength:  50,
+		Article:    "a ",
+		Name:       "willow",
+		Color:      "#9e9067",
+		ExtraColor: "#4e6b2c",
+		Strength:   50,
 	},
 	Juniper: {
-		Name:      "juniper",
-		Color:     "#c2b19a",
-		LeafColor: "#3e4506",
-		Strength:  50,
+		Article:    "a ",
+		Name:       "juniper",
+		Color:      "#c2b19a",
+		ExtraColor: "#3e4506",
+		Strength:   50,
 	},
 	Wood0: {
+		Article:  "a ",
 		Name:     "wood0",
 		Color:    "#000",
 		Strength: 5,
 	},
 	Wood1: {
+		Article:  "a ",
 		Name:     "wood1",
 		Color:    "#111",
 		Strength: 20,
 	},
 	Wood2: {
+		Article:  "a ",
 		Name:     "wood2",
 		Color:    "#222",
 		Strength: 80,
 	},
 	Wood3: {
+		Article:  "a ",
 		Name:     "wood3",
 		Color:    "#333",
 		Strength: 300,
 	},
 	Wood4: {
+		Article:  "a ",
 		Name:     "wood4",
 		Color:    "#444",
 		Strength: 1000,
 	},
 	Wood5: {
+		Article:  "a ",
 		Name:     "wood5",
 		Color:    "#555",
 		Strength: 5000,
 	},
 	Wood6: {
+		Article:  "a ",
 		Name:     "wood6",
 		Color:    "#666",
 		Strength: 20000,
 	},
 	Wood7: {
+		Article:  "a ",
 		Name:     "wood7",
 		Color:    "#777",
 		Strength: 80000,
 	},
 	Wood8: {
+		Article:  "a ",
 		Name:     "wood8",
 		Color:    "#888",
 		Strength: 300000,
 	},
 	Wood9: {
+		Article:  "a ",
 		Name:     "wood9",
 		Color:    "#999",
 		Strength: 1000000,
 	},
 	Wood10: {
+		Article:  "a ",
 		Name:     "wood10",
 		Color:    "#aaa",
 		Strength: 5000000,
 	},
 	Wood11: {
+		Article:  "a ",
 		Name:     "wood11",
 		Color:    "#bbb",
 		Strength: 20000000,
 	},
 	Wood12: {
+		Article:  "a ",
 		Name:     "wood12",
 		Color:    "#ccc",
 		Strength: 80000000,
 	},
 	Wood13: {
+		Article:  "a ",
 		Name:     "wood13",
 		Color:    "#ddd",
 		Strength: 300000000,
 	},
 	Wood14: {
+		Article:  "a ",
 		Name:     "wood14",
 		Color:    "#eee",
 		Strength: 1000000000,
 	},
 	Wood15: {
+		Article:  "a ",
 		Name:     "wood15",
 		Color:    "#fff",
 		Strength: 5000000000,
@@ -190,15 +206,11 @@ func (t *Tree) Examine() string {
 }
 
 func (t *Tree) Serialize() *NetworkedObject {
-	colors := []Color{woodTypeInfo[t.Type].Color}
-	if leaf := woodTypeInfo[t.Type].LeafColor; leaf != "" {
-		colors = append(colors, leaf)
-	}
 	return &NetworkedObject{
 		Name:    t.Name(),
 		Options: []string{"chop down"},
 		Sprite:  "tree",
-		Colors:  colors,
+		Colors:  []Color{woodTypeInfo[t.Type].Color, woodTypeInfo[t.Type].ExtraColor},
 	}
 }
 

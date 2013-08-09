@@ -62,9 +62,9 @@ const metalColor = "metal"
 var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	Headwear: {
 		{
-			Article: "the ",
+			Article: "the none and only ",
 			Name:    "nonexistent hat",
-			Examine: "this hat doesn't actually exist.",
+			Examine: "this hat doesn't actually exist. it is a placeholder item.",
 		},
 		{
 			Article: "a ",
@@ -111,7 +111,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 		{
 			Article: "a ",
 			Name:    "helmet",
-			Examine: "this will protect me from space aliens!",
+			Examine: "55% guaranteed to protect your brain from space aliens.",
 
 			Sprite: "hat_helmet",
 			Colors: []Color{metalColor},
@@ -122,8 +122,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	Shirt: {
 		{
 			Article: "a ",
-			Name:    "hip hop tee shirt",
-			Examine: "$120. by fruit, feat. the loom.",
+			Name:    "plain shirt",
+			Examine: "the ultimate in style: a $6 monochromatic t-shirt.",
 
 			Sprite: "shirt_basic",
 			Colors: []Color{"#fff"},
@@ -132,8 +132,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 	Pants: {
 		{
 			Article: "a pair of ",
-			Name:    "off-brand jeans",
-			Examine: "these have seen some use.",
+			Name:    "plain jeans",
+			Examine: "worn out at the knees, but they still fit.",
 
 			Sprite: "pants_basic",
 			Colors: []Color{"#758a9d"},
@@ -143,7 +143,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 		{
 			Article: "a pair of ",
 			Name:    "sneakers",
-			Examine: "your favorite pair.",
+			Examine: "plain old generic sneakers. not even a brand name.",
 
 			Sprite: "shoes_basic",
 			Colors: []Color{"#eef8f0"},
@@ -175,7 +175,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 		{
 			Article: "a pair of ",
 			Name:    "pauldrons",
-			Examine: "posh.",
+			Examine: "protects you from shoulder aliens.",
 
 			Sprite: "pauldrons_basic",
 			Colors: []Color{metalColor},
@@ -187,7 +187,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 		{
 			Article: "a pair of ",
 			Name:    "vambraces",
-			Examine: "metal wristbands.",
+			Examine: "metal wristbands that make you look like you're from a 6th century motorcycle gang.",
 
 			Sprite: "vambraces_basic",
 			Colors: []Color{metalColor},
@@ -242,7 +242,11 @@ type Cosmetic struct {
 }
 
 func (c *Cosmetic) Article() string {
-	return cosmetics[c.Type][c.ID].Article
+	article := cosmetics[c.Type][c.ID].Article
+	if c.Metal != 0 && (article == "a " || article == "an ") {
+		return metalTypeInfo[c.Metal].Article
+	}
+	return article
 }
 
 func (c *Cosmetic) Name() string {

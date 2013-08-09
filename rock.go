@@ -4,6 +4,16 @@ import (
 	"math"
 )
 
+type resourceInfo struct {
+	Article    string
+	Name       string
+	Color      Color
+	ExtraColor Color
+	Strength   uint64
+	lowStr     uint64
+	sqrtStr    uint64
+}
+
 type RockType uint16
 
 const (
@@ -30,104 +40,117 @@ const (
 	rockTypeCount
 )
 
-var rockTypeInfo = [rockTypeCount]struct {
-	Name     string
-	Color    Color
-	Strength uint64
-	lowStr   uint64
-	sqrtStr  uint64
-}{
+var rockTypeInfo = [rockTypeCount]resourceInfo{
 	Granite: {
+		Article:  "a ",
 		Name:     "granite",
 		Color:    "#948e85",
 		Strength: 50,
 	},
 	Adminstone: {
+		Article:  "an ",
 		Name:     "adminstone",
 		Color:    "#1e0036",
 		Strength: 1 << 62,
 	},
 	Limestone: {
+		Article:  "a ",
 		Name:     "limestone",
 		Color:    "#bebd8f",
 		Strength: 50,
 	},
 	Stone0: {
+		Article:  "a ",
 		Name:     "stone0",
 		Color:    "#000",
 		Strength: 5,
 	},
 	Stone1: {
+		Article:  "a ",
 		Name:     "stone1",
 		Color:    "#111",
 		Strength: 20,
 	},
 	Stone2: {
+		Article:  "a ",
 		Name:     "stone2",
 		Color:    "#222",
 		Strength: 80,
 	},
 	Stone3: {
+		Article:  "a ",
 		Name:     "stone3",
 		Color:    "#333",
 		Strength: 300,
 	},
 	Stone4: {
+		Article:  "a ",
 		Name:     "stone4",
 		Color:    "#444",
 		Strength: 1000,
 	},
 	Stone5: {
+		Article:  "a ",
 		Name:     "stone5",
 		Color:    "#555",
 		Strength: 5000,
 	},
 	Stone6: {
+		Article:  "a ",
 		Name:     "stone6",
 		Color:    "#666",
 		Strength: 20000,
 	},
 	Stone7: {
+		Article:  "a ",
 		Name:     "stone7",
 		Color:    "#777",
 		Strength: 80000,
 	},
 	Stone8: {
+		Article:  "a ",
 		Name:     "stone8",
 		Color:    "#888",
 		Strength: 300000,
 	},
 	Stone9: {
+		Article:  "a ",
 		Name:     "stone9",
 		Color:    "#999",
 		Strength: 1000000,
 	},
 	Stone10: {
+		Article:  "a ",
 		Name:     "stone10",
 		Color:    "#aaa",
 		Strength: 5000000,
 	},
 	Stone11: {
+		Article:  "a ",
 		Name:     "stone11",
 		Color:    "#bbb",
 		Strength: 20000000,
 	},
 	Stone12: {
+		Article:  "a ",
 		Name:     "stone12",
 		Color:    "#ccc",
 		Strength: 80000000,
 	},
 	Stone13: {
+		Article:  "a ",
 		Name:     "stone13",
 		Color:    "#ddd",
 		Strength: 300000000,
 	},
 	Stone14: {
+		Article:  "a ",
 		Name:     "stone14",
 		Color:    "#eee",
 		Strength: 1000000000,
 	},
 	Stone15: {
+		Article:  "a ",
 		Name:     "stone15",
 		Color:    "#fff",
 		Strength: 5000000000,
@@ -172,104 +195,117 @@ const (
 	metalTypeCount
 )
 
-var metalTypeInfo = [metalTypeCount]struct {
-	Name     string
-	Color    Color
-	Strength uint64
-	lowStr   uint64
-	sqrtStr  uint64
-}{
+var metalTypeInfo = [metalTypeCount]resourceInfo{
 	Iron: {
+		Article:  "an ",
 		Name:     "iron",
 		Color:    "#79493d",
 		Strength: 50,
 	},
 	Unobtainium: {
+		Article:  "an ",
 		Name:     "unobtainium",
 		Color:    "#cd8aff",
 		Strength: 1 << 62,
 	},
 	Copper: {
+		Article:  "a ",
 		Name:     "copper",
 		Color:    "#af633e",
 		Strength: 50,
 	},
 	Metal0: {
+		Article:  "a ",
 		Name:     "metal0",
 		Color:    "#000",
 		Strength: 5,
 	},
 	Metal1: {
+		Article:  "a ",
 		Name:     "metal1",
 		Color:    "#111",
 		Strength: 20,
 	},
 	Metal2: {
+		Article:  "a ",
 		Name:     "metal2",
 		Color:    "#222",
 		Strength: 80,
 	},
 	Metal3: {
+		Article:  "a ",
 		Name:     "metal3",
 		Color:    "#333",
 		Strength: 300,
 	},
 	Metal4: {
+		Article:  "a ",
 		Name:     "metal4",
 		Color:    "#444",
 		Strength: 1000,
 	},
 	Metal5: {
+		Article:  "a ",
 		Name:     "metal5",
 		Color:    "#555",
 		Strength: 5000,
 	},
 	Metal6: {
+		Article:  "a ",
 		Name:     "metal6",
 		Color:    "#666",
 		Strength: 20000,
 	},
 	Metal7: {
+		Article:  "a ",
 		Name:     "metal7",
 		Color:    "#777",
 		Strength: 80000,
 	},
 	Metal8: {
+		Article:  "a ",
 		Name:     "metal8",
 		Color:    "#888",
 		Strength: 300000,
 	},
 	Metal9: {
+		Article:  "a ",
 		Name:     "metal9",
 		Color:    "#999",
 		Strength: 1000000,
 	},
 	Metal10: {
+		Article:  "a ",
 		Name:     "metal10",
 		Color:    "#aaa",
 		Strength: 5000000,
 	},
 	Metal11: {
+		Article:  "a ",
 		Name:     "metal11",
 		Color:    "#bbb",
 		Strength: 20000000,
 	},
 	Metal12: {
+		Article:  "a ",
 		Name:     "metal12",
 		Color:    "#ccc",
 		Strength: 80000000,
 	},
 	Metal13: {
+		Article:  "a ",
 		Name:     "metal13",
 		Color:    "#ddd",
 		Strength: 300000000,
 	},
 	Metal14: {
+		Article:  "a ",
 		Name:     "metal14",
 		Color:    "#eee",
 		Strength: 1000000000,
 	},
 	Metal15: {
+		Article:  "a ",
 		Name:     "metal15",
 		Color:    "#fff",
 		Strength: 5000000000,
