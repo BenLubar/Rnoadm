@@ -10,7 +10,6 @@ type WoodType uint8
 const (
 	Oak WoodType = iota
 	Beonetwon
-	DeadTree
 	Maple
 	Birch
 	Willow
@@ -287,7 +286,7 @@ func (l *Logs) Serialize() *NetworkedObject {
 }
 
 func (l *Logs) Volume() uint64 {
-	return 30
+	return 25
 }
 
 func (l *Logs) Weight() uint64 {
