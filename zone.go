@@ -454,8 +454,8 @@ type Object interface {
 
 type Item interface {
 	Object
-	//	Mass() uint64   // grams
-	//	Volume() uint64 // cubic centimeters
+	Weight() uint64 // grams
+	Volume() uint64 // cubic centimeters
 	AdminOnly() bool
 }
 

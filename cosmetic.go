@@ -299,6 +299,14 @@ func (c *Cosmetic) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	}
 }
 
+func (c *Cosmetic) Volume() uint64 {
+	return 1 // TODO
+}
+
+func (c *Cosmetic) Weight() uint64 {
+	return 0 // TODO
+}
+
 func (c *Cosmetic) AdminOnly() bool {
 	return cosmetics[c.Type][c.ID].AdminOnly || metalTypeInfo[c.Metal].Strength >= 1<<60
 }

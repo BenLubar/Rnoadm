@@ -451,6 +451,45 @@ func (h *Hero) Examine() string {
 	return string(text)
 }
 
+func (h *Hero) Weight() uint64 {
+	var total uint64
+	// toolbelted and worn items are counted as half of their weight.
+	for i := range h.Worn {
+		total += h.Worn[i].Weight() / 2
+	}
+	if h.Toolbelt.Pickaxe != nil {
+		total += h.Toolbelt.Pickaxe.Weight() / 2
+	}
+	if h.Toolbelt.Hatchet != nil {
+		total += h.Toolbelt.Hatchet.Weight() / 2
+	}
+	for _, o := range h.Backpack {
+		if i, ok := o.(Item); ok {
+			total += i.Weight()
+		}
+	}
+	return total
+}
+
+func (h *Hero) MaxWeight() uint64 {
+	return 100 * 1000
+}
+
+func (h *Hero) Volume() uint64 {
+	var total uint64
+	// toolbelted and worn items are not counted in volume.
+	for _, o := range h.Backpack {
+		if i, ok := o.(Item); ok {
+			total += i.Volume()
+		}
+	}
+	return total
+}
+
+func (h *Hero) MaxVolume() uint64 {
+	return 10 * 100 * 100 * 100
+}
+
 func (h *Hero) Health() uint64 {
 	health := h.MaxHealth() - h.Damage
 	if health > h.MaxHealth() {
@@ -621,6 +660,11 @@ func (h *Hero) ZIndex() int {
 }
 
 func (h *Hero) GiveItem(o Object) bool {
+	if i, ok := o.(Item); ok {
+		if h.MaxVolume()-h.Volume() < i.Volume() {
+			return false
+		}
+	}
 	h.Backpack = append(h.Backpack, o)
 	select {
 	case h.backpackDirty <- struct{}{}:

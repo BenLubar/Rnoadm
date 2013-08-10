@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -12,6 +13,7 @@ type resourceInfo struct {
 	Strength   uint64
 	lowStr     uint64
 	sqrtStr    uint64
+	Density    uint64 // centigrams per cubic centimeter (cg/cc)
 }
 
 type RockType uint16
@@ -46,114 +48,133 @@ var rockTypeInfo = [rockTypeCount]resourceInfo{
 		Name:     "granite",
 		Color:    "#948e85",
 		Strength: 50,
+		Density:  260, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Adminstone: {
 		Article:  "an ",
 		Name:     "adminstone",
 		Color:    "#1e0036",
 		Strength: 1 << 62,
+		Density:  15000,
 	},
 	Limestone: {
 		Article:  "a ",
 		Name:     "limestone",
 		Color:    "#bebd8f",
 		Strength: 50,
+		Density:  271, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Stone0: {
 		Article:  "a ",
 		Name:     "stone0",
 		Color:    "#000",
 		Strength: 5,
+		Density:  150,
 	},
 	Stone1: {
 		Article:  "a ",
 		Name:     "stone1",
 		Color:    "#111",
 		Strength: 20,
+		Density:  160,
 	},
 	Stone2: {
 		Article:  "a ",
 		Name:     "stone2",
 		Color:    "#222",
 		Strength: 80,
+		Density:  170,
 	},
 	Stone3: {
 		Article:  "a ",
 		Name:     "stone3",
 		Color:    "#333",
 		Strength: 300,
+		Density:  180,
 	},
 	Stone4: {
 		Article:  "a ",
 		Name:     "stone4",
 		Color:    "#444",
 		Strength: 1000,
+		Density:  190,
 	},
 	Stone5: {
 		Article:  "a ",
 		Name:     "stone5",
 		Color:    "#555",
 		Strength: 5000,
+		Density:  200,
 	},
 	Stone6: {
 		Article:  "a ",
 		Name:     "stone6",
 		Color:    "#666",
 		Strength: 20000,
+		Density:  210,
 	},
 	Stone7: {
 		Article:  "a ",
 		Name:     "stone7",
 		Color:    "#777",
 		Strength: 80000,
+		Density:  220,
 	},
 	Stone8: {
 		Article:  "a ",
 		Name:     "stone8",
 		Color:    "#888",
 		Strength: 300000,
+		Density:  230,
 	},
 	Stone9: {
 		Article:  "a ",
 		Name:     "stone9",
 		Color:    "#999",
 		Strength: 1000000,
+		Density:  240,
 	},
 	Stone10: {
 		Article:  "a ",
 		Name:     "stone10",
 		Color:    "#aaa",
 		Strength: 5000000,
+		Density:  250,
 	},
 	Stone11: {
 		Article:  "a ",
 		Name:     "stone11",
 		Color:    "#bbb",
 		Strength: 20000000,
+		Density:  260,
 	},
 	Stone12: {
 		Article:  "a ",
 		Name:     "stone12",
 		Color:    "#ccc",
 		Strength: 80000000,
+		Density:  270,
 	},
 	Stone13: {
 		Article:  "a ",
 		Name:     "stone13",
 		Color:    "#ddd",
 		Strength: 300000000,
+		Density:  280,
 	},
 	Stone14: {
 		Article:  "a ",
 		Name:     "stone14",
 		Color:    "#eee",
 		Strength: 1000000000,
+		Density:  290,
 	},
 	Stone15: {
 		Article:  "a ",
 		Name:     "stone15",
 		Color:    "#fff",
 		Strength: 5000000000,
+		Density:  300,
 	},
 }
 
@@ -201,114 +222,133 @@ var metalTypeInfo = [metalTypeCount]resourceInfo{
 		Name:     "iron",
 		Color:    "#79493d",
 		Strength: 50,
+		Density:  787, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Unobtainium: {
 		Article:  "an ",
 		Name:     "unobtainium",
 		Color:    "#cd8aff",
 		Strength: 1 << 62,
+		Density:  2256,
 	},
 	Copper: {
 		Article:  "a ",
 		Name:     "copper",
 		Color:    "#af633e",
 		Strength: 50,
+		Density:  896, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Metal0: {
 		Article:  "a ",
 		Name:     "metal0",
 		Color:    "#000",
 		Strength: 5,
+		Density:  850,
 	},
 	Metal1: {
 		Article:  "a ",
 		Name:     "metal1",
 		Color:    "#111",
 		Strength: 20,
+		Density:  860,
 	},
 	Metal2: {
 		Article:  "a ",
 		Name:     "metal2",
 		Color:    "#222",
 		Strength: 80,
+		Density:  870,
 	},
 	Metal3: {
 		Article:  "a ",
 		Name:     "metal3",
 		Color:    "#333",
 		Strength: 300,
+		Density:  880,
 	},
 	Metal4: {
 		Article:  "a ",
 		Name:     "metal4",
 		Color:    "#444",
 		Strength: 1000,
+		Density:  890,
 	},
 	Metal5: {
 		Article:  "a ",
 		Name:     "metal5",
 		Color:    "#555",
 		Strength: 5000,
+		Density:  900,
 	},
 	Metal6: {
 		Article:  "a ",
 		Name:     "metal6",
 		Color:    "#666",
 		Strength: 20000,
+		Density:  910,
 	},
 	Metal7: {
 		Article:  "a ",
 		Name:     "metal7",
 		Color:    "#777",
 		Strength: 80000,
+		Density:  920,
 	},
 	Metal8: {
 		Article:  "a ",
 		Name:     "metal8",
 		Color:    "#888",
 		Strength: 300000,
+		Density:  930,
 	},
 	Metal9: {
 		Article:  "a ",
 		Name:     "metal9",
 		Color:    "#999",
 		Strength: 1000000,
+		Density:  940,
 	},
 	Metal10: {
 		Article:  "a ",
 		Name:     "metal10",
 		Color:    "#aaa",
 		Strength: 5000000,
+		Density:  950,
 	},
 	Metal11: {
 		Article:  "a ",
 		Name:     "metal11",
 		Color:    "#bbb",
 		Strength: 20000000,
+		Density:  960,
 	},
 	Metal12: {
 		Article:  "a ",
 		Name:     "metal12",
 		Color:    "#ccc",
 		Strength: 80000000,
+		Density:  970,
 	},
 	Metal13: {
 		Article:  "a ",
 		Name:     "metal13",
 		Color:    "#ddd",
 		Strength: 300000000,
+		Density:  980,
 	},
 	Metal14: {
 		Article:  "a ",
 		Name:     "metal14",
 		Color:    "#eee",
 		Strength: 1000000000,
+		Density:  990,
 	},
 	Metal15: {
 		Article:  "a ",
 		Name:     "metal15",
 		Color:    "#fff",
 		Strength: 5000000000,
+		Density:  1000,
 	},
 }
 
@@ -417,6 +457,14 @@ func (s *Stone) Serialize() *NetworkedObject {
 	}
 }
 
+func (s *Stone) Volume() uint64 {
+	return 1 // TODO
+}
+
+func (s *Stone) Weight() uint64 {
+	return s.Volume() * rockTypeInfo[s.Type].Density / 100
+}
+
 func (s *Stone) AdminOnly() bool {
 	return rockTypeInfo[s.Type].Strength >= 1<<60
 }
@@ -451,6 +499,14 @@ func (o *Ore) Serialize() *NetworkedObject {
 	}
 }
 
+func (o *Ore) Volume() uint64 {
+	return 1 // TODO
+}
+
+func (o *Ore) Weight() uint64 {
+	return o.Volume() * metalTypeInfo[o.Type].Density / 100
+}
+
 func (o *Ore) AdminOnly() bool {
 	return metalTypeInfo[o.Type].Strength >= 1<<60
 }
@@ -470,7 +526,7 @@ func (p *Pickaxe) Name() string {
 }
 
 func (p *Pickaxe) Examine() string {
-	return "a pickaxe made from " + metalTypeInfo[p.Head].Name + " and " + woodTypeInfo[p.Handle].Name + "."
+	return fmt.Sprintf("a pickaxe made from %s and %s.\nscore: %d - %d", metalTypeInfo[p.Head].Name, woodTypeInfo[p.Handle].Name, metalTypeInfo[p.Head].lowStr+woodTypeInfo[p.Handle].lowStr, metalTypeInfo[p.Head].Strength+woodTypeInfo[p.Handle].Strength)
 }
 
 func (p *Pickaxe) Blocking() bool {
@@ -494,7 +550,13 @@ func (p *Pickaxe) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	}
 }
 
-func (p *Pickaxe) IsItem() {}
+func (p *Pickaxe) Volume() uint64 {
+	return 1 + 1 // TODO
+}
+
+func (p *Pickaxe) Weight() uint64 {
+	return (1*metalTypeInfo[p.Head].Density + 1*woodTypeInfo[p.Handle].Density) / 100
+}
 
 func (p *Pickaxe) AdminOnly() bool {
 	return metalTypeInfo[p.Head].Strength >= 1<<60 || woodTypeInfo[p.Handle].Strength >= 1<<60

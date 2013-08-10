@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -41,6 +42,7 @@ var woodTypeInfo = [woodTypeCount]resourceInfo{
 		Color:      "#dab583",
 		ExtraColor: "#919a2a",
 		Strength:   50,
+		Density:    65, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Beonetwon: {
 		Article:    "a ",
@@ -48,12 +50,14 @@ var woodTypeInfo = [woodTypeCount]resourceInfo{
 		Color:      "#00b120",
 		ExtraColor: "#b120ee",
 		Strength:   1 << 62,
+		Density:    1,
 	},
 	DeadTree: {
 		Article:  "a ",
 		Name:     "rotting",
 		Color:    "#5f5143",
 		Strength: 50,
+		Density:  30,
 	},
 	Maple: {
 		Article:    "a ",
@@ -61,6 +65,7 @@ var woodTypeInfo = [woodTypeCount]resourceInfo{
 		Color:      "#ffb963",
 		ExtraColor: "#aa5217",
 		Strength:   50,
+		Density:    60, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Birch: {
 		Article:    "a ",
@@ -68,6 +73,7 @@ var woodTypeInfo = [woodTypeCount]resourceInfo{
 		Color:      "#d0ddd0",
 		ExtraColor: "#29995c",
 		Strength:   50,
+		Density:    64, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Willow: {
 		Article:    "a ",
@@ -75,6 +81,7 @@ var woodTypeInfo = [woodTypeCount]resourceInfo{
 		Color:      "#9e9067",
 		ExtraColor: "#4e6b2c",
 		Strength:   50,
+		Density:    42, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Juniper: {
 		Article:    "a ",
@@ -82,102 +89,119 @@ var woodTypeInfo = [woodTypeCount]resourceInfo{
 		Color:      "#c2b19a",
 		ExtraColor: "#3e4506",
 		Strength:   50,
+		Density:    39, // Source: Wolfram|Alpha - 2013-09-08
 	},
 	Wood0: {
 		Article:  "a ",
 		Name:     "wood0",
 		Color:    "#000",
 		Strength: 5,
+		Density:  55,
 	},
 	Wood1: {
 		Article:  "a ",
 		Name:     "wood1",
 		Color:    "#111",
 		Strength: 20,
+		Density:  56,
 	},
 	Wood2: {
 		Article:  "a ",
 		Name:     "wood2",
 		Color:    "#222",
 		Strength: 80,
+		Density:  57,
 	},
 	Wood3: {
 		Article:  "a ",
 		Name:     "wood3",
 		Color:    "#333",
 		Strength: 300,
+		Density:  58,
 	},
 	Wood4: {
 		Article:  "a ",
 		Name:     "wood4",
 		Color:    "#444",
 		Strength: 1000,
+		Density:  59,
 	},
 	Wood5: {
 		Article:  "a ",
 		Name:     "wood5",
 		Color:    "#555",
 		Strength: 5000,
+		Density:  60,
 	},
 	Wood6: {
 		Article:  "a ",
 		Name:     "wood6",
 		Color:    "#666",
 		Strength: 20000,
+		Density:  61,
 	},
 	Wood7: {
 		Article:  "a ",
 		Name:     "wood7",
 		Color:    "#777",
 		Strength: 80000,
+		Density:  62,
 	},
 	Wood8: {
 		Article:  "a ",
 		Name:     "wood8",
 		Color:    "#888",
 		Strength: 300000,
+		Density:  63,
 	},
 	Wood9: {
 		Article:  "a ",
 		Name:     "wood9",
 		Color:    "#999",
 		Strength: 1000000,
+		Density:  64,
 	},
 	Wood10: {
 		Article:  "a ",
 		Name:     "wood10",
 		Color:    "#aaa",
 		Strength: 5000000,
+		Density:  65,
 	},
 	Wood11: {
 		Article:  "a ",
 		Name:     "wood11",
 		Color:    "#bbb",
 		Strength: 20000000,
+		Density:  66,
 	},
 	Wood12: {
 		Article:  "a ",
 		Name:     "wood12",
 		Color:    "#ccc",
 		Strength: 80000000,
+		Density:  67,
 	},
 	Wood13: {
 		Article:  "a ",
 		Name:     "wood13",
 		Color:    "#ddd",
 		Strength: 300000000,
+		Density:  68,
 	},
 	Wood14: {
 		Article:  "a ",
 		Name:     "wood14",
 		Color:    "#eee",
 		Strength: 1000000000,
+		Density:  69,
 	},
 	Wood15: {
 		Article:  "a ",
 		Name:     "wood15",
 		Color:    "#fff",
 		Strength: 5000000000,
+		Density:  70,
 	},
 }
 
@@ -262,6 +286,14 @@ func (l *Logs) Serialize() *NetworkedObject {
 	}
 }
 
+func (l *Logs) Volume() uint64 {
+	return 1 // TODO
+}
+
+func (l *Logs) Weight() uint64 {
+	return l.Volume() * woodTypeInfo[l.Type].Density / 100
+}
+
 func (l *Logs) AdminOnly() bool {
 	return woodTypeInfo[l.Type].Strength >= 1<<60
 }
@@ -281,7 +313,7 @@ func (h *Hatchet) Name() string {
 }
 
 func (h *Hatchet) Examine() string {
-	return "a hatchet made from " + metalTypeInfo[h.Head].Name + " and " + woodTypeInfo[h.Handle].Name + "."
+	return fmt.Sprintf("a hatchet made from %s and %s.\nscore: %d - %d", metalTypeInfo[h.Head].Name, woodTypeInfo[h.Handle].Name, metalTypeInfo[h.Head].lowStr+woodTypeInfo[h.Handle].lowStr, metalTypeInfo[h.Head].Strength+woodTypeInfo[h.Handle].Strength)
 }
 
 func (h *Hatchet) Blocking() bool {
@@ -305,7 +337,13 @@ func (h *Hatchet) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	}
 }
 
-func (h *Hatchet) IsItem() {}
+func (h *Hatchet) Volume() uint64 {
+	return 1 + 1 // TODO
+}
+
+func (h *Hatchet) Weight() uint64 {
+	return (1*metalTypeInfo[h.Head].Density + 1*woodTypeInfo[h.Handle].Density) / 100
+}
 
 func (h *Hatchet) AdminOnly() bool {
 	return metalTypeInfo[h.Head].Strength >= 1<<60 || woodTypeInfo[h.Handle].Strength >= 1<<60
