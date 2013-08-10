@@ -10,6 +10,7 @@ type WoodType uint8
 const (
 	Oak WoodType = iota
 	Beonetwon
+	DeadTree
 	Maple
 	Birch
 	Willow
