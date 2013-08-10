@@ -458,7 +458,7 @@ func (s *Stone) Serialize() *NetworkedObject {
 }
 
 func (s *Stone) Volume() uint64 {
-	return 30
+	return 25
 }
 
 func (s *Stone) Weight() uint64 {
@@ -500,7 +500,7 @@ func (o *Ore) Serialize() *NetworkedObject {
 }
 
 func (o *Ore) Volume() uint64 {
-	return 30
+	return 25
 }
 
 func (o *Ore) Weight() uint64 {
