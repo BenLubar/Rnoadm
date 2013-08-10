@@ -661,7 +661,7 @@ func (h *Hero) ZIndex() int {
 
 func (h *Hero) GiveItem(o Object) bool {
 	if i, ok := o.(Item); ok {
-		if h.MaxVolume()-h.Volume() < i.Volume() {
+		if h.MaxVolume() >= h.Volume() || h.MaxVolume()-h.Volume() < i.Volume() {
 			return false
 		}
 	}
@@ -782,7 +782,7 @@ func (s *MoveSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
 	z.Unlock()
 
 	h.Lock()
-	h.Delay = 2
+	h.Delay = uint(2 + h.Weight()/h.MaxWeight()*5)
 	h.scheduleDelay = 3
 	obj := Object(h)
 	if p != nil {

@@ -11,6 +11,10 @@ type cosmeticInfo struct {
 
 	HealthBonus uint64
 
+	Volume      uint64
+	Density     uint64 // centigrams per cubic centimeter (cg/cc)
+	MetalVolume uint64
+
 	AdminOnly bool
 }
 
@@ -74,6 +78,9 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "hat_novelty_foam_chicken",
 			Colors: []Color{"#fff", "#ff0", "#f00"},
 
+			Volume:  739,
+			Density: 19,
+
 			AdminOnly: true,
 		},
 		{
@@ -86,6 +93,9 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "hat_bear_riding_a_unicycle",
 			Colors: []Color{"#ccf", "#ecb", "#fff"},
 
+			Volume:  2000000,
+			Density: 15,
+
 			AdminOnly: true,
 		},
 		{
@@ -96,6 +106,9 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Sprite: "hat_unusual_strange_vintage_hound_dog",
 			Colors: []Color{"#fff", "#fff"},
 
+			Volume:  30,
+			Density: 15,
+
 			AdminOnly: true,
 		},
 		{
@@ -105,6 +118,9 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "hat_spanish_war_mask",
 			Colors: []Color{"#900", "#007"},
+
+			Volume:  5,
+			Density: 10,
 
 			AdminOnly: true,
 		},
@@ -117,6 +133,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 500,
+
+			MetalVolume: 20,
 		},
 	},
 	Shirt: {
@@ -127,6 +145,9 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "shirt_basic",
 			Colors: []Color{"#fff"},
+
+			Volume:  10,
+			Density: 17,
 		},
 	},
 	Pants: {
@@ -137,6 +158,9 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "pants_basic",
 			Colors: []Color{"#758a9d"},
+
+			Volume:  10,
+			Density: 21,
 		},
 	},
 	Shoes: {
@@ -147,6 +171,9 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 
 			Sprite: "shoes_basic",
 			Colors: []Color{"#eef8f0"},
+
+			Volume:  25,
+			Density: 70,
 		},
 		{
 			Article: "a pair of ",
@@ -157,6 +184,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 100,
+
+			MetalVolume: 20,
 		},
 	},
 	Breastplate: {
@@ -169,6 +198,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 1000,
+
+			MetalVolume: 20,
 		},
 	},
 	Pauldrons: {
@@ -181,6 +212,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 100,
+
+			MetalVolume: 20,
 		},
 	},
 	Vambraces: {
@@ -193,6 +226,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 200,
+
+			MetalVolume: 20,
 		},
 	},
 	Gauntlets: {
@@ -205,6 +240,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 100,
+
+			MetalVolume: 20,
 		},
 	},
 	Tassets: {
@@ -217,6 +254,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 500,
+
+			MetalVolume: 20,
 		},
 	},
 	Greaves: {
@@ -229,6 +268,8 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 200,
+
+			MetalVolume: 20,
 		},
 	},
 }
@@ -300,11 +341,11 @@ func (c *Cosmetic) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (c *Cosmetic) Volume() uint64 {
-	return 1 // TODO
+	return cosmetics[c.Type][c.ID].Volume + cosmetics[c.Type][c.ID].MetalVolume
 }
 
 func (c *Cosmetic) Weight() uint64 {
-	return 0 // TODO
+	return (cosmetics[c.Type][c.ID].Volume*cosmetics[c.Type][c.ID].Density + cosmetics[c.Type][c.ID].MetalVolume*metalTypeInfo[c.Metal].Density) / 100
 }
 
 func (c *Cosmetic) AdminOnly() bool {

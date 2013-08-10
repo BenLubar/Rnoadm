@@ -458,7 +458,7 @@ func (s *Stone) Serialize() *NetworkedObject {
 }
 
 func (s *Stone) Volume() uint64 {
-	return 1 // TODO
+	return 30
 }
 
 func (s *Stone) Weight() uint64 {
@@ -500,7 +500,7 @@ func (o *Ore) Serialize() *NetworkedObject {
 }
 
 func (o *Ore) Volume() uint64 {
-	return 1 // TODO
+	return 30
 }
 
 func (o *Ore) Weight() uint64 {
@@ -551,11 +551,11 @@ func (p *Pickaxe) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (p *Pickaxe) Volume() uint64 {
-	return 1 + 1 // TODO
+	return 20 + 20
 }
 
 func (p *Pickaxe) Weight() uint64 {
-	return (1*metalTypeInfo[p.Head].Density + 1*woodTypeInfo[p.Handle].Density) / 100
+	return (20*metalTypeInfo[p.Head].Density + 20*woodTypeInfo[p.Handle].Density) / 100
 }
 
 func (p *Pickaxe) AdminOnly() bool {

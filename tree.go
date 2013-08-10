@@ -287,7 +287,7 @@ func (l *Logs) Serialize() *NetworkedObject {
 }
 
 func (l *Logs) Volume() uint64 {
-	return 1 // TODO
+	return 30
 }
 
 func (l *Logs) Weight() uint64 {
@@ -338,11 +338,11 @@ func (h *Hatchet) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 }
 
 func (h *Hatchet) Volume() uint64 {
-	return 1 + 1 // TODO
+	return 20 + 20
 }
 
 func (h *Hatchet) Weight() uint64 {
-	return (1*metalTypeInfo[h.Head].Density + 1*woodTypeInfo[h.Handle].Density) / 100
+	return (20*metalTypeInfo[h.Head].Density + 20*woodTypeInfo[h.Handle].Density) / 100
 }
 
 func (h *Hatchet) AdminOnly() bool {
