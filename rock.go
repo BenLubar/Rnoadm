@@ -212,6 +212,7 @@ const (
 	Metal13
 	Metal14
 	Metal15
+	RustyMetal
 
 	metalTypeCount
 )
@@ -349,6 +350,13 @@ var metalTypeInfo = [metalTypeCount]resourceInfo{
 		Color:    "#fff",
 		Strength: 5000000000,
 		Density:  1000,
+	},
+	RustyMetal: {
+		Article:  "a ",
+		Name:     "rusty",
+		Color:    "#4c271e",
+		Strength: 50,
+		Density:  100,
 	},
 }
 
@@ -526,7 +534,7 @@ func (p *Pickaxe) Name() string {
 }
 
 func (p *Pickaxe) Examine() string {
-	return fmt.Sprintf("a pickaxe made from %s and %s.\nscore: %d - %d", metalTypeInfo[p.Head].Name, woodTypeInfo[p.Handle].Name, metalTypeInfo[p.Head].lowStr+woodTypeInfo[p.Handle].lowStr, metalTypeInfo[p.Head].Strength+woodTypeInfo[p.Handle].Strength)
+	return fmt.Sprintf("a pickaxe made from %s metal and %s wood.\nscore: %d - %d", metalTypeInfo[p.Head].Name, woodTypeInfo[p.Handle].Name, metalTypeInfo[p.Head].lowStr+woodTypeInfo[p.Handle].lowStr, metalTypeInfo[p.Head].Strength+woodTypeInfo[p.Handle].Strength)
 }
 
 func (p *Pickaxe) Blocking() bool {

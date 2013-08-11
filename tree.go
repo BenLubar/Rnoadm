@@ -10,7 +10,7 @@ type WoodType uint8
 const (
 	Oak WoodType = iota
 	Beonetwon
-	DeadTree
+	RottingWood
 	Maple
 	Birch
 	Willow
@@ -52,7 +52,7 @@ var woodTypeInfo = [woodTypeCount]resourceInfo{
 		Strength:   1 << 62,
 		Density:    1,
 	},
-	DeadTree: {
+	RottingWood: {
 		Article:  "a ",
 		Name:     "rotting",
 		Color:    "#5f5143",
@@ -313,7 +313,7 @@ func (h *Hatchet) Name() string {
 }
 
 func (h *Hatchet) Examine() string {
-	return fmt.Sprintf("a hatchet made from %s and %s.\nscore: %d - %d", metalTypeInfo[h.Head].Name, woodTypeInfo[h.Handle].Name, metalTypeInfo[h.Head].lowStr+woodTypeInfo[h.Handle].lowStr, metalTypeInfo[h.Head].Strength+woodTypeInfo[h.Handle].Strength)
+	return fmt.Sprintf("a hatchet made from %s metal and %s wood.\nscore: %d - %d", metalTypeInfo[h.Head].Name, woodTypeInfo[h.Handle].Name, metalTypeInfo[h.Head].lowStr+woodTypeInfo[h.Handle].lowStr, metalTypeInfo[h.Head].Strength+woodTypeInfo[h.Handle].Strength)
 }
 
 func (h *Hatchet) Blocking() bool {

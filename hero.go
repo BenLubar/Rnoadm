@@ -26,18 +26,21 @@ var genderInfo = [genderCount]struct {
 	PronounSubject   string
 	PronounObject    string
 	PronounPosessive string
+	NounOffspring    string
 }{
 	Male: {
 		Name:             "male",
 		PronounSubject:   "he",
 		PronounObject:    "him",
 		PronounPosessive: "his",
+		NounOffspring:    "son",
 	},
 	Female: {
 		Name:             "female",
 		PronounSubject:   "she",
 		PronounObject:    "her",
 		PronounPosessive: "her",
+		NounOffspring:    "daughter",
 	},
 }
 
@@ -62,7 +65,7 @@ var raceInfo = [raceCount]struct {
 	Human: {
 		Name:         "human",
 		Genders:      []Gender{Male, Female},
-		Occupations:  []Occupation{Civilian},
+		Occupations:  []Occupation{Citizen},
 		SkinTones:    []Color{"#ffe3cc", "#ffdbbd", "#ffcda3", "#f7e9dc", "#edd0b7", "#e8d1be", "#e5c298", "#e3c3a8", "#c9a281", "#c2a38a", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948", "#635041", "#4f3f33"},
 		BaseHealth:   10000,
 		BaseArmor:    100,
@@ -74,10 +77,61 @@ var raceInfo = [raceCount]struct {
 type Occupation uint16
 
 const (
-	Civilian Occupation = iota
+	Adventurer Occupation = iota
+	Citizen
 
 	occupationCount
 )
+
+var occupationInfo = [occupationCount]struct {
+	Name            string
+	StartingGear    map[CosmeticType]*Cosmetic
+	StartingPickaxe *Pickaxe
+	StartingHatchet *Hatchet
+}{
+	Adventurer: {
+		Name: "adventurer",
+		StartingGear: map[CosmeticType]*Cosmetic{
+			Shirt: &Cosmetic{
+				Type: Shirt,
+				ID:   0,
+			},
+			Pants: &Cosmetic{
+				Type: Pants,
+				ID:   0,
+			},
+			Shoes: &Cosmetic{
+				Type: Shoes,
+				ID:   0,
+			},
+		},
+		StartingPickaxe: &Pickaxe{
+			Head:   RustyMetal,
+			Handle: RottingWood,
+		},
+		StartingHatchet: &Hatchet{
+			Head:   RustyMetal,
+			Handle: RottingWood,
+		},
+	},
+	Citizen: {
+		Name: "citizen",
+		StartingGear: map[CosmeticType]*Cosmetic{
+			Shirt: &Cosmetic{
+				Type: Shirt,
+				ID:   0,
+			},
+			Pants: &Cosmetic{
+				Type: Pants,
+				ID:   0,
+			},
+			Shoes: &Cosmetic{
+				Type: Shoes,
+				ID:   0,
+			},
+		},
+	},
+}
 
 var userIDLock sync.Mutex
 
@@ -251,7 +305,6 @@ func (p *Player) CharacterCreationCommand(command string) {
 				Hero:  p.Hero,
 				Death: time.Now().UTC(),
 			})
-			p.Hero = nil
 			p.Unlock()
 			p.Save()
 			p.Lock()
@@ -274,7 +327,7 @@ func (p *Player) CharacterCreationCommand(command string) {
 
 	if p.CharacterCreation == nil {
 		if p.Hero != nil {
-			p.CharacterCreation = GenerateHero(p.Hero.Race, r)
+			p.CharacterCreation = GenerateHeroOccupation(p.Hero.Race, Adventurer, r)
 			p.CharacterCreation.Last1 = p.Hero.Last1
 			p.CharacterCreation.Last1T = p.Hero.Last1T
 			p.CharacterCreation.Last2 = p.Hero.Last2
@@ -282,8 +335,9 @@ func (p *Player) CharacterCreationCommand(command string) {
 			p.CharacterCreation.Last3 = p.Hero.Last3
 			p.CharacterCreation.Last3T = p.Hero.Last3T
 			p.CharacterCreation.SkinToneIndex = p.Hero.SkinToneIndex
+			p.Hero = nil
 		} else {
-			p.CharacterCreation = GenerateHero(Human, r)
+			p.CharacterCreation = GenerateHeroOccupation(Human, Adventurer, r)
 		}
 	}
 
@@ -481,13 +535,16 @@ func (p *Player) ZIndex() int {
 
 func (p *Player) Examine() string {
 	examine := p.Hero.Examine()
+	p.Lock()
+	defer p.Unlock()
 	if p.Admin {
-		p.Lock()
-		defer p.Unlock()
 		examine += "\n" + p.Name() + " is an admin."
 		if p.Examine_ != "" {
 			examine += "\n\"" + p.Examine_ + "\""
 		}
+	}
+	if len(p.Ancestry) > 0 {
+		examine += "\n" + genderInfo[p.Gender].PronounSubject + " is the " + genderInfo[p.Gender].NounOffspring + " of " + p.Ancestry[len(p.Ancestry)-1].Hero.Name() + "."
 	}
 	return examine
 }
@@ -1163,10 +1220,14 @@ func (s *CombatSchedule) NextMove(x, y uint8) (uint8, uint8) {
 }
 
 func GenerateHero(race Race, r *rand.Rand) *Hero {
+	return GenerateHeroOccupation(race, raceInfo[race].Occupations[r.Intn(len(raceInfo[race].Occupations))], r)
+}
+
+func GenerateHeroOccupation(race Race, occupation Occupation, r *rand.Rand) *Hero {
 	h := &Hero{
 		Race:       race,
 		Gender:     raceInfo[race].Genders[r.Intn(len(raceInfo[race].Genders))],
-		Occupation: raceInfo[race].Occupations[r.Intn(len(raceInfo[race].Occupations))],
+		Occupation: occupation,
 		Worn:       make([]Cosmetic, cosmeticTypeCount),
 		Birth:      time.Now().UTC(),
 	}
@@ -1174,6 +1235,19 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 	case Human:
 		h.HeroName = GenerateHumanName(r, h.Gender)
 	}
+
+	for slot, item := range occupationInfo[occupation].StartingGear {
+		h.Worn[slot] = *item
+	}
+	if occupationInfo[occupation].StartingPickaxe != nil {
+		pickaxe := *occupationInfo[occupation].StartingPickaxe
+		h.Toolbelt.Pickaxe = &pickaxe
+	}
+	if occupationInfo[occupation].StartingHatchet != nil {
+		hatchet := *occupationInfo[occupation].StartingHatchet
+		h.Toolbelt.Hatchet = &hatchet
+	}
+
 	h.SkinToneIndex = uint8(r.Intn(len(raceInfo[race].SkinTones)))
 	const pastels = "abcde"
 	const earthy = "34567"
@@ -1181,33 +1255,21 @@ func GenerateHero(race Race, r *rand.Rand) *Hero {
 	if r.Intn(2) == 0 {
 		palette = earthy
 	}
-	h.Worn[Shirt] = Cosmetic{
-		Type: Shirt,
-		ID:   0,
-		Custom: []Color{Color([]byte{
-			'#',
-			palette[r.Intn(len(palette))],
-			palette[r.Intn(len(palette))],
-			palette[r.Intn(len(palette))],
-		})},
-	}
+	h.Worn[Shirt].Custom = []Color{Color([]byte{
+		'#',
+		palette[r.Intn(len(palette))],
+		palette[r.Intn(len(palette))],
+		palette[r.Intn(len(palette))],
+	})}
 	palette = earthy
 	if r.Intn(3) == 0 {
 		palette = pastels
 	}
-	h.Worn[Pants] = Cosmetic{
-		Type: Pants,
-		ID:   0,
-		Custom: []Color{Color([]byte{
-			'#',
-			palette[r.Intn(len(palette))],
-			palette[r.Intn(len(palette))],
-			palette[r.Intn(len(palette))],
-		})},
-	}
-	h.Worn[Shoes] = Cosmetic{
-		Type: Shoes,
-		ID:   0,
-	}
+	h.Worn[Pants].Custom = []Color{Color([]byte{
+		'#',
+		palette[r.Intn(len(palette))],
+		palette[r.Intn(len(palette))],
+		palette[r.Intn(len(palette))],
+	})}
 	return h
 }

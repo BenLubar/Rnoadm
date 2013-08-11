@@ -88,7 +88,7 @@ func init() {
 		Rocks: []RockType{Granite, Limestone},
 		Ores:  []MetalType{0, Iron, Copper},
 		Flora: []FloraType{LeafPlant, FlowerPlant, BulbPlant},
-		Trees: []WoodType{Oak, DeadTree, Maple, Birch},
+		Trees: []WoodType{Oak, RottingWood, Maple, Birch},
 		Races: []Race{Human},
 	}
 	elements[Dust] = element{
