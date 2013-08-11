@@ -1,4 +1,4 @@
-const GRAPHICS_REVISION = 1;
+const GRAPHICS_REVISION = 3;
 
 var undefined;
 const tileSize = 32;
@@ -56,7 +56,7 @@ function drawObject(draw, x, y, ctx, o, frame, scale) {
 	o.attach.forEach(function(a) {
 		drawObject(draw, x, y, ctx, a, frame, scale);
 	});
-	if (o.health) {
+	if (!isNaN(o.health)) {
 		draw(x, y, {
 			Sprite: 'ui_bar',
 			Color:  '#800',
@@ -847,8 +847,8 @@ var rightClickHud = function(wx, wy, sx, sy) {
 
 huds['character_creation'] = function(data) {
 	var f = function(draw) {
-		gameState.playerXNext = gameState.playerX = 127 + Math.cos(frame() / 10000 * 7) * 64;
-		gameState.playerYNext = gameState.playerY = 127 + Math.sin(frame() / 10000 * 6) * 64;
+		gameState.playerXNext = gameState.playerX = 127 + Math.cos(frame() / 1000000 * 7) * 64;
+		gameState.playerYNext = gameState.playerY = 127 + Math.sin(frame() / 1000000 * 6) * 64;
 		repaint();
 		for (var x = -6; x < 6; x++) {
 			draw(x, -5, {
@@ -1010,6 +1010,59 @@ huds['examine'] = function(data) {
 	f.click = f.keyPress = f.keyDown = function() {
 		delete gameState.hud;
 		repaint();
+		return false;
+	};
+	return f;
+};
+
+huds['death'] = function(data) {
+	var start = frame();
+	var f = function(draw) {
+		var opacity = Math.min(1, (frame() - start) / 100);
+		if (opacity != 1)
+			repaint();
+		for (var x = -w/2; x < w/2; x++) {
+			for (var y = -h/2; y < h/2; y++) {
+				draw(x, y, {
+					Sprite: 'ui_r1',
+					Color:  'rgba(0,0,0,' + opacity + ')'
+				});
+			}
+		}
+		for (var x = 0; x < 16; x++) {
+			draw(x - 8, h/2, {
+				Sprite: 'ui_gravestone',
+				Color:  color_888,
+				Height: 768,
+				X:      x
+			});
+		}
+		draw(-1, -5, {
+			Text:  'here lies',
+			Color: color_444
+		});
+		draw(-3, -4, {
+			Text:  data['N'],
+			Color: color_444,
+			Title: true
+		});
+		draw(-3, -3.5, {
+			Text:  data['D'],
+			Color: color_444
+		});
+		draw(-2, -3, {
+			Text:  data['C'],
+			Color: color_444
+		});
+		draw(-1.5, -2, {
+			Text:  'Requiescat in Pace',
+			Color: color_444
+		});
+	};
+	f.click = function(x, y) {
+		return false;
+	};
+	f.keyPress = f.keyDown = function(code) {
 		return false;
 	};
 	return f;

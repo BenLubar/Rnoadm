@@ -151,7 +151,7 @@ type NetworkedObject struct {
 	Height   uint16             `json:"H,omitempty"`
 	Attached []*NetworkedObject `json:"A,omitempty"`
 	Moves    bool               `json:"M,omitempty"`
-	Health   float64            `json:"L,omitempty"`
+	Health   *float64           `json:"L,omitempty"`
 	Item     bool               `json:"T,omitempty"`
 }
 
@@ -249,12 +249,18 @@ func websocketHandler(conn *websocket.Conn) {
 	inventory := make(chan packetInventory, 1)
 	messages := make(chan _Message, 8)
 
-	var updates <-chan TileChange
 	var updateQueue packetTileChange
 	updateTimer := time.NewTicker(5 * time.Millisecond)
 	defer updateTimer.Stop()
 
 	for {
+		var updates <-chan TileChange
+		if player != nil {
+			player.Lock()
+			updates = player.updates
+			player.Unlock()
+		}
+
 		select {
 		case p, ok := <-packets:
 			if !ok {
@@ -346,9 +352,9 @@ func websocketHandler(conn *websocket.Conn) {
 
 				player.Lock()
 				zone, zoneUpdates := GrabZone(player.ZoneX, player.ZoneY, player)
-				updates = zoneUpdates
+				player.updates = zoneUpdates
 				player.zone = zone
-				if player.Hero != nil {
+				if player.Hero != nil && player.Hero.Health() != 0 {
 					tx, ty := player.TileX, player.TileY
 					tile := zone.Tile(player.TileX, player.TileY)
 					if tile == nil {
@@ -404,7 +410,7 @@ func websocketHandler(conn *websocket.Conn) {
 				updateQueue.ResetZone = true
 				updateQueue.TileChange = zone.AllTileChange()
 
-				if player.Hero == nil {
+				if player.Hero == nil || player.Hero.Health() == 0 {
 					player.CharacterCreationCommand("")
 					continue
 				}
@@ -564,7 +570,11 @@ func websocketHandler(conn *websocket.Conn) {
 
 		case update, ok := <-updates:
 			if !ok {
-				updates = nil
+				player.Lock()
+				if player.updates == updates {
+					player.updates = nil
+				}
+				player.Unlock()
 				updateQueue.ResetZone = true
 				updateQueue.TileChange = updateQueue.TileChange[:0]
 				continue

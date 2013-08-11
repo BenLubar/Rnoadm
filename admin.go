@@ -122,7 +122,7 @@ func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 	switch cmd[0] {
 	case "human":
 		h := GenerateHero(Human, rand.New(&p.Seed))
-		p.GiveItem(h)
+		p.ForceGiveItem(h)
 		p.SendMessage("spawned " + h.Name())
 	default:
 		var (

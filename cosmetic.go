@@ -9,7 +9,11 @@ type cosmeticInfo struct {
 	Sprite string
 	Colors []Color
 
-	HealthBonus uint64
+	HealthBonus   uint64
+	ArmorBonus    uint64
+	DamageBonus   uint64
+	AccuracyBonus uint64
+	AttackSpeed   uint8
 
 	Volume      uint64
 	Density     uint64 // centigrams per cubic centimeter (cg/cc)
@@ -31,6 +35,7 @@ const (
 	Gauntlets
 	Tassets
 	Greaves
+	Weapon
 
 	cosmeticTypeCount
 )
@@ -46,6 +51,7 @@ var CosmeticSlotName [cosmeticTypeCount]string = [...]string{
 	"hands",
 	"waist",
 	"ankles",
+	"right hand",
 }
 
 var CosmeticSlotOrder [cosmeticTypeCount]CosmeticType = [...]CosmeticType{
@@ -59,6 +65,7 @@ var CosmeticSlotOrder [cosmeticTypeCount]CosmeticType = [...]CosmeticType{
 	Shoes,
 	Gauntlets,
 	Headwear,
+	Weapon,
 }
 
 const metalColor = "metal"
@@ -133,6 +140,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 500,
+			ArmorBonus:  500,
 
 			MetalVolume: 20,
 		},
@@ -184,6 +192,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 100,
+			ArmorBonus:  100,
 
 			MetalVolume: 20,
 		},
@@ -198,6 +207,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 1000,
+			ArmorBonus:  1000,
 
 			MetalVolume: 20,
 		},
@@ -212,6 +222,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 100,
+			ArmorBonus:  100,
 
 			MetalVolume: 20,
 		},
@@ -226,6 +237,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 200,
+			ArmorBonus:  200,
 
 			MetalVolume: 20,
 		},
@@ -240,6 +252,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 100,
+			ArmorBonus:  100,
 
 			MetalVolume: 20,
 		},
@@ -254,6 +267,7 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 500,
+			ArmorBonus:  500,
 
 			MetalVolume: 20,
 		},
@@ -268,6 +282,23 @@ var cosmetics = [cosmeticTypeCount][]cosmeticInfo{
 			Colors: []Color{metalColor},
 
 			HealthBonus: 200,
+			ArmorBonus:  200,
+
+			MetalVolume: 20,
+		},
+	},
+	Weapon: {
+		{
+			Article: "a ",
+			Name:    "sword",
+			Examine: "the sword that once belonged to the person who made it.",
+
+			Sprite: "weapon_sword",
+			Colors: []Color{metalColor, "#ec6"},
+
+			DamageBonus:   1000,
+			AccuracyBonus: 1000,
+			AttackSpeed:   4,
 
 			MetalVolume: 20,
 		},
@@ -365,4 +396,29 @@ func (c *Cosmetic) HealthBonus() uint64 {
 	bonus := base
 	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
 	return bonus
+}
+
+func (c *Cosmetic) ArmorBonus() uint64 {
+	base := cosmetics[c.Type][c.ID].ArmorBonus
+	bonus := base
+	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
+	return bonus
+}
+
+func (c *Cosmetic) DamageBonus() uint64 {
+	base := cosmetics[c.Type][c.ID].DamageBonus
+	bonus := base
+	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
+	return bonus
+}
+
+func (c *Cosmetic) AccuracyBonus() uint64 {
+	base := cosmetics[c.Type][c.ID].AccuracyBonus
+	bonus := base
+	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
+	return bonus
+}
+
+func (c *Cosmetic) AttackSpeed() uint8 {
+	return cosmetics[c.Type][c.ID].AttackSpeed
 }

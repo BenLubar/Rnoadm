@@ -50,16 +50,24 @@ const (
 )
 
 var raceInfo = [raceCount]struct {
-	Name       string
-	Genders    []Gender
-	SkinTones  []Color
-	BaseHealth uint64
+	Name         string
+	Genders      []Gender
+	Occupations  []Occupation
+	SkinTones    []Color
+	BaseHealth   uint64
+	BaseArmor    uint64
+	BaseDamage   uint64
+	BaseAccuracy uint64
 }{
 	Human: {
-		Name:       "human",
-		Genders:    []Gender{Male, Female},
-		SkinTones:  []Color{"#ffe3cc", "#ffdbbd", "#ffcda3", "#f7e9dc", "#edd0b7", "#e8d1be", "#e5c298", "#e3c3a8", "#c9a281", "#c2a38a", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948", "#635041", "#4f3f33"},
-		BaseHealth: 10000,
+		Name:         "human",
+		Genders:      []Gender{Male, Female},
+		Occupations:  []Occupation{Civilian},
+		SkinTones:    []Color{"#ffe3cc", "#ffdbbd", "#ffcda3", "#f7e9dc", "#edd0b7", "#e8d1be", "#e5c298", "#e3c3a8", "#c9a281", "#c2a38a", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948", "#635041", "#4f3f33"},
+		BaseHealth:   10000,
+		BaseArmor:    100,
+		BaseDamage:   100,
+		BaseAccuracy: 100,
 	},
 }
 
@@ -112,6 +120,11 @@ func newUserID() uint64 {
 	return userID
 }
 
+type AncestryInfo struct {
+	Hero  *Hero
+	Death time.Time
+}
+
 type Player struct {
 	networkID
 	ID uint64
@@ -130,8 +143,11 @@ type Player struct {
 	kick      chan<- string
 	hud       chan packetSetHUD
 	inventory chan<- packetInventory
+	updates   <-chan TileChange
 
 	CharacterCreation *Hero
+
+	Ancestry []AncestryInfo
 
 	lock sync.Mutex
 
@@ -194,6 +210,58 @@ func (p *Player) CharacterCreationCommand(command string) {
 
 	if p.Hero != nil && p.Hero.Health() > 0 {
 		return
+	}
+
+	if p.Hero != nil {
+		zone := p.zone
+		tx, ty := p.TileX, p.TileY
+		p.Unlock()
+		zone.Lock()
+		if zone.Tile(tx, ty).Remove(p) {
+			SendZoneTileChange(zone.X, zone.Y, TileChange{
+				ID:      p.NetworkID(),
+				Removed: true,
+			})
+		}
+		zone.Unlock()
+
+		if p.Admin {
+			zone.Lock()
+			zone.Tile(tx, ty).Add(p)
+			zone.Unlock()
+			p.Lock()
+			p.Damage = 0
+			p.SetHUD("", nil)
+			return
+		}
+
+		p.Lock()
+		if command == "open" {
+			p.ZoneX, p.ZoneY = 0, 0
+			p.TileX, p.TileY = 127, 127
+			ReleaseZone(p.zone, p)
+			p.zone, p.updates = GrabZone(0, 0, p)
+			p.Ancestry = append(p.Ancestry, AncestryInfo{
+				Hero:  p.Hero,
+				Death: time.Now().UTC(),
+			})
+			p.Hero = nil
+			p.Unlock()
+			p.Save()
+			p.Lock()
+		} else {
+			const timeFormat = "2 January 2006"
+			cause := "cause of death unknown"
+			if p.Hero.DeathCause != "" {
+				cause = p.Hero.DeathCause
+			}
+			p.SetHUD("death", map[string]interface{}{
+				"N": p.Name(),
+				"D": p.Hero.Birth.Format(timeFormat) + " - " + time.Now().UTC().Format(timeFormat),
+				"C": cause,
+			})
+			return
+		}
 	}
 
 	r := rand.New(&p.Seed)
@@ -377,6 +445,27 @@ func (p *Player) Serialize() *NetworkedObject {
 	return p.Hero.Serialize()
 }
 
+func (p *Player) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // assault
+		if player == p {
+			player.SendMessage("stop hitting yourself!")
+			player.Lock()
+			player.schedule = nil
+			player.Unlock()
+		} else {
+			player.Lock()
+			player.schedule = &CombatSchedule{
+				OpponentH: p.Hero,
+				OpponentP: p,
+				X:         x,
+				Y:         y,
+			}
+			player.Unlock()
+		}
+	}
+}
+
 func (p *Player) ZIndex() int {
 	if p.Admin {
 		return 1 << 30
@@ -417,16 +506,22 @@ type Hero struct {
 	Delay uint
 
 	Backpack []Object
-	Worn     [cosmeticTypeCount]Cosmetic
+	Worn     []Cosmetic
 	Toolbelt struct {
 		*Hatchet
 		*Pickaxe
 	}
 
+	DeathCause string
+
 	Damage uint64
+
+	Birth time.Time
 
 	schedule      Schedule
 	scheduleDelay uint
+
+	combat uint8
 
 	backpackDirty chan struct{}
 }
@@ -443,9 +538,16 @@ func (h *Hero) Examine() string {
 	text := append(append(append([]byte(h.Name()), " is a "...), raceInfo[h.Race].Name...), " hero."...)
 	for i := range h.Worn {
 		if h.Worn[i].Exists() {
-			text = append(append(append(text, '\n'), genderInfo[h.Gender].PronounSubject...), " is wearing "...)
-			text = append(append(append(text, h.Worn[i].Article()...), h.Worn[i].Name()...), " on "...)
-			text = append(append(append(append(text, genderInfo[h.Gender].PronounPosessive...), ' '), CosmeticSlotName[h.Worn[i].Type]...), '.')
+			switch CosmeticType(i) {
+			case Weapon:
+				text = append(append(append(text, '\n'), genderInfo[h.Gender].PronounSubject...), " is holding "...)
+				text = append(append(append(text, h.Worn[i].Article()...), h.Worn[i].Name()...), " in "...)
+				text = append(append(append(append(text, genderInfo[h.Gender].PronounPosessive...), ' '), CosmeticSlotName[h.Worn[i].Type]...), '.')
+			default:
+				text = append(append(append(text, '\n'), genderInfo[h.Gender].PronounSubject...), " is wearing "...)
+				text = append(append(append(text, h.Worn[i].Article()...), h.Worn[i].Name()...), " on "...)
+				text = append(append(append(append(text, genderInfo[h.Gender].PronounPosessive...), ' '), CosmeticSlotName[h.Worn[i].Type]...), '.')
+			}
 		}
 	}
 	return string(text)
@@ -508,6 +610,36 @@ func (h *Hero) MaxHealth() uint64 {
 	return health
 }
 
+func (h *Hero) Armor() uint64 {
+	armor := raceInfo[h.Race].BaseArmor
+	for i := range h.Worn {
+		if h.Worn[i].Exists() {
+			armor += h.Worn[i].ArmorBonus()
+		}
+	}
+	return armor
+}
+
+func (h *Hero) MaxDamage() uint64 {
+	damage := raceInfo[h.Race].BaseDamage
+	for i := range h.Worn {
+		if h.Worn[i].Exists() {
+			damage += h.Worn[i].DamageBonus()
+		}
+	}
+	return damage
+}
+
+func (h *Hero) Accuracy() uint64 {
+	accuracy := raceInfo[h.Race].BaseAccuracy
+	for i := range h.Worn {
+		if h.Worn[i].Exists() {
+			accuracy += h.Worn[i].AccuracyBonus()
+		}
+	}
+	return accuracy
+}
+
 func (h *Hero) Blocking() bool {
 	return false
 }
@@ -526,14 +658,54 @@ func (h *Hero) Serialize() *NetworkedObject {
 			attached = append(attached, h.Worn[slot].Serialize())
 		}
 	}
+	var health *float64
+	if h.combat > 0 {
+		health_ := float64(h.Health()) / float64(h.MaxHealth())
+		health = &health_
+	}
 	return &NetworkedObject{
 		Name:     h.Name(),
 		Sprite:   "body_" + raceInfo[h.Race].Name,
 		Colors:   colors,
 		Attached: attached,
 		Moves:    true,
-		//Health:   float64(h.Health()) / float64(h.MaxHealth()),
+		Health:   health,
+		Options:  []string{"assault"},
 	}
+}
+
+func (h *Hero) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
+	switch opt {
+	case 0: // assault
+		player.Lock()
+		player.schedule = &CombatSchedule{
+			OpponentH: h,
+			X:         x,
+			Y:         y,
+		}
+		tx, ty := player.TileX, player.TileY
+		player.Unlock()
+
+		h.Lock()
+		h.schedule = &CombatSchedule{
+			OpponentH: player.Hero,
+			OpponentP: player,
+			X:         tx,
+			Y:         ty,
+		}
+		h.Unlock()
+	}
+}
+
+func (h *Hero) TakeDamage(damage uint64, deathcause string) {
+	max := h.MaxHealth()
+	if h.Damage >= max {
+		return
+	}
+	if damage >= max || h.Damage >= max-damage {
+		h.DeathCause = deathcause
+	}
+	h.Damage += damage
 }
 
 func (h *Hero) Think(z *Zone, x, y uint8) {
@@ -542,6 +714,20 @@ func (h *Hero) Think(z *Zone, x, y uint8) {
 
 func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	h.Lock()
+
+	if h.Health() == 0 {
+		h.Unlock()
+		if p != nil {
+			p.CharacterCreationCommand("")
+		}
+		return
+	}
+
+	if len(h.Worn) != int(cosmeticTypeCount) {
+		worn := make([]Cosmetic, cosmeticTypeCount)
+		copy(worn, h.Worn)
+		h.Worn = worn
+	}
 
 	if p == nil || !p.Admin {
 		for i := 0; i < len(h.Backpack); i++ {
@@ -604,6 +790,24 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	default:
 	}
 
+	if h.combat != 0 {
+		h.combat--
+		if h.combat == 0 {
+			var obj Object = h
+			if p != nil {
+				obj = p
+			}
+			h.Unlock()
+			SendZoneTileChange(z.X, z.Y, TileChange{
+				ID:  obj.NetworkID(),
+				X:   x,
+				Y:   y,
+				Obj: obj.Serialize(),
+			})
+			h.Lock()
+		}
+	}
+
 	if h.Delay > 0 {
 		if h.scheduleDelay > 0 {
 			h.scheduleDelay--
@@ -634,6 +838,14 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 		return
 	}
 
+	if h.Damage != 0 {
+		if p != nil {
+			h.Damage--
+		} else {
+			h.Damage /= 2
+		}
+	}
+
 	h.Unlock()
 
 	if p != nil {
@@ -661,16 +873,20 @@ func (h *Hero) ZIndex() int {
 
 func (h *Hero) GiveItem(o Object) bool {
 	if i, ok := o.(Item); ok {
-		if h.MaxVolume() >= h.Volume() || h.MaxVolume()-h.Volume() < i.Volume() {
+		if h.MaxVolume() < h.Volume() || h.MaxVolume()-h.Volume() < i.Volume() {
 			return false
 		}
 	}
+	h.ForceGiveItem(o)
+	return true
+}
+
+func (h *Hero) ForceGiveItem(o Object) {
 	h.Backpack = append(h.Backpack, o)
 	select {
 	case h.backpackDirty <- struct{}{}:
 	default:
 	}
-	return true
 }
 
 func (h *Hero) RemoveItem(slot int, o Object) bool {
@@ -847,10 +1063,106 @@ func (s *TakeSchedule) NextMove(x, y uint8) (uint8, uint8) {
 	return x, y
 }
 
+type CombatSchedule struct {
+	OpponentH *Hero
+	OpponentP *Player
+	X, Y      uint8
+}
+
+func (s *CombatSchedule) Act(z *Zone, x, y uint8, h *Hero, p *Player) bool {
+	if dx := int(x) - int(s.X); dx < -1 || dx > 1 {
+		return false
+	}
+	if dy := int(y) - int(s.Y); dy < -1 || dy > 1 {
+		return false
+	}
+
+	z.Lock()
+	found := false
+	for _, o := range z.Tile(s.X, s.Y).Objects {
+		if o == s.OpponentH || o == s.OpponentP {
+			found = true
+			break
+		}
+	}
+	z.Unlock()
+	if !found {
+		return false
+	}
+
+	h.Lock()
+	wasCombat := h.combat > 0
+	h.combat = 50
+	if h.Worn[Weapon].Exists() {
+		h.Delay = uint(h.Worn[Weapon].AttackSpeed() - 1)
+	} else {
+		h.Delay = 14
+	}
+	h.scheduleDelay = h.Delay + 1
+
+	var damage uint64
+	if true { // TODO: accuracy/armor
+		damage = uint64(rand.Int63n(int64(h.MaxDamage())))
+	}
+	h.Unlock()
+	if !wasCombat {
+		if p == nil {
+			SendZoneTileChange(z.X, z.Y, TileChange{
+				ID:  h.NetworkID(),
+				X:   x,
+				Y:   y,
+				Obj: h.Serialize(),
+			})
+		} else {
+			SendZoneTileChange(z.X, z.Y, TileChange{
+				ID:  p.NetworkID(),
+				X:   x,
+				Y:   y,
+				Obj: p.Serialize(),
+			})
+		}
+	}
+
+	s.OpponentH.Lock()
+	shouldUpdate := s.OpponentH.combat == 0
+	s.OpponentH.combat = 50
+	if damage > 0 {
+		shouldUpdate = true
+		s.OpponentH.TakeDamage(damage, "slain by "+h.Name())
+	}
+	s.OpponentH.Unlock()
+	if shouldUpdate {
+		if s.OpponentP == nil {
+			SendZoneTileChange(z.X, z.Y, TileChange{
+				ID:  s.OpponentH.NetworkID(),
+				X:   s.X,
+				Y:   s.Y,
+				Obj: s.OpponentH.Serialize(),
+			})
+		} else {
+			SendZoneTileChange(z.X, z.Y, TileChange{
+				ID:  s.OpponentP.NetworkID(),
+				X:   s.X,
+				Y:   s.Y,
+				Obj: s.OpponentP.Serialize(),
+			})
+		}
+	}
+
+	return true
+}
+
+func (s *CombatSchedule) NextMove(x, y uint8) (uint8, uint8) {
+	return x, y
+}
+
 func GenerateHero(race Race, r *rand.Rand) *Hero {
 	h := &Hero{
-		Race:   race,
-		Gender: raceInfo[race].Genders[r.Intn(len(raceInfo[race].Genders))],
+		Race:       race,
+		Gender:     raceInfo[race].Genders[r.Intn(len(raceInfo[race].Genders))],
+		Occupation: raceInfo[race].Occupations[r.Intn(len(raceInfo[race].Occupations))],
+		Worn:       make([]Cosmetic, cosmeticTypeCount),
+		Birth:      time.Now().UTC(),
 	}
 	switch race {
 	case Human:
