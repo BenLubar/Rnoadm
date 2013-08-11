@@ -229,6 +229,12 @@ func (p *Player) CharacterCreationCommand(command string) {
 			zone.Lock()
 			zone.Tile(tx, ty).Add(p)
 			zone.Unlock()
+			SendZoneTileChange(zone.X, zone.Y, TileChange{
+				ID:  p.NetworkID(),
+				X:   tx,
+				Y:   ty,
+				Obj: p.Serialize(),
+			})
 			p.Lock()
 			p.Damage = 0
 			p.SetHUD("", nil)

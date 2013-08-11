@@ -1037,6 +1037,10 @@ huds['death'] = function(data) {
 				X:      x
 			});
 		}
+		draw(-2, -6.5, {
+			Text:  'oh dear, your spirit is released!',
+			Color: '#f00'
+		});
 		draw(-1, -5, {
 			Text:  'here lies',
 			Color: color_444
@@ -1046,7 +1050,7 @@ huds['death'] = function(data) {
 			Color: color_444,
 			Title: true
 		});
-		draw(-3, -3.5, {
+		draw(-2.5, -3.5, {
 			Text:  data['D'],
 			Color: color_444
 		});
@@ -1054,12 +1058,21 @@ huds['death'] = function(data) {
 			Text:  data['C'],
 			Color: color_444
 		});
-		draw(-1.5, -2, {
+		draw(-2.5, -1.5, {
 			Text:  'Requiescat in Pace',
-			Color: color_444
+			Color: color_444,
+			Title: true
+		});
+		draw(-3, h/2 - 1, {
+			Text:  'The Legend Lives On',
+			Color: mouseX >= -4 && mouseX < 4 && mouseY >= h/2 - 2 ? color_fff : color_aaa,
+			Title: true
 		});
 	};
 	f.click = function(x, y) {
+		if (x >= -4 && x < 4 && y >= h/2 - 2) {
+			send({'CharacterCreation': {'Command': 'open'}});
+		}
 		return false;
 	};
 	f.keyPress = f.keyDown = function(code) {
