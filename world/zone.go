@@ -30,21 +30,21 @@ func (z *Zone) tile(x, y uint8) *Tile {
 }
 
 func (z *Zone) notifyAdd(t *Tile, obj ObjectLike) {
-	old := obj.NotifyPosition(t)
+	old := obj.notifyPosition(t)
 	if old != nil {
 		old.remove(obj)
 	}
 }
 
 func (z *Zone) notifyRemove(t *Tile, obj ObjectLike) {
-	old := obj.NotifyPosition(nil)
+	old := obj.notifyPosition(nil)
 	if old != t && old != nil {
 		old.remove(obj)
 	}
 }
 
 func (z *Zone) notifyMove(from *Tile, to *Tile, obj ObjectLike) {
-	old := obj.NotifyPosition(to)
+	old := obj.notifyPosition(to)
 	if old != from && old != nil {
 		old.remove(obj)
 	}

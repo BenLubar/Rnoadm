@@ -10,9 +10,9 @@ func TestSaveLoad(t *testing.T) {
 	var z1 Zone
 	z1.X = 1
 	z1.Y = -1
-	z1.Tile(42, 1).Add(&Object{})
-	z1.Tile(42, 1).Add(&VisibleObject{})
-	z1.Tile(100, 200).Add(&Object{})
+	z1.Tile(42, 1).Add(InitObject(&Object{}))
+	z1.Tile(42, 1).Add(InitObject(&VisibleObject{}))
+	z1.Tile(100, 200).Add(InitObject(&Object{}))
 
 	var buf bytes.Buffer
 	writeZone(&z1, &buf)

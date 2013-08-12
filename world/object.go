@@ -7,13 +7,12 @@ import (
 )
 
 type ObjectLike interface {
-	// NotifyPosition is called when an object is added to, removed from,
-	// or moved between tiles. The argument is the new tile, or nil for
-	// removal. This function must return the previous value given to it.
-	NotifyPosition(*Tile) *Tile
+	notifyOuter(ObjectLike)
+	notifyPosition(*Tile) *Tile
 
-	// This function is not called, but is provided in the default
-	// implementation for convenience.
+	Outer() ObjectLike
+
+	// Position returns the tile this object is located in.
 	Position() *Tile
 
 	// Think is called every tick (200ms) for objects that are in a zone.
@@ -26,21 +25,33 @@ type ObjectLike interface {
 	Save() (uint, interface{}, []ObjectLike)
 
 	// Load is given a version number, data, and attached objects from a
-	// previous call to Save. Panicking on errors is suggested. From a zero
-	// value of a type, after a call to Load, the NotifyPosition method's
-	// next call should return nil.
+	// previous call to Save. Panicking on errors is suggested.
 	Load(uint, interface{}, []ObjectLike)
 }
 
 type Object struct {
-	tile unsafe.Pointer // *Tile
+	outer ObjectLike
+	tile  unsafe.Pointer // *Tile
 }
 
 func init() {
 	Register("object", (*Object)(nil))
 }
 
-func (o *Object) NotifyPosition(t *Tile) *Tile {
+func InitObject(obj ObjectLike) ObjectLike {
+	obj.notifyOuter(obj)
+	return obj
+}
+
+func (o *Object) notifyOuter(outer ObjectLike) {
+	o.outer = outer
+}
+
+func (o *Object) Outer() ObjectLike {
+	return o.outer
+}
+
+func (o *Object) notifyPosition(t *Tile) *Tile {
 	for {
 		old := atomic.LoadPointer(&o.tile)
 		if atomic.CompareAndSwapPointer(&o.tile, old, unsafe.Pointer(t)) {

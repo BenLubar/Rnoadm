@@ -129,7 +129,7 @@ func (t *Tile) load(version uint, data interface{}) {
 			for i, a := range o["a"].([]interface{}) {
 				attached[i] = convert(a)
 			}
-			obj := getObjectByIdentifier(o["t"].(string))
+			obj := InitObject(getObjectByIdentifier(o["t"].(string)))
 			obj.Load(o["v"].(uint), o["d"], attached)
 			return obj
 		}
@@ -141,6 +141,6 @@ func (t *Tile) load(version uint, data interface{}) {
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
 	for _, obj := range t.objects {
-		obj.NotifyPosition(t)
+		obj.notifyPosition(t)
 	}
 }
