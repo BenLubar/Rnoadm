@@ -5,10 +5,6 @@ import (
 )
 
 type ObjectLike interface {
-	// Name is the user-visible name of this object. Capitalization is only
-	// used for living objects. Non-living object names are fully lowercase.
-	Name() string
-
 	// NotifyPosition is called when an object is added to, removed from,
 	// or moved between tiles. The argument is the new tile, or nil for
 	// removal. This function must return the previous value given to it.
@@ -35,10 +31,6 @@ type Object struct {
 
 func init() {
 	Register("object", (*Object)(nil))
-}
-
-func (o *Object) Name() string {
-	return "unknown"
 }
 
 func (o *Object) NotifyPosition(t *Tile) *Tile {
