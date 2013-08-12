@@ -447,11 +447,11 @@ func websocketHandler(conn *websocket.Conn) {
 				player.Unlock()
 
 				zone.Lock()
-				schedule := MoveSchedule(FindPath(zone, tx, ty, p.Walk.X, p.Walk.Y, true))
+				schedule := FindPath(zone, tx, ty, p.Walk.X, p.Walk.Y, false)
 				zone.Unlock()
 
 				player.Lock()
-				player.schedule = &schedule
+				player.schedule = schedule
 				player.Unlock()
 			}
 
@@ -554,9 +554,14 @@ func websocketHandler(conn *websocket.Conn) {
 							continue
 						}
 						player.Lock()
-						move := MoveSchedule(FindPath(zone, player.TileX, player.TileY, p.Interact.X, p.Interact.Y, true))
+						tx, ty := player.TileX, player.TileY
+						player.Unlock()
+						zone.Lock()
+						move := FindPath(zone, tx, ty, p.Interact.X, p.Interact.Y, false)
+						zone.Unlock()
+						player.Lock()
 						player.schedule = &ScheduleSchedule{
-							&move,
+							move,
 							&TakeSchedule{
 								Item: object,
 							},
@@ -625,6 +630,9 @@ func websocketHandler(conn *websocket.Conn) {
 				if player != nil && player.Admin {
 					for i := range updateQueue.TileChange {
 						if obj := updateQueue.TileChange[i].Obj; obj != nil {
+							tmp := *obj
+							obj = &tmp
+							updateQueue.TileChange[i].Obj = obj
 							obj.Options = append([]string{"ADMIN TAKE"}, obj.Options...)
 						}
 					}

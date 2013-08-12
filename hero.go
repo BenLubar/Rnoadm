@@ -65,7 +65,7 @@ var raceInfo = [raceCount]struct {
 	Human: {
 		Name:         "human",
 		Genders:      []Gender{Male, Female},
-		Occupations:  []Occupation{Citizen},
+		Occupations:  []Occupation{Citizen, Knight},
 		SkinTones:    []Color{"#ffe3cc", "#ffdbbd", "#ffcda3", "#f7e9dc", "#edd0b7", "#e8d1be", "#e5c298", "#e3c3a8", "#c9a281", "#c2a38a", "#ba9c82", "#ad8f76", "#a17a5a", "#876d58", "#6e5948", "#635041", "#4f3f33"},
 		BaseHealth:   10000,
 		BaseArmor:    100,
@@ -79,30 +79,24 @@ type Occupation uint16
 const (
 	Adventurer Occupation = iota
 	Citizen
+	Knight
 
 	occupationCount
 )
 
 var occupationInfo = [occupationCount]struct {
 	Name            string
-	StartingGear    map[CosmeticType]*Cosmetic
+	StartingGear    []map[CosmeticType]*Cosmetic
 	StartingPickaxe *Pickaxe
 	StartingHatchet *Hatchet
 }{
 	Adventurer: {
 		Name: "adventurer",
-		StartingGear: map[CosmeticType]*Cosmetic{
-			Shirt: &Cosmetic{
-				Type: Shirt,
-				ID:   0,
-			},
-			Pants: &Cosmetic{
-				Type: Pants,
-				ID:   0,
-			},
-			Shoes: &Cosmetic{
-				Type: Shoes,
-				ID:   0,
+		StartingGear: []map[CosmeticType]*Cosmetic{
+			{
+				Shirt: {Type: Shirt, ID: 0},
+				Pants: {Type: Pants, ID: 0},
+				Shoes: {Type: Shoes, ID: 0},
 			},
 		},
 		StartingPickaxe: &Pickaxe{
@@ -116,18 +110,224 @@ var occupationInfo = [occupationCount]struct {
 	},
 	Citizen: {
 		Name: "citizen",
-		StartingGear: map[CosmeticType]*Cosmetic{
-			Shirt: &Cosmetic{
-				Type: Shirt,
-				ID:   0,
+		StartingGear: []map[CosmeticType]*Cosmetic{
+			{
+				Shirt: {Type: Shirt, ID: 0},
+				Pants: {Type: Pants, ID: 0},
+				Shoes: {Type: Shoes, ID: 0},
 			},
-			Pants: &Cosmetic{
-				Type: Pants,
-				ID:   0,
+		},
+	},
+	Knight: {
+		Name: "knight",
+		StartingGear: []map[CosmeticType]*Cosmetic{
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal0},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal0},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal0},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal0},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal0},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal0},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal0},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal0},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal0},
 			},
-			Shoes: &Cosmetic{
-				Type: Shoes,
-				ID:   0,
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal1},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal1},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal1},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal1},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal1},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal1},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal1},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal1},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal1},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal2},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal2},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal2},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal2},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal2},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal2},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal2},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal2},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal2},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal3},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal3},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal3},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal3},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal3},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal3},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal3},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal3},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal3},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal4},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal4},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal4},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal4},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal4},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal4},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal4},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal4},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal4},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal5},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal5},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal5},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal5},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal5},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal5},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal5},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal5},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal5},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal6},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal6},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal6},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal6},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal6},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal6},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal6},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal6},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal6},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal7},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal7},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal7},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal7},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal7},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal7},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal7},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal7},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal7},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal8},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal8},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal8},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal8},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal8},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal8},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal8},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal8},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal8},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal9},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal9},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal9},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal9},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal9},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal9},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal9},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal9},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal9},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal10},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal10},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal10},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal10},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal10},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal10},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal10},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal10},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal10},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal11},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal11},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal11},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal11},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal11},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal11},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal11},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal11},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal11},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal12},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal12},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal12},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal12},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal12},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal12},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal12},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal12},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal12},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal13},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal13},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal13},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal13},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal13},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal13},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal13},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal13},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal13},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal14},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal14},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal14},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal14},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal14},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal14},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal14},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal14},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal14},
+			},
+			{
+				Shirt:       {Type: Shirt, ID: 0},
+				Pants:       {Type: Pants, ID: 0},
+				Headwear:    {Type: Headwear, ID: 5, Metal: Metal15},
+				Pauldrons:   {Type: Pauldrons, ID: 0, Metal: Metal15},
+				Breastplate: {Type: Breastplate, ID: 0, Metal: Metal15},
+				Vambraces:   {Type: Vambraces, ID: 0, Metal: Metal15},
+				Gauntlets:   {Type: Gauntlets, ID: 0, Metal: Metal15},
+				Tassets:     {Type: Tassets, ID: 0, Metal: Metal15},
+				Greaves:     {Type: Greaves, ID: 0, Metal: Metal15},
+				Shoes:       {Type: Shoes, ID: 1, Metal: Metal15},
+				Weapon:      {Type: Weapon, ID: 0, Metal: Metal15},
 			},
 		},
 	},
@@ -598,18 +798,42 @@ func (h *Hero) Unlock() {
 }
 
 func (h *Hero) Examine() string {
-	text := append(append(append([]byte(h.Name()), " is a "...), raceInfo[h.Race].Name...), " hero."...)
+	text := append(append(append(append(append(
+		[]byte(h.Name()),
+		" is a "...),
+		raceInfo[h.Race].Name...),
+		' '),
+		occupationInfo[h.Occupation].Name...),
+		'.')
 	for i := range h.Worn {
 		if h.Worn[i].Exists() {
 			switch CosmeticType(i) {
 			case Weapon:
-				text = append(append(append(text, '\n'), genderInfo[h.Gender].PronounSubject...), " is holding "...)
-				text = append(append(append(text, h.Worn[i].Article()...), h.Worn[i].Name()...), " in "...)
-				text = append(append(append(append(text, genderInfo[h.Gender].PronounPosessive...), ' '), CosmeticSlotName[h.Worn[i].Type]...), '.')
+				text = append(append(append(append(append(append(append(append(append(append(
+					text,
+					'\n'),
+					genderInfo[h.Gender].PronounSubject...),
+					" is holding "...),
+					h.Worn[i].Article()...),
+					h.Worn[i].Name()...),
+					" in "...),
+					genderInfo[h.Gender].PronounPosessive...),
+					' '),
+					CosmeticSlotName[h.Worn[i].Type]...),
+					'.')
 			default:
-				text = append(append(append(text, '\n'), genderInfo[h.Gender].PronounSubject...), " is wearing "...)
-				text = append(append(append(text, h.Worn[i].Article()...), h.Worn[i].Name()...), " on "...)
-				text = append(append(append(append(text, genderInfo[h.Gender].PronounPosessive...), ' '), CosmeticSlotName[h.Worn[i].Type]...), '.')
+				text = append(append(append(append(append(append(append(append(append(append(
+					text,
+					'\n'),
+					genderInfo[h.Gender].PronounSubject...),
+					" is wearing "...),
+					h.Worn[i].Article()...),
+					h.Worn[i].Name()...),
+					" on "...),
+					genderInfo[h.Gender].PronounPosessive...),
+					' '),
+					CosmeticSlotName[h.Worn[i].Type]...),
+					'.')
 			}
 		}
 	}
@@ -918,12 +1142,15 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	goalX, goalY := x+uint8(rand.Intn(16)-rand.Intn(16)), y+uint8(rand.Intn(16)-rand.Intn(16))
 	z.Lock()
 	blocked := z.Blocked(goalX, goalY)
-	z.Unlock()
 
-	h.Lock()
 	if !blocked {
-		schedule := MoveSchedule(FindPath(z, x, y, goalX, goalY, true))
-		h.schedule = &schedule
+		schedule := FindPath(z, x, y, goalX, goalY, false)
+		z.Unlock()
+		h.Lock()
+		h.schedule = schedule
+	} else {
+		z.Unlock()
+		h.Lock()
 	}
 	h.Delay = uint(rand.Intn(5) + 1)
 	h.scheduleDelay = uint(rand.Intn(100) + 1)
@@ -1236,7 +1463,7 @@ func GenerateHeroOccupation(race Race, occupation Occupation, r *rand.Rand) *Her
 		h.HeroName = GenerateHumanName(r, h.Gender)
 	}
 
-	for slot, item := range occupationInfo[occupation].StartingGear {
+	for slot, item := range occupationInfo[occupation].StartingGear[r.Intn(len(occupationInfo[occupation].StartingGear))] {
 		h.Worn[slot] = *item
 	}
 	if occupationInfo[occupation].StartingPickaxe != nil {

@@ -418,8 +418,8 @@ func (r *Rock) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 		player.Lock()
 		var schedule Schedule = &MineQuarrySchedule{X: x, Y: y, R: r, Mine: true}
 		if tx, ty := player.TileX, player.TileY; (tx-x)*(tx-x)+(ty-y)*(ty-y) > 1 {
-			moveSchedule := MoveSchedule(FindPath(zone, tx, ty, x, y, false))
-			schedule = &ScheduleSchedule{&moveSchedule, schedule}
+			moveSchedule := FindPath(zone, tx, ty, x, y, false)
+			schedule = &ScheduleSchedule{moveSchedule, schedule}
 		}
 		player.schedule = schedule
 		player.Unlock()
@@ -427,8 +427,8 @@ func (r *Rock) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 		player.Lock()
 		var schedule Schedule = &MineQuarrySchedule{X: x, Y: y, R: r, Mine: false}
 		if tx, ty := player.TileX, player.TileY; (tx-x)*(tx-x)+(ty-y)*(ty-y) > 1 {
-			moveSchedule := MoveSchedule(FindPath(zone, tx, ty, x, y, false))
-			schedule = &ScheduleSchedule{&moveSchedule, schedule}
+			moveSchedule := FindPath(zone, tx, ty, x, y, false)
+			schedule = &ScheduleSchedule{moveSchedule, schedule}
 		}
 		player.schedule = schedule
 		player.Unlock()

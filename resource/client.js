@@ -261,6 +261,12 @@ function repaint() {
 			}
 		}
 
+		draw(-w/2, h/2 - 16, {
+			Sprite: 'ui_fade',
+			Color:  '#000',
+			Scale:  16
+		});
+
 		(gameState.inventory || []).forEach(function(item, i) {
 			drawObject(draw, w / 2 - inventoryCols + i % inventoryCols, h / 2 - Math.ceil(gameState.inventory.length / inventoryCols) + Math.floor(i / inventoryCols), undefined, item.object);
 		});

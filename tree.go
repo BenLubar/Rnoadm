@@ -248,8 +248,8 @@ func (t *Tree) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 		player.Lock()
 		var schedule Schedule = &ChopTreeSchedule{X: x, Y: y, T: t}
 		if tx, ty := player.TileX, player.TileY; (tx-x)*(tx-x)+(ty-y)*(ty-y) > 1 {
-			moveSchedule := MoveSchedule(FindPath(zone, tx, ty, x, y, false))
-			schedule = &ScheduleSchedule{&moveSchedule, schedule}
+			moveSchedule := FindPath(zone, tx, ty, x, y, false)
+			schedule = &ScheduleSchedule{moveSchedule, schedule}
 		}
 		player.schedule = schedule
 		player.Unlock()

@@ -4,7 +4,7 @@ import (
 	"github.com/sperre/astar"
 )
 
-func FindPath(z *Zone, startX, startY, endX, endY uint8, allowDiagonal bool) [][2]uint8 {
+func FindPath(z *Zone, startX, startY, endX, endY uint8, allowDiagonal bool) *MoveSchedule {
 	spaceBlocked := false
 	mapData := make(astar.MapData, 256)
 	mapData_ := make([]int, 256*256)
@@ -29,7 +29,7 @@ func FindPath(z *Zone, startX, startY, endX, endY uint8, allowDiagonal bool) [][
 		}
 	}
 	nodes := astar.Astar(mapData, int(startX), int(startY), int(endX), int(endY), allowDiagonal)
-	path := make([][2]uint8, len(nodes))
+	path := make(MoveSchedule, len(nodes))
 	for i, n := range nodes {
 		path[i][0] = uint8(n.X)
 		path[i][1] = uint8(n.Y)
@@ -40,5 +40,5 @@ func FindPath(z *Zone, startX, startY, endX, endY uint8, allowDiagonal bool) [][
 	if spaceBlocked && len(path) > 0 {
 		path = path[:len(path)-1]
 	}
-	return path
+	return &path
 }
