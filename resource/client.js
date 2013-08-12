@@ -1,4 +1,4 @@
-const GRAPHICS_REVISION = 3;
+const GRAPHICS_REVISION = 4;
 
 var undefined;
 const tileSize = 32;
@@ -385,7 +385,7 @@ var wsonmessage = ws.onmessage = function(e) {
 		p.forEach(function(tile) {
 			var id = tile['ID'];
 			if (tile['R']) {
-				if (gameState.objects[id].xnext > getPlayerX() - 64/2 && gameState.objects[id].xnext < getPlayerX() + 64/2 && gameState.objects[id].ynext > getPlayerY() - 64/2 && gameState.objects[id].ynext < getPlayerY() + 64/2) {
+				if (id in gameState.objects && gameState.objects[id].xnext > getPlayerX() - 64/2 && gameState.objects[id].xnext < getPlayerX() + 64/2 && gameState.objects[id].ynext > getPlayerY() - 64/2 && gameState.objects[id].ynext < getPlayerY() + 64/2) {
 					if (!gameState.objects[id].object.moves) {
 						zoneBufferStaticDirty = true;
 					}

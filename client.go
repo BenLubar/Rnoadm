@@ -488,6 +488,34 @@ func websocketHandler(conn *websocket.Conn) {
 					continue
 				}
 
+				if player.Admin && p.Interact.Inventory < 0 {
+					if p.Interact.Option > 0 {
+						p.Interact.Option--
+					} else if p.Interact.Option == 0 {
+						if _, ok := object.(*Player); ok {
+							continue
+						}
+
+						player.Lock()
+						AdminLog.Printf("TAKE [%d:%q] (%d:%d, %d:%d) <= %q %q (%d, %d)", player.ID, player.Name(), player.ZoneX, player.TileX, player.ZoneY, player.TileY, object.Name(), object.Examine(), p.Interact.X, p.Interact.Y)
+						zone := player.zone
+						player.Unlock()
+						zone.Lock()
+						if zone.Tile(p.Interact.X, p.Interact.Y).Remove(object) {
+							zone.Unlock()
+							SendZoneTileChange(zone.X, zone.Y, TileChange{
+								ID:      object.NetworkID(),
+								Removed: true,
+							})
+							player.Lock()
+							player.ForceGiveItem(object)
+							player.Unlock()
+							continue
+						}
+						zone.Unlock()
+					}
+				}
+
 				if p.Interact.Option < 0 {
 					switch p.Interact.Option {
 					case -1: // examine
@@ -592,6 +620,14 @@ func websocketHandler(conn *websocket.Conn) {
 				if len(updateQueue.TileChange) > 100 {
 					leftover = updateQueue.TileChange[100:]
 					updateQueue.TileChange = updateQueue.TileChange[:100]
+				}
+
+				if player != nil && player.Admin {
+					for i := range updateQueue.TileChange {
+						if obj := updateQueue.TileChange[i].Obj; obj != nil {
+							obj.Options = append([]string{"ADMIN TAKE"}, obj.Options...)
+						}
+					}
 				}
 
 				websocket.JSON.Send(conn, updateQueue)

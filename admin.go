@@ -177,7 +177,7 @@ func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 					Type: stone,
 				}
 			}
-		case "rich rock":
+		case "rich rock", "deposit", "rich deposit":
 			if metalOk && stoneOk && !woodOk {
 				item = &Rock{
 					Type: stone,
@@ -216,6 +216,38 @@ func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 				item = &Hatchet{
 					Handle: wood,
 					Head:   metal,
+				}
+			}
+		case "wall":
+			if metalOk && !stoneOk && !woodOk {
+				item = &WallMetal{
+					Type: metal,
+				}
+			}
+			if !metalOk && stoneOk && !woodOk {
+				item = &WallStone{
+					Type: stone,
+				}
+			}
+			if !metalOk && !stoneOk && woodOk {
+				item = &WallWood{
+					Type: wood,
+				}
+			}
+		case "floor":
+			if metalOk && !stoneOk && !woodOk {
+				item = &FloorMetal{
+					Type: metal,
+				}
+			}
+			if !metalOk && stoneOk && !woodOk {
+				item = &FloorStone{
+					Type: stone,
+				}
+			}
+			if !metalOk && !stoneOk && woodOk {
+				item = &FloorWood{
+					Type: wood,
 				}
 			}
 		case "armor set":

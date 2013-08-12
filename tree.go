@@ -262,7 +262,8 @@ func (t *Tree) ZIndex() int {
 
 type Logs struct {
 	networkID
-	Type WoodType
+	Type    WoodType
+	Quality uint64
 }
 
 func (l *Logs) Name() string {
@@ -304,8 +305,9 @@ func (l *Logs) ZIndex() int {
 
 type Hatchet struct {
 	networkID
-	Head   MetalType
-	Handle WoodType
+	Head    MetalType
+	Handle  WoodType
+	Quality uint64
 }
 
 func (h *Hatchet) Name() string {

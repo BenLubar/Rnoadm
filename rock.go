@@ -441,7 +441,8 @@ func (r *Rock) ZIndex() int {
 
 type Stone struct {
 	networkID
-	Type RockType
+	Type    RockType
+	Quality uint64
 }
 
 func (s *Stone) Name() string {
@@ -449,7 +450,7 @@ func (s *Stone) Name() string {
 }
 
 func (s *Stone) Examine() string {
-	return "a " + rockTypeInfo[s.Type].Name + " stone."
+	return "some " + rockTypeInfo[s.Type].Name + " stone."
 }
 
 func (s *Stone) Blocking() bool {
@@ -483,7 +484,8 @@ func (s *Stone) ZIndex() int {
 
 type Ore struct {
 	networkID
-	Type MetalType
+	Type    MetalType
+	Quality uint64
 }
 
 func (o *Ore) Name() string {
@@ -525,8 +527,9 @@ func (o *Ore) ZIndex() int {
 
 type Pickaxe struct {
 	networkID
-	Head   MetalType
-	Handle WoodType
+	Head    MetalType
+	Handle  WoodType
+	Quality uint64
 }
 
 func (p *Pickaxe) Name() string {

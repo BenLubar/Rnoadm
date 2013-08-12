@@ -310,7 +310,10 @@ type Cosmetic struct {
 	Type   CosmeticType
 	ID     uint64
 	Custom []Color
-	Metal  MetalType
+
+	Metal MetalType
+
+	Quality uint64
 }
 
 func (c *Cosmetic) Article() string {
@@ -393,28 +396,28 @@ func (c *Cosmetic) Exists() bool {
 
 func (c *Cosmetic) HealthBonus() uint64 {
 	base := cosmetics[c.Type][c.ID].HealthBonus
-	bonus := base
+	bonus := base + c.Quality
 	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
 	return bonus
 }
 
 func (c *Cosmetic) ArmorBonus() uint64 {
 	base := cosmetics[c.Type][c.ID].ArmorBonus
-	bonus := base
+	bonus := base + c.Quality
 	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
 	return bonus
 }
 
 func (c *Cosmetic) DamageBonus() uint64 {
 	base := cosmetics[c.Type][c.ID].DamageBonus
-	bonus := base
+	bonus := base + c.Quality
 	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
 	return bonus
 }
 
 func (c *Cosmetic) AccuracyBonus() uint64 {
 	base := cosmetics[c.Type][c.ID].AccuracyBonus
-	bonus := base
+	bonus := base + c.Quality
 	bonus += metalTypeInfo[c.Metal].sqrtStr * base / 10
 	return bonus
 }
