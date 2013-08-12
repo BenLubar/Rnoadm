@@ -11,30 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	"sync/atomic"
 )
-
-var nextNetworkID uint64
-
-type networkID uint64
-
-func (id *networkID) NetworkID() uint64 {
-	if i := atomic.LoadUint64((*uint64)(id)); i != 0 {
-		return i
-	}
-	atomic.CompareAndSwapUint64((*uint64)(id), 0, atomic.AddUint64(&nextNetworkID, 1))
-	return atomic.LoadUint64((*uint64)(id))
-}
-
-func (id *networkID) Serialize() *NetworkedObject {
-	// TODO: remove this method
-	return &NetworkedObject{
-		Sprite: "ui_r1",
-		Colors: []Color{"#f0f"},
-	}
-}
-
-func (id *networkID) Interact(x, y uint8, player *Player, zone *Zone, opt int) {}
 
 const root3 = 1.7320508075688772935274463415058723669428052538103806
 const zoneTiles = 46872
