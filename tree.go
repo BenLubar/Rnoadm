@@ -256,10 +256,6 @@ func (t *Tree) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	}
 }
 
-func (t *Tree) ZIndex() int {
-	return 0
-}
-
 type Logs struct {
 	networkID
 	Type    WoodType
@@ -297,10 +293,6 @@ func (l *Logs) Weight() uint64 {
 
 func (l *Logs) AdminOnly() bool {
 	return woodTypeInfo[l.Type].Strength >= 1<<60
-}
-
-func (l *Logs) ZIndex() int {
-	return 25
 }
 
 type Hatchet struct {
@@ -349,10 +341,6 @@ func (h *Hatchet) Weight() uint64 {
 
 func (h *Hatchet) AdminOnly() bool {
 	return metalTypeInfo[h.Head].Strength >= 1<<60 || woodTypeInfo[h.Handle].Strength >= 1<<60
-}
-
-func (h *Hatchet) ZIndex() int {
-	return 25
 }
 
 type ChopTreeSchedule struct {

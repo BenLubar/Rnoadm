@@ -26,10 +26,6 @@ func (w *WallStone) Blocking() bool {
 	return true
 }
 
-func (w *WallStone) ZIndex() int {
-	return 100
-}
-
 type WallMetal struct {
 	networkID
 	Type    MetalType
@@ -54,10 +50,6 @@ func (w *WallMetal) Serialize() *NetworkedObject {
 
 func (w *WallMetal) Blocking() bool {
 	return true
-}
-
-func (w *WallMetal) ZIndex() int {
-	return 100
 }
 
 type WallWood struct {
@@ -86,10 +78,6 @@ func (w *WallWood) Blocking() bool {
 	return true
 }
 
-func (w *WallWood) ZIndex() int {
-	return 100
-}
-
 type FloorStone struct {
 	networkID
 	Type    RockType
@@ -114,10 +102,6 @@ func (f *FloorStone) Serialize() *NetworkedObject {
 
 func (f *FloorStone) Blocking() bool {
 	return false
-}
-
-func (f *FloorStone) ZIndex() int {
-	return -50
 }
 
 type FloorMetal struct {
@@ -146,10 +130,6 @@ func (f *FloorMetal) Blocking() bool {
 	return false
 }
 
-func (f *FloorMetal) ZIndex() int {
-	return -50
-}
-
 type FloorWood struct {
 	networkID
 	Type    WoodType
@@ -174,8 +154,4 @@ func (f *FloorWood) Serialize() *NetworkedObject {
 
 func (f *FloorWood) Blocking() bool {
 	return false
-}
-
-func (f *FloorWood) ZIndex() int {
-	return -50
 }

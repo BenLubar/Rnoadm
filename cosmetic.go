@@ -386,10 +386,6 @@ func (c *Cosmetic) AdminOnly() bool {
 	return cosmetics[c.Type][c.ID].AdminOnly || metalTypeInfo[c.Metal].Strength >= 1<<60
 }
 
-func (c *Cosmetic) ZIndex() int {
-	return 25
-}
-
 func (c *Cosmetic) Exists() bool {
 	return (c.Type != 0 || c.ID != 0) && c.Type < cosmeticTypeCount && c.ID < uint64(len(cosmetics[c.Type]))
 }

@@ -25,10 +25,6 @@ func (b *Bed) Blocking() bool {
 	})
 }*/
 
-func (b *Bed) ZIndex() int {
-	return 0
-}
-
 type Chest struct {
 	networkID
 	Type WoodType
@@ -53,7 +49,3 @@ func (c *Chest) Blocking() bool {
 		ZIndex: 75,
 	})
 }*/
-
-func (c *Chest) ZIndex() int {
-	return 0
-}

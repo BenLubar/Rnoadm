@@ -726,13 +726,6 @@ func (p *Player) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	}
 }
 
-func (p *Player) ZIndex() int {
-	if p.Admin {
-		return 1 << 30
-	}
-	return p.Hero.ZIndex()
-}
-
 func (p *Player) Examine() string {
 	examine := p.Hero.Examine()
 	p.Lock()
@@ -1155,10 +1148,6 @@ func (h *Hero) think(z *Zone, x, y uint8, p *Player) {
 	h.Delay = uint(rand.Intn(5) + 1)
 	h.scheduleDelay = uint(rand.Intn(100) + 1)
 	h.Unlock()
-}
-
-func (h *Hero) ZIndex() int {
-	return 50
 }
 
 func (h *Hero) GiveItem(o Object) bool {

@@ -15,7 +15,3 @@ func (l *Liquid) Examine() string {
 func (l *Liquid) Blocking() bool {
 	return true
 }
-
-func (l *Liquid) ZIndex() int {
-	return 0
-}

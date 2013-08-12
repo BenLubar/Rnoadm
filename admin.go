@@ -115,6 +115,15 @@ func ParseCosmeticName(name string) (CosmeticType, uint64, bool) {
 	return 0, 0, false
 }
 
+func ParseCritterName(name string) (CritterType, bool) {
+	for t := range critterInfo {
+		if critterInfo[t].Name == name {
+			return CritterType(t), true
+		}
+	}
+	return 0, false
+}
+
 func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 	if len(cmd) < 1 {
 		return
@@ -283,6 +292,12 @@ func AdminCommandSpawn(addr string, p *Player, cmd []string) {
 					return
 				}
 				item = c
+			}
+		}
+		if item == nil && !metalOk && !stoneOk && !woodOk {
+			t, ok := ParseCritterName(leftover)
+			if ok {
+				item = &Critter{Type: t}
 			}
 		}
 		if item != nil {

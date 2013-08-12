@@ -435,10 +435,6 @@ func (r *Rock) Interact(x, y uint8, player *Player, zone *Zone, opt int) {
 	}
 }
 
-func (r *Rock) ZIndex() int {
-	return 0
-}
-
 type Stone struct {
 	networkID
 	Type    RockType
@@ -478,10 +474,6 @@ func (s *Stone) AdminOnly() bool {
 	return rockTypeInfo[s.Type].Strength >= 1<<60
 }
 
-func (s *Stone) ZIndex() int {
-	return 25
-}
-
 type Ore struct {
 	networkID
 	Type    MetalType
@@ -519,10 +511,6 @@ func (o *Ore) Weight() uint64 {
 
 func (o *Ore) AdminOnly() bool {
 	return metalTypeInfo[o.Type].Strength >= 1<<60
-}
-
-func (o *Ore) ZIndex() int {
-	return 25
 }
 
 type Pickaxe struct {
@@ -571,10 +559,6 @@ func (p *Pickaxe) Weight() uint64 {
 
 func (p *Pickaxe) AdminOnly() bool {
 	return metalTypeInfo[p.Head].Strength >= 1<<60 || woodTypeInfo[p.Handle].Strength >= 1<<60
-}
-
-func (p *Pickaxe) ZIndex() int {
-	return 25
 }
 
 type MineQuarrySchedule struct {

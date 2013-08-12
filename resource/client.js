@@ -1,4 +1,4 @@
-const GRAPHICS_REVISION = 4;
+const GRAPHICS_REVISION = 5;
 
 var undefined;
 const tileSize = 32;

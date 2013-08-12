@@ -72,7 +72,3 @@ func (f *Flora) Serialize() *NetworkedObject {
 func (f *Flora) Blocking() bool {
 	return false
 }
-
-func (f *Flora) ZIndex() int {
-	return 0
-}

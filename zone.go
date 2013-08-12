@@ -10,7 +10,6 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
-	"sort"
 	"sync"
 	"sync/atomic"
 )
@@ -392,20 +391,6 @@ func (z *Zone) Name() string {
 	return "unknown zone"
 }
 
-type zindexsort []Object
-
-func (z zindexsort) Len() int {
-	return len(z)
-}
-
-func (z zindexsort) Swap(i, j int) {
-	z[i], z[j] = z[j], z[i]
-}
-
-func (z zindexsort) Less(i, j int) bool {
-	return z[i].ZIndex() > z[j].ZIndex()
-}
-
 type Tile struct {
 	Objects []Object
 	Sprite  uint8
@@ -413,7 +398,6 @@ type Tile struct {
 
 func (t *Tile) Add(o Object) {
 	t.Objects = append(t.Objects, o)
-	sort.Sort(zindexsort(t.Objects))
 }
 
 func (t *Tile) Remove(o Object) bool {
@@ -444,7 +428,6 @@ type Object interface {
 	Name() string
 	Examine() string
 	Blocking() bool
-	ZIndex() int
 
 	NetworkID() uint64
 	Serialize() *NetworkedObject
@@ -465,8 +448,10 @@ type Thinker interface {
 
 var _ Thinker = (*Player)(nil)
 var _ Thinker = (*Hero)(nil)
+var _ Thinker = (*Critter)(nil)
 
 func init() {
+	gob.Register(Object(&Critter{}))
 	gob.Register(Object(&Hero{}))
 	// Players are removed from Zones before saving.
 	gob.Register(Object(&Flora{}))
