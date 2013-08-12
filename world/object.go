@@ -2,6 +2,8 @@ package world
 
 import (
 	"fmt"
+	"sync/atomic"
+	"unsafe"
 )
 
 type ObjectLike interface {
@@ -9,6 +11,10 @@ type ObjectLike interface {
 	// or moved between tiles. The argument is the new tile, or nil for
 	// removal. This function must return the previous value given to it.
 	NotifyPosition(*Tile) *Tile
+
+	// This function is not called, but is provided in the default
+	// implementation for convenience.
+	Position() *Tile
 
 	// Think is called every tick (200ms) for objects that are in a zone.
 	Think()
@@ -26,7 +32,7 @@ type ObjectLike interface {
 }
 
 type Object struct {
-	tile *Tile
+	tile unsafe.Pointer // *Tile
 }
 
 func init() {
@@ -34,9 +40,16 @@ func init() {
 }
 
 func (o *Object) NotifyPosition(t *Tile) *Tile {
-	old := o.tile
-	o.tile = t
-	return old
+	for {
+		old := atomic.LoadPointer(&o.tile)
+		if atomic.CompareAndSwapPointer(&o.tile, old, unsafe.Pointer(t)) {
+			return (*Tile)(old)
+		}
+	}
+}
+
+func (o *Object) Position() *Tile {
+	return (*Tile)(atomic.LoadPointer(&o.tile))
 }
 
 func (o *Object) Think() {
