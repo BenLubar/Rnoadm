@@ -92,13 +92,23 @@ func (t *Tile) Zone() *Zone {
 func (t *Tile) save() (uint, interface{}) {
 	contents := make([]interface{}, 0, len(t.objects))
 
-	for _, o := range t.objects {
-		version, data := o.Save()
-		contents = append(contents, map[string]interface{}{
+	var convert func(o ObjectLike) interface{}
+	convert = func(o ObjectLike) interface{} {
+		version, data, attached := o.Save()
+		attachedData := make([]interface{}, len(attached))
+		for i, a := range attached {
+			attachedData[i] = convert(a)
+		}
+		return map[string]interface{}{
 			"t": getObjectTypeIdentifier(o),
 			"v": version,
 			"d": data,
-		})
+			"a": attachedData,
+		}
+	}
+
+	for _, o := range t.objects {
+		contents = append(contents, convert(o))
 	}
 
 	return 0, map[string]interface{}{
@@ -110,11 +120,22 @@ func (t *Tile) load(version uint, data interface{}) {
 	switch version {
 	case 0:
 		contents := data.(map[string]interface{})["c"].([]interface{})
-		t.objects = make([]ObjectLike, 0, len(contents))
-		for _, c := range contents {
+		t.objects = make([]ObjectLike, len(contents))
+
+		var convert func(c interface{}) ObjectLike
+		convert = func(c interface{}) ObjectLike {
 			o := c.(map[string]interface{})
+			attached := make([]ObjectLike, len(o["a"].([]interface{})))
+			for i, a := range o["a"].([]interface{}) {
+				attached[i] = convert(a)
+			}
 			obj := getObjectByIdentifier(o["t"].(string))
-			obj.Load(o["v"].(uint), o["d"])
+			obj.Load(o["v"].(uint), o["d"], attached)
+			return obj
+		}
+
+		for i, c := range contents {
+			t.objects[i] = convert(c)
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
