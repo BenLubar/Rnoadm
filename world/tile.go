@@ -1,5 +1,9 @@
 package world
 
+import (
+	"fmt"
+)
+
 type Tile struct {
 	objects []ObjectLike
 
@@ -83,4 +87,39 @@ func (t *Tile) Position() (x, y uint8) {
 func (t *Tile) Zone() *Zone {
 	// this is safe - Tiles never move between locations or zones.
 	return t.zone
+}
+
+func (t *Tile) save() (uint, interface{}) {
+	contents := make([]interface{}, 0, len(t.objects))
+
+	for _, o := range t.objects {
+		version, data := o.Save()
+		contents = append(contents, map[string]interface{}{
+			"t": getObjectTypeIdentifier(o),
+			"v": version,
+			"d": data,
+		})
+	}
+
+	return 0, map[string]interface{}{
+		"c": contents,
+	}
+}
+
+func (t *Tile) load(version uint, data interface{}) {
+	switch version {
+	case 0:
+		contents := data.(map[string]interface{})["c"].([]interface{})
+		t.objects = make([]ObjectLike, 0, len(contents))
+		for _, c := range contents {
+			o := c.(map[string]interface{})
+			obj := getObjectByIdentifier(o["t"].(string))
+			obj.Load(o["v"].(uint), o["d"])
+		}
+	default:
+		panic(fmt.Sprintf("version %d unknown", version))
+	}
+	for _, obj := range t.objects {
+		obj.NotifyPosition(t)
+	}
 }

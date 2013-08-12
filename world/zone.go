@@ -5,7 +5,7 @@ import (
 )
 
 type Zone struct {
-	X, Y  uint64          // unprotected by mutex; never changes
+	X, Y  int64           // unprotected by mutex; never changes
 	tiles [256 * 256]Tile // individual tiles are protected by the mutex
 
 	mtx sync.Mutex
@@ -19,6 +19,10 @@ func (z *Zone) Tile(x, y uint8) *Tile {
 	z.lock()
 	defer z.unlock()
 
+	return z.tile(x, y)
+}
+
+func (z *Zone) tile(x, y uint8) *Tile {
 	t := &z.tiles[uint(x)|uint(y)<<8]
 	t.x, t.y, t.zone = x, y, z
 
