@@ -1,6 +1,6 @@
-package main
+package hero
 
-type NameSubtype uint16
+type NameSubtype uint64
 
 const (
 	NameUtil NameSubtype = iota
