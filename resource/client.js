@@ -34,6 +34,8 @@ wsmessage = function(e) {
 	if (p = msg['Kick']) {
 		ws.onclose = wsopen = wsclose = wsmessage = function() {};
 		ws.close();
+		inRepaint = true;
+		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 		alert(p);
 	}
 	if (p = msg['ClientHash']) {
@@ -168,7 +170,9 @@ paint = function() {
 	inRepaint = false;
 	canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
-	drawSprite(0, 0, 'ui_r1', '#f0f');
+	drawSprite(0, 0, 'body_human', '#0f0');
+	drawSprite(0, 0, 'pants_basic', '#00f');
+	drawSprite(0, 0, 'shirt_basic', '#f00');
 },
 loginForm = document.querySelector('form'),
 loginField = loginForm.querySelector('#username'),

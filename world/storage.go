@@ -1,10 +1,16 @@
 package world
 
 import (
+	"bytes"
 	"compress/gzip"
+	"encoding/base32"
+	"encoding/binary"
 	"encoding/gob"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
+	"sync"
 )
 
 type savedZone struct {
@@ -93,4 +99,98 @@ func writeZone(z *Zone, w io.Writer) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+type loadedZone struct {
+	zone *Zone
+	ref  uint
+}
+
+var loadedZones = make(map[[2]int64]*loadedZone)
+var loadedZoneLock sync.Mutex
+
+// run zone loading and saving in a separate goroutine - corrupt zones cause
+// full server crashes to avoid further corruption.
+func zoneCritical(f func()) {
+	ch := make(chan struct{}, 1)
+
+	go func() {
+		loadedZoneLock.Lock()
+		defer loadedZoneLock.Unlock()
+
+		f()
+
+		ch <- struct{}{}
+	}()
+
+	<-ch
+}
+
+func zoneFilename(x, y int64) string {
+	var buf [binary.MaxVarintLen64 * 2]byte
+	i := binary.PutVarint(buf[:], x)
+	i += binary.PutVarint(buf[i:], y)
+	encoded := base32.StdEncoding.EncodeToString(buf[:i])
+	for i := range encoded {
+		if encoded[i] == '=' {
+			encoded = encoded[:i]
+			break
+		}
+	}
+	return filepath.Join("rnoadm-AA", "zone"+encoded+".gz")
+}
+
+func GetZone(x, y int64) *Zone {
+	var z *Zone
+	zoneCritical(func() {
+		lz, ok := loadedZones[[2]int64{x, y}]
+		if ok {
+			lz.ref++
+			z = lz.zone
+			return
+		}
+
+		f, err := os.Open(zoneFilename(x, y))
+		if err == nil {
+			defer f.Close()
+			z = readZone(f)
+		} else {
+			z = generateZone(x, y)
+		}
+
+		lz = &loadedZone{
+			zone: z,
+			ref:  1,
+		}
+		loadedZones[[2]int64{x, y}] = lz
+	})
+	return z
+}
+
+func ReleaseZone(z *Zone) {
+	zoneCritical(func() {
+		lz := loadedZones[[2]int64{z.X, z.Y}]
+		lz.ref--
+		if lz.ref != 0 {
+			return
+		}
+
+		delete(loadedZones, [2]int64{z.X, z.Y})
+
+		// write to a memory buffer first to avoid corruption on failed
+		// saves
+		var buf bytes.Buffer
+		writeZone(lz.zone, &buf)
+
+		f, err := os.Create(zoneFilename(z.X, z.Y))
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+
+		_, err = buf.WriteTo(f)
+		if err != nil {
+			panic(err)
+		}
+	})
 }

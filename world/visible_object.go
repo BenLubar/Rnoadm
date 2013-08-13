@@ -1,7 +1,13 @@
 package world
 
+import (
+	"sync/atomic"
+)
+
 type Visible interface {
 	ObjectLike
+
+	NetworkID() uint64
 
 	// Name is the user-visible name of this object. Title Case is used for
 	// important living objects. All other objects are fully lowercase.
@@ -27,10 +33,26 @@ type Visible interface {
 
 type VisibleObject struct {
 	Object
+
+	networkID uint64 // not saved
 }
 
 func init() {
 	Register("visobj", Visible((*VisibleObject)(nil)))
+}
+
+var nextNetworkID uint64
+
+func (o *VisibleObject) NetworkID() uint64 {
+	if id := atomic.LoadUint64(&o.networkID); id != 0 {
+		// simple case: we already have a network ID; return it
+		return id
+	}
+	// set our network ID to the next available ID, but do nothing if
+	// we already have an ID set.
+	atomic.CompareAndSwapUint64(&o.networkID, 0, atomic.AddUint64(&nextNetworkID, 1))
+	// we definitely have a network ID at this point; return it.
+	return atomic.LoadUint64(&o.networkID)
 }
 
 func (o *VisibleObject) Name() string {
