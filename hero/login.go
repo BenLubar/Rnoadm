@@ -148,7 +148,7 @@ func Login(addr string, packet *LoginPacket) (*Player, string) {
 
 	onlinePlayers[p.login] = p
 
-	return nil, "Login is not yet functional."
+	return p, ""
 }
 
 func loginToFilename(login string) string {
