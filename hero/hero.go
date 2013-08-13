@@ -17,6 +17,8 @@ type HeroLike interface {
 type Hero struct {
 	world.CombatObject
 
+	name HeroName
+
 	race       Race
 	gender     Gender
 	occupation Occupation
@@ -33,6 +35,7 @@ func (h *Hero) Save() (uint, interface{}, []world.ObjectLike) {
 	defer h.mtx.Unlock()
 
 	return 0, map[string]interface{}{
+		"name":       h.name.serialize(),
 		"race":       uint64(h.race),
 		"gender":     uint64(h.gender),
 		"occupation": uint64(h.occupation),
@@ -47,12 +50,20 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 	case 0:
 		dataMap := data.(map[string]interface{})
 		h.CombatObject = *attached[0].(*world.CombatObject)
+		h.name.unserialize(dataMap["name"].(map[string]interface{}))
 		h.race = Race(dataMap["race"].(uint64))
 		h.gender = Gender(dataMap["gender"].(uint64))
 		h.occupation = Occupation(dataMap["occupation"].(uint64))
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+}
+
+func (h *Hero) Name() string {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	return h.name.Name()
 }
 
 func (h *Hero) Race() Race {
@@ -78,4 +89,8 @@ func (h *Hero) Occupation() Occupation {
 
 func (h *Hero) Sprite() string {
 	return h.Race().Sprite()
+}
+
+func (h *Hero) MaxHealth() uint64 {
+	return h.Race().BaseHealth()
 }

@@ -26,10 +26,12 @@ const (
 )
 
 var raceInfo = [raceCount]struct {
-	sprite string
+	sprite     string
+	baseHealth uint64
 }{
 	RaceHuman: {
-		sprite: "body_human",
+		sprite:     "body_human",
+		baseHealth: 10000,
 	},
 }
 
@@ -46,4 +48,5 @@ var occupationInfo = [occupationCount]struct {
 	OccupationKnight:     {},
 }
 
-func (r Race) Sprite() string { return raceInfo[r].sprite }
+func (r Race) Sprite() string     { return raceInfo[r].sprite }
+func (r Race) BaseHealth() uint64 { return raceInfo[r].baseHealth }
