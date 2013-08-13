@@ -89,27 +89,28 @@ func (t *Tile) Zone() *Zone {
 	return t.zone
 }
 
+func SaveConvert(o ObjectLike) interface{} {
+	version, data, attached := o.Save()
+	attachedData := make([]interface{}, len(attached))
+	for i, a := range attached {
+		attachedData[i] = SaveConvert(a)
+	}
+	return map[string]interface{}{
+		"t": getObjectTypeIdentifier(o),
+		"v": version,
+		"d": data,
+		"a": attachedData,
+	}
+}
+
 func (t *Tile) save() (uint, interface{}) {
 	contents := make([]interface{}, 0, len(t.objects))
 
-	var convert func(o ObjectLike) interface{}
-	convert = func(o ObjectLike) interface{} {
-		version, data, attached := o.Save()
-		attachedData := make([]interface{}, len(attached))
-		for i, a := range attached {
-			attachedData[i] = convert(a)
-		}
-		return map[string]interface{}{
-			"t": getObjectTypeIdentifier(o),
-			"v": version,
-			"d": data,
-			"a": attachedData,
-		}
-	}
-
 	for _, o := range t.objects {
-		if _, ok := o.(NoSaveObject); !ok {
-			contents = append(contents, convert(o))
+		if s, ok := o.(NoSaveObject); ok {
+			s.SaveSelf()
+		} else {
+			contents = append(contents, SaveConvert(o))
 		}
 	}
 
@@ -118,26 +119,25 @@ func (t *Tile) save() (uint, interface{}) {
 	}
 }
 
+func LoadConvert(c interface{}) ObjectLike {
+	o := c.(map[string]interface{})
+	attached := make([]ObjectLike, len(o["a"].([]interface{})))
+	for i, a := range o["a"].([]interface{}) {
+		attached[i] = LoadConvert(a)
+	}
+	obj := InitObject(getObjectByIdentifier(o["t"].(string)))
+	obj.Load(o["v"].(uint), o["d"], attached)
+	return obj
+}
+
 func (t *Tile) load(version uint, data interface{}) {
 	switch version {
 	case 0:
 		contents := data.(map[string]interface{})["c"].([]interface{})
 		t.objects = make([]ObjectLike, len(contents))
 
-		var convert func(c interface{}) ObjectLike
-		convert = func(c interface{}) ObjectLike {
-			o := c.(map[string]interface{})
-			attached := make([]ObjectLike, len(o["a"].([]interface{})))
-			for i, a := range o["a"].([]interface{}) {
-				attached[i] = convert(a)
-			}
-			obj := InitObject(getObjectByIdentifier(o["t"].(string)))
-			obj.Load(o["v"].(uint), o["d"], attached)
-			return obj
-		}
-
 		for i, c := range contents {
-			t.objects[i] = convert(c)
+			t.objects[i] = LoadConvert(c)
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
@@ -148,5 +148,5 @@ func (t *Tile) load(version uint, data interface{}) {
 }
 
 type NoSaveObject interface {
-	NoSaveObject()
+	SaveSelf()
 }
