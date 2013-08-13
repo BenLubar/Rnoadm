@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
 	"sync"
+	"time"
 )
 
 type HeroLike interface {
@@ -23,6 +24,9 @@ type Hero struct {
 	gender     Gender
 	occupation Occupation
 
+	birth time.Time
+	death time.Time
+
 	mtx sync.Mutex
 }
 
@@ -39,6 +43,8 @@ func (h *Hero) Save() (uint, interface{}, []world.ObjectLike) {
 		"race":       uint64(h.race),
 		"gender":     uint64(h.gender),
 		"occupation": uint64(h.occupation),
+		"birth":      h.birth.Format(time.RFC3339Nano),
+		"death":      h.death.Format(time.RFC3339Nano),
 	}, []world.ObjectLike{&h.CombatObject}
 }
 
@@ -54,6 +60,15 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 		h.race = Race(dataMap["race"].(uint64))
 		h.gender = Gender(dataMap["gender"].(uint64))
 		h.occupation = Occupation(dataMap["occupation"].(uint64))
+		var err error
+		h.birth, err = time.Parse(time.RFC3339Nano, dataMap["birth"].(string))
+		if err != nil {
+			panic(err)
+		}
+		h.death, err = time.Parse(time.RFC3339Nano, dataMap["death"].(string))
+		if err != nil {
+			panic(err)
+		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}

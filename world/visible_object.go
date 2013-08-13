@@ -7,8 +7,6 @@ type Visible interface {
 	// important living objects. All other objects are fully lowercase.
 	Name() string
 
-	Examine() string
-
 	// Sprite is sent to the client as the name of the image (minus ".png"
 	// extension) to use as a sprite sheet.
 	Sprite() string
@@ -37,10 +35,6 @@ func init() {
 
 func (o *VisibleObject) Name() string {
 	return "unknown"
-}
-
-func (o *VisibleObject) Examine() string {
-	return "what could it be?"
 }
 
 func (o *VisibleObject) Sprite() string {

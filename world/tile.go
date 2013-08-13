@@ -108,7 +108,9 @@ func (t *Tile) save() (uint, interface{}) {
 	}
 
 	for _, o := range t.objects {
-		contents = append(contents, convert(o))
+		if _, ok := o.(NoSaveObject); !ok {
+			contents = append(contents, convert(o))
+		}
 	}
 
 	return 0, map[string]interface{}{
@@ -143,4 +145,8 @@ func (t *Tile) load(version uint, data interface{}) {
 	for _, obj := range t.objects {
 		obj.notifyPosition(t)
 	}
+}
+
+type NoSaveObject interface {
+	NoSaveObject()
 }
