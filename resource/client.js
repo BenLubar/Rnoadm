@@ -207,6 +207,15 @@ paint = function() {
 	var startY = Math.max(playerX - h2, 0);
 	var endY = Math.min(playerY + h2, 256);
 
+	playerX += 0.5;
+	playerY += 0.5;
+
+	for (var x = 0; x < 256; x += 512/tileSize) {
+		for (var y = 0; y < 256; y += 512/tileSize) {
+			drawSprite(x - playerX, y - playerY, 'grass', '#0f0', {'h': 512, 'w': 512});
+		}
+	}
+
 	for (var x = startX; x < endX; x++) {
 		for (var y = startY; y < endY; y++) {
 			var objects = gameState.objects[x | (y << 8)] || {};
@@ -260,6 +269,7 @@ loginForm.onsubmit = function() {
 	var parent = loginForm.parentNode;
 	parent.removeChild(loginForm);
 	parent.appendChild(canvas.canvas);
+	parent.style.overflow = 'hidden';
 	repaint();
 };
 
