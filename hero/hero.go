@@ -3,6 +3,7 @@ package hero
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"math/rand"
 	"sync"
 	"time"
 )
@@ -23,6 +24,7 @@ type Hero struct {
 	race       Race
 	gender     Gender
 	occupation Occupation
+	skinTone   uint
 
 	birth time.Time
 	death time.Time
@@ -43,6 +45,7 @@ func (h *Hero) Save() (uint, interface{}, []world.ObjectLike) {
 		"race":       uint64(h.race),
 		"gender":     uint64(h.gender),
 		"occupation": uint64(h.occupation),
+		"skin":       h.skinTone,
 		"birth":      h.birth.Format(time.RFC3339Nano),
 		"death":      h.death.Format(time.RFC3339Nano),
 	}, []world.ObjectLike{&h.CombatObject}
@@ -60,6 +63,11 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 		h.race = Race(dataMap["race"].(uint64))
 		h.gender = Gender(dataMap["gender"].(uint64))
 		h.occupation = Occupation(dataMap["occupation"].(uint64))
+		var ok bool
+		h.skinTone, ok = dataMap["skin"].(uint)
+		if !ok {
+			h.skinTone = uint(rand.Intn(len(h.race.SkinTones())))
+		}
 		var err error
 		h.birth, err = time.Parse(time.RFC3339Nano, dataMap["birth"].(string))
 		if err != nil {
@@ -104,6 +112,10 @@ func (h *Hero) Occupation() Occupation {
 
 func (h *Hero) Sprite() string {
 	return h.Race().Sprite()
+}
+
+func (h *Hero) Colors() []string {
+	return []string{h.Race().SkinTones()[h.skinTone]}
 }
 
 func (h *Hero) MaxHealth() uint64 {

@@ -29,6 +29,12 @@ type Visible interface {
 	// Each color increases the y value on the client, and each animation
 	// frame increases the x value.
 	SpritePos() (uint, uint)
+
+	Scale() uint
+
+	Colors() []string
+
+	Attached() []Visible
 }
 
 type VisibleObject struct {
@@ -73,4 +79,16 @@ func (o *VisibleObject) AnimationType() string {
 
 func (o *VisibleObject) SpritePos() (uint, uint) {
 	return 0, 0
+}
+
+func (o *VisibleObject) Scale() uint {
+	return 1
+}
+
+func (o *VisibleObject) Colors() []string {
+	return []string{"#f0f"}
+}
+
+func (o *VisibleObject) Attached() []Visible {
+	return nil
 }

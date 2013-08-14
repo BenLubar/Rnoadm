@@ -16,6 +16,7 @@ type Player struct {
 
 	login      string
 	password   []byte
+	admin      bool
 	firstAddr  string
 	lastAddr   string
 	registered time.Time
@@ -56,6 +57,7 @@ func (p *Player) Save() (uint, interface{}, []world.ObjectLike) {
 		"zy":       zy,
 		"u":        p.login,
 		"p":        p.password,
+		"admin":    p.admin,
 		"rega":     p.firstAddr,
 		"lasta":    p.lastAddr,
 		"regt":     p.registered.Format(time.RFC3339Nano),
@@ -78,6 +80,7 @@ func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLik
 		p.tileX, p.tileY = dataMap["tx"].(uint8), dataMap["ty"].(uint8)
 		p.login = dataMap["u"].(string)
 		p.password = dataMap["p"].([]byte)
+		p.admin, _ = dataMap["admin"].(bool)
 		p.firstAddr = dataMap["rega"].(string)
 		p.lastAddr = dataMap["lasta"].(string)
 		var err error
@@ -144,4 +147,15 @@ func (p *Player) Kick(message string) {
 	case p.kick <- message:
 	default: // already kicked
 	}
+}
+
+func (p *Player) CanSpawn() bool {
+	return !p.characterCreation && (p.Health() > 0 || p.admin)
+}
+
+func (p *Player) LoginPosition() (int64, uint8, int64, uint8) {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	return p.zoneX, p.tileX, p.zoneY, p.tileY
 }

@@ -20,6 +20,7 @@ func GenerateHeroOccupation(r *rand.Rand, race Race, occupation Occupation) *Her
 	hero.race = race
 	hero.occupation = occupation
 	hero.gender = race.Genders()[r.Intn(len(race.Genders()))]
+	hero.skinTone = uint(r.Intn(len(race.SkinTones())))
 	switch race {
 	case RaceHuman:
 		hero.name = *GenerateHumanName(r, hero.gender)

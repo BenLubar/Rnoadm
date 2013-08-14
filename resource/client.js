@@ -9,6 +9,10 @@ loggedIn = false,
 connected = false,
 inRepaint = true,
 w = 32, h = 16,
+gameState = {
+	objects: new Array(256 * 256),
+	player: {x: 127, y: 127}
+},
 canvas = document.createElement('canvas').getContext('2d'),
 floor = function(n) {
 	return Math.floor(n);
@@ -24,6 +28,7 @@ wsopen = function() {
 	if (loggedIn) {
 		send({'Auth': {'U': username, 'P': password}});
 	}
+	gameState.objects = new Array(256 * 256);
 },
 wsclose = function() {
 	connected = false;
@@ -46,6 +51,29 @@ wsmessage = function(e) {
 		} else {
 			clientHash = p;
 		}
+	}
+	if (p = msg['Update']) {
+		gameState.player.x = msg['PlayerX'];
+		gameState.player.y = msg['PlayerY'];
+		p.forEach(function(update) {
+			var i = update['X'] | (update['Y'] << 8);
+			if (!gameState.objects[i]) {
+				gameState.objects[i] = {};
+			}
+			if (!gameState.objects[i][update['I']]) {
+				gameState.objects[i][update['I']] = {};
+			}
+			if (update['R']) {
+				delete gameState.objects[i][update['I']];
+			} else if (update['O']) {
+				gameState.objects[i][update['I']].sprite = update['O']['S'];
+			} else {
+				var from = update['Fx'] | (update['Fy'] << 8);
+				gameState.objects[i][update['I']] = gameState.objects[from][update['I']];
+				delete gameState.objects[from][update['I']];
+			}
+		});
+		repaint();
 	}
 	console.log(msg);
 },
@@ -71,9 +99,9 @@ drawSprite = function(x, y, sprite, color, extra, ctx) {
 	ctx = ctx || canvas;
 	var xoff = ctx == canvas ? w/2*tileSize : 0;
 	var yoff = ctx == canvas ? h/2*tileSize : 0;
-	var scale = extra['scale'] || 1;
-	var height = extra['height'] || tileSize;
-	var width = extra['width'] || tileSize;
+	var scale = extra['s'] || 1;
+	var height = extra['h'] || tileSize;
+	var width = extra['w'] || tileSize;
 	var col = extra['x'] || 0;
 	var row = extra['y'] || 0;
 	if (!images[sprite]) {
@@ -170,9 +198,26 @@ paint = function() {
 	inRepaint = false;
 	canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
-	drawSprite(0, 0, 'body_human', '#0f0');
-	drawSprite(0, 0, 'pants_basic', '#00f');
-	drawSprite(0, 0, 'shirt_basic', '#f00');
+	var w2 = floor(w/2 + 1);
+	var h2 = floor(h/2 + 1);
+	var playerX = gameState.player.x;
+	var playerY = gameState.player.y;
+	var startX = Math.max(playerX - w2, 0);
+	var endX = Math.min(playerX + w2, 256);
+	var startY = Math.max(playerX - h2, 0);
+	var endY = Math.min(playerY + h2, 256);
+
+	for (var x = startX; x < endX; x++) {
+		for (var y = startY; y < endY; y++) {
+			var objects = gameState.objects[x | (y << 8)] || {};
+
+			for (var i in objects) {
+				(objects[i].sprite || []).forEach(function(sprite) {
+					drawSprite(x - playerX, y - playerY, sprite['S'], sprite['C'], sprite['E']);
+				});
+			}
+		}
+	}
 },
 loginForm = document.querySelector('form'),
 loginField = loginForm.querySelector('#username'),
