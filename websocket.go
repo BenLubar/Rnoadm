@@ -53,6 +53,7 @@ func addSprites(u *packetUpdateObject, obj world.Visible) *packetUpdateObject {
 	x, y := obj.SpritePos()
 	width, height := obj.SpriteSize()
 	scale := obj.Scale()
+	animation := obj.AnimationType()
 	for i, c := range obj.Colors() {
 		u.Sprites = append(u.Sprites, packetUpdateSprite{
 			Sheet: sheet,
@@ -63,6 +64,7 @@ func addSprites(u *packetUpdateObject, obj world.Visible) *packetUpdateObject {
 				"x": x,
 				"y": y + uint(i),
 				"s": scale,
+				"a": animation,
 			},
 		})
 	}

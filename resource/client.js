@@ -3,8 +3,8 @@ const GRAPHICS_REVISION = 6;
 const tileSize = 32;
 var ws,
 clientHash,
-username,
-password,
+username = sessionStorage['rnoadm_username'] || '',
+password = sessionStorage['rnoadm_password'] || '',
 loggedIn = false,
 connected = false,
 inRepaint = true,
@@ -16,6 +16,9 @@ gameState = {
 canvas = document.createElement('canvas').getContext('2d'),
 floor = function(n) {
 	return Math.floor(n);
+},
+time = function() {
+	return +new Date() / 50;
 },
 send = function(packet) {
 	if (!connected)
@@ -41,6 +44,8 @@ wsmessage = function(e) {
 		ws.close();
 		inRepaint = true;
 		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
+		delete sessionStorage['rnoadm_username'];
+		delete sessionStorage['rnoadm_password'];
 		alert(p);
 	}
 	if (p = msg['ClientHash']) {
@@ -91,6 +96,7 @@ repaint = function() {
 	inRepaint = true;
 	requestAnimationFrame(paint);
 },
+nextRepaint = Infinity,
 images = {},
 images_resize = {},
 images_recolor = {},
@@ -104,6 +110,21 @@ drawSprite = function(x, y, sprite, color, extra, ctx) {
 	var width = extra['w'] || tileSize;
 	var col = extra['x'] || 0;
 	var row = extra['y'] || 0;
+	({
+		'': function() {
+			// no animation
+		},
+		'ccr': function() {
+			// character creation rotation
+			col += [0, 6, 3, 9][floor(time() / 10) % 4];
+			nextRepaint = Math.min(nextRepaint, floor(time() / 10 + 1) * 10);
+		},
+		'wa': function() {
+			// walk (alternating)
+			col += [0, 1, 0, 2][floor(time() / 4) % 4];
+			nextRepaint = Math.min(nextRepaint, floor(time() / 4 + 1) * 2);
+		}
+	})[extra['a'] || '']();
 	if (!images[sprite]) {
 		images[sprite] = true;
 		var img = new Image();
@@ -212,7 +233,7 @@ paint = function() {
 
 	for (var x = 0; x < 256; x += 512/tileSize) {
 		for (var y = 0; y < 256; y += 512/tileSize) {
-			drawSprite(x - playerX, y - playerY, 'grass', '#0f0', {'h': 512, 'w': 512});
+			drawSprite(x - playerX, y - playerY, 'grass', '#4dbd33', {'h': 512, 'w': 512});
 		}
 	}
 
@@ -242,8 +263,25 @@ onresize = function() {
 };
 onresize();
 
+setInterval(function() {
+	if (time() >= nextRepaint) {
+		nextRepaint = Infinity;
+		repaint();
+	}
+}, 50);
+
 this['admin'] = function(command) {
 	send({'Admin': command});
+};
+
+var onlogin = function() {
+	loggedIn = true;
+	var parent = loginForm.parentNode;
+	parent.removeChild(loginForm);
+	parent.appendChild(canvas.canvas);
+	parent.style.overflow = 'hidden';
+	inRepaint = false;
+	repaint();
 };
 
 passField.onchange = function() {
@@ -263,15 +301,15 @@ loginForm.onsubmit = function() {
 		passField.focus();
 		return;
 	}
-	loggedIn = true;
-	inRepaint = false;
+	sessionStorage['rnoadm_username'] = username;
+	sessionStorage['rnoadm_password'] = password;
 	send({'Auth': {'U': username, 'P': password}});
-	var parent = loginForm.parentNode;
-	parent.removeChild(loginForm);
-	parent.appendChild(canvas.canvas);
-	parent.style.overflow = 'hidden';
-	repaint();
+	onlogin();
 };
+
+if (username && password) {
+	onlogin();
+}
 
 connect();
 })()

@@ -2,6 +2,8 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
+	"github.com/BenLubar/Rnoadm/hero"
+	"github.com/BenLubar/Rnoadm/world"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -23,9 +25,8 @@ func main() {
 		}
 	}()
 
-	defer func() {
-
-	}()
+	defer world.SaveAllZones()
+	defer hero.SaveAllPlayers()
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, os.Kill)

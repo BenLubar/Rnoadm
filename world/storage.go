@@ -194,3 +194,22 @@ func ReleaseZone(z *Zone) {
 		}
 	})
 }
+
+func SaveAllZones() {
+	zoneCritical(func() {
+		for _, lz := range loadedZones {
+			var buf bytes.Buffer
+			writeZone(lz.zone, &buf)
+
+			f, err := os.Create(zoneFilename(lz.zone.X, lz.zone.Y))
+			if err != nil {
+				panic(err)
+			}
+			_, err = buf.WriteTo(f)
+			f.Close()
+			if err != nil {
+				panic(err)
+			}
+		}
+	})
+}

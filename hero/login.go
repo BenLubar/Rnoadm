@@ -199,3 +199,12 @@ func PlayerDisconnected(p *Player) {
 		delete(onlinePlayers, p.login)
 	}
 }
+
+func SaveAllPlayers() {
+	loginLock.Lock()
+	defer loginLock.Unlock()
+
+	for _, p := range onlinePlayers {
+		savePlayer(p)
+	}
+}
