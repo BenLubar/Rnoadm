@@ -126,7 +126,7 @@ func socketHandler(ws *websocket.Conn) {
 				Y:      y,
 				Object: addSprites(&packetUpdateObject{}, o),
 			}:
-			default:
+			case <-time.After(time.Minute):
 			}
 		},
 		Remove: func(t *world.Tile, obj world.ObjectLike) {
@@ -142,7 +142,7 @@ func socketHandler(ws *websocket.Conn) {
 				Y:      y,
 				Remove: true,
 			}:
-			default:
+			case <-time.After(time.Minute):
 			}
 		},
 		Move: func(from, to *world.Tile, obj world.ObjectLike) {
@@ -160,7 +160,7 @@ func socketHandler(ws *websocket.Conn) {
 				FromX: &fx,
 				FromY: &fy,
 			}:
-			default:
+			case <-time.After(time.Minute):
 			}
 		},
 	}
