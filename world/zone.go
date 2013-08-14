@@ -29,6 +29,14 @@ func (z *Zone) AddListener(l *ZoneListener) {
 		z.listeners = make(map[*ZoneListener]bool)
 	}
 	z.listeners[l] = true
+	if l.Add != nil {
+		for i := range z.tiles {
+			t := &z.tiles[i]
+			for _, o := range t.objects {
+				l.Add(t, o)
+			}
+		}
+	}
 }
 
 func (z *Zone) RemoveListener(l *ZoneListener) {
@@ -36,6 +44,14 @@ func (z *Zone) RemoveListener(l *ZoneListener) {
 	defer z.unlock()
 
 	delete(z.listeners, l)
+	if l.Remove != nil {
+		for i := range z.tiles {
+			t := &z.tiles[i]
+			for _, o := range t.objects {
+				l.Remove(t, o)
+			}
+		}
+	}
 }
 
 // Tile returns the Tile at a position in the Zone.

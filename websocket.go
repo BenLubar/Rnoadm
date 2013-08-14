@@ -228,6 +228,8 @@ func socketHandler(ws *websocket.Conn) {
 
 			if t := player.Position(); t != nil {
 				updateQueue.PlayerX, updateQueue.PlayerY = t.Position()
+			} else {
+				updateQueue.PlayerX, updateQueue.PlayerY = 127, 127
 			}
 
 			websocket.JSON.Send(ws, updateQueue)
