@@ -112,7 +112,7 @@ func socketHandler(ws *websocket.Conn) {
 	)
 	updateTick := time.NewTicker(time.Second / 10)
 	defer updateTick.Stop()
-	updates := make(chan packetUpdateUpdate, 200)
+	updates := make(chan []packetUpdateUpdate, 1)
 
 	listener := &world.ZoneListener{
 		Add: func(t *world.Tile, obj world.ObjectLike) {
@@ -121,14 +121,21 @@ func socketHandler(ws *websocket.Conn) {
 				return
 			}
 			x, y := t.Position()
-			select {
-			case updates <- packetUpdateUpdate{
-				ID:     o.NetworkID(),
-				X:      x,
-				Y:      y,
-				Object: addSprites(&packetUpdateObject{}, o),
-			}:
-			case <-time.After(time.Minute):
+			newUpdates := []packetUpdateUpdate{
+				{
+					ID:     o.NetworkID(),
+					X:      x,
+					Y:      y,
+					Object: addSprites(&packetUpdateObject{}, o),
+				},
+			}
+			for {
+				select {
+				case updates <- newUpdates:
+					return
+				case other := <-updates:
+					newUpdates = append(other, newUpdates...)
+				}
 			}
 		},
 		Remove: func(t *world.Tile, obj world.ObjectLike) {
@@ -137,14 +144,21 @@ func socketHandler(ws *websocket.Conn) {
 				return
 			}
 			x, y := t.Position()
-			select {
-			case updates <- packetUpdateUpdate{
-				ID:     o.NetworkID(),
-				X:      x,
-				Y:      y,
-				Remove: true,
-			}:
-			case <-time.After(time.Minute):
+			newUpdates := []packetUpdateUpdate{
+				{
+					ID:     o.NetworkID(),
+					X:      x,
+					Y:      y,
+					Remove: true,
+				},
+			}
+			for {
+				select {
+				case updates <- newUpdates:
+					return
+				case other := <-updates:
+					newUpdates = append(other, newUpdates...)
+				}
 			}
 		},
 		Move: func(from, to *world.Tile, obj world.ObjectLike) {
@@ -154,15 +168,22 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			fx, fy := from.Position()
 			tx, ty := to.Position()
-			select {
-			case updates <- packetUpdateUpdate{
-				ID:    o.NetworkID(),
-				X:     tx,
-				Y:     ty,
-				FromX: &fx,
-				FromY: &fy,
-			}:
-			case <-time.After(time.Minute):
+			newUpdates := []packetUpdateUpdate{
+				{
+					ID:    o.NetworkID(),
+					X:     tx,
+					Y:     ty,
+					FromX: &fx,
+					FromY: &fy,
+				},
+			}
+			for {
+				select {
+				case updates <- newUpdates:
+					return
+				case other := <-updates:
+					newUpdates = append(other, newUpdates...)
+				}
 			}
 		},
 	}
@@ -212,7 +233,7 @@ func socketHandler(ws *websocket.Conn) {
 			return
 
 		case update := <-updates:
-			updateQueue.Update = append(updateQueue.Update, update)
+			updateQueue.Update = append(updateQueue.Update, update...)
 
 		case <-updateTick.C:
 			if len(updateQueue.Update) == 0 {

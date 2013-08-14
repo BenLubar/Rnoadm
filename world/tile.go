@@ -125,9 +125,9 @@ func LoadConvert(c interface{}) ObjectLike {
 	for i, a := range o["a"].([]interface{}) {
 		attached[i] = LoadConvert(a)
 	}
-	obj := InitObject(getObjectByIdentifier(o["t"].(string)))
+	obj := getObjectByIdentifier(o["t"].(string))
 	obj.Load(o["v"].(uint), o["d"], attached)
-	return obj
+	return InitObject(obj)
 }
 
 func (t *Tile) load(version uint, data interface{}) {

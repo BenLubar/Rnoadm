@@ -25,6 +25,34 @@ func GenerateHeroOccupation(r *rand.Rand, race Race, occupation Occupation) *Her
 	case RaceHuman:
 		hero.name = *GenerateHumanName(r, hero.gender)
 	}
+	hero.equipped = append(hero.equipped, &Equippable{
+		slot:         SlotShirt,
+		kind:         0,
+		wearer:       hero,
+		customColors: []string{randomColor(r)},
+	})
+	hero.equipped = append(hero.equipped, &Equippable{
+		slot:         SlotPants,
+		kind:         0,
+		wearer:       hero,
+		customColors: []string{randomColor(r)},
+	})
+	hero.equipped = append(hero.equipped, &Equippable{
+		slot:   SlotFeet,
+		kind:   0,
+		wearer: hero,
+	})
 	world.InitObject(hero)
 	return hero
+}
+
+func randomColor(r *rand.Rand) string {
+	choices := []string{"23456", "6789a", "abcde"}
+	choice := choices[r.Intn(len(choices))]
+	return string([]byte{
+		'#',
+		choice[r.Intn(len(choice))],
+		choice[r.Intn(len(choice))],
+		choice[r.Intn(len(choice))],
+	})
 }

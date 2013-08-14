@@ -26,6 +26,9 @@ type Hero struct {
 	occupation Occupation
 	skinTone   uint
 
+	equipped []*Equippable
+	items    []world.Visible
+
 	birth time.Time
 	death time.Time
 
@@ -40,6 +43,14 @@ func (h *Hero) Save() (uint, interface{}, []world.ObjectLike) {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
+	attached := []world.ObjectLike{&h.CombatObject}
+	for _, e := range h.equipped {
+		attached = append(attached, e)
+	}
+	for _, i := range h.items {
+		attached = append(attached, i)
+	}
+
 	return 0, map[string]interface{}{
 		"name":       h.name.serialize(),
 		"race":       uint64(h.race),
@@ -48,7 +59,9 @@ func (h *Hero) Save() (uint, interface{}, []world.ObjectLike) {
 		"skin":       h.skinTone,
 		"birth":      h.birth.Format(time.RFC3339Nano),
 		"death":      h.death.Format(time.RFC3339Nano),
-	}, []world.ObjectLike{&h.CombatObject}
+		"equipped":   uint(len(h.equipped)),
+		"items":      uint(len(h.items)),
+	}, attached
 }
 
 func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike) {
@@ -77,8 +90,43 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 		if err != nil {
 			panic(err)
 		}
+
+		equipCount, ok := dataMap["equipped"].(uint)
+		if ok {
+			h.equipped = make([]*Equippable, equipCount)
+			for i, e := range attached[1 : equipCount+1] {
+				h.equipped[i] = e.(*Equippable)
+			}
+			itemCount := dataMap["items"].(uint)
+			h.items = make([]world.Visible, itemCount)
+			for i, o := range attached[equipCount+1 : itemCount+equipCount+1] {
+				h.items[i] = o.(world.Visible)
+			}
+		} else {
+			r := rand.New(rand.NewSource(rand.Int63()))
+			h.equipped = []*Equippable{
+				{
+					slot:         SlotShirt,
+					kind:         0,
+					customColors: []string{randomColor(r)},
+				},
+				{
+					slot:         SlotPants,
+					kind:         0,
+					customColors: []string{randomColor(r)},
+				},
+				{
+					slot: SlotFeet,
+					kind: 0,
+				},
+			}
+		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
+	}
+
+	for _, e := range h.equipped {
+		e.wearer = h
 	}
 }
 
@@ -116,6 +164,18 @@ func (h *Hero) Sprite() string {
 
 func (h *Hero) Colors() []string {
 	return []string{h.Race().SkinTones()[h.skinTone]}
+}
+
+func (h *Hero) Attached() []world.Visible {
+	attached := make([]world.Visible, len(h.equipped))
+	for i, e := range h.equipped {
+		attached[i] = e
+	}
+	return attached
+}
+
+func (h *Hero) AnimationType() string {
+	return "ccr"
 }
 
 func (h *Hero) MaxHealth() uint64 {
