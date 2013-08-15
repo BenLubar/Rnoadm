@@ -270,7 +270,7 @@ paint = function() {
 	var playerY = lerpPosition(gameState.player.prevY, gameState.player.y, gameState.player.lastMove);
 	var startX = Math.max(floor(playerX - w2), 0);
 	var endX = Math.min(floor(playerX + w2), 256);
-	var startY = Math.max(floor(playerX - h2), 0);
+	var startY = Math.max(floor(playerY - h2), 0);
 	var endY = Math.min(floor(playerY + h2), 256);
 
 	playerX += 0.5;
@@ -397,8 +397,8 @@ canvas.canvas.onmousemove = function(e) {
 	repaint();
 }
 
-this['admin'] = function(command) {
-	send({'Admin': command});
+this['admin'] = function() {
+	send({'Admin': [].slice.call(arguments)});
 };
 
 var onlogin = function() {

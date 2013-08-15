@@ -11,7 +11,7 @@ import (
 )
 
 type clientPacket struct {
-	Admin *string
+	Admin []string
 	Auth  *hero.LoginPacket
 	Walk  *struct {
 		X, Y uint8

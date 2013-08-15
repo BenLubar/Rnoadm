@@ -90,7 +90,7 @@ func (e *Equip) AnimationType() string {
 
 func (e *Equip) SpritePos() (uint, uint) {
 	if e.wearer == nil {
-		return 16, 0
+		return 12, 0
 	}
 	return e.wearer.SpritePos()
 }
