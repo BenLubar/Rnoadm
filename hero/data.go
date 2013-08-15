@@ -42,9 +42,14 @@ var raceInfo = [raceCount]struct {
 }
 
 var genderInfo = [genderCount]struct {
+	name string
 }{
-	GenderMale:   {},
-	GenderFemale: {},
+	GenderMale: {
+		name: "male",
+	},
+	GenderFemale: {
+		name: "female",
+	},
 }
 
 var occupationInfo = [occupationCount]struct {
@@ -59,3 +64,4 @@ func (r Race) BaseHealth() uint64        { return raceInfo[r].baseHealth }
 func (r Race) Genders() []Gender         { return raceInfo[r].genders }
 func (r Race) Occupations() []Occupation { return raceInfo[r].occupations }
 func (r Race) SkinTones() []string       { return raceInfo[r].skinTones }
+func (g Gender) Name() string            { return genderInfo[g].name }

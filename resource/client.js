@@ -22,9 +22,12 @@ lerpPosition = function(a, b, t) {
 	repaint();
 	return (a * (16 + t) + b * -t) / 16;
 },
+mouseX = -Infinity,
+mouseY = -Infinity,
 gameState = {
 	objects: new Array(256 * 256),
-	player: {x: 127, y: 127, prevX: 127, prevY: 127, lastMove: time()}
+	player:  {x: 127, y: 127, prevX: 127, prevY: 127, lastMove: time()},
+	hud:     {name: '', data: {}}
 },
 canvas = document.createElement('canvas').getContext('2d'),
 send = function(packet) {
@@ -101,6 +104,11 @@ wsmessage = function(e) {
 		});
 		repaint();
 	}
+	if (p = msg['HUD']) {
+		gameState.hud.name = p['N'];
+		gameState.hud.data = p['D'] || {};
+		repaint();
+	}
 },
 connect = function() {
 	ws = new WebSocket('ws://' + location.host + '/ws');
@@ -117,6 +125,22 @@ repaint = function() {
 	requestAnimationFrame(paint);
 },
 nextRepaint = Infinity,
+drawText = function(x, y, text, color, extra, ctx) {
+	extra = extra || {};
+	color = color || '#fff';
+	ctx = ctx || canvas;
+	var xoff = ctx == canvas ? w/2*tileSize : 0;
+	var yoff = ctx == canvas ? h/2*tileSize : 0;
+	if (extra['T']) {
+		ctx.font = '32px "Jolly Lodger"';
+	} else {
+		ctx.font = '16px "Open Sans Condensed"';
+	}
+	ctx.fillStyle = '#000';
+	ctx.fillText(text, xoff + x*tileSize, yoff + y*tileSize + 1);
+	ctx.fillStyle = color;
+	ctx.fillText(text, xoff + x*tileSize, yoff + y*tileSize);
+},
 images = {},
 images_resize = {},
 images_recolor = {},
@@ -136,8 +160,8 @@ drawSprite = function(x, y, sprite, color, extra, ctx) {
 		},
 		'ccr': function() {
 			// character creation rotation
-			col += [0, 6, 3, 9][floor(time() / 10) % 4];
-			nextRepaint = Math.min(nextRepaint, floor(time() / 10 + 1) * 10);
+			col += [0, 6, 3, 9][floor(time() / 30) % 4];
+			nextRepaint = Math.min(nextRepaint, floor(time() / 30 + 1) * 30);
 		},
 		'wa': function() {
 			// walk (alternating)
@@ -271,6 +295,44 @@ paint = function() {
 			}
 		}
 	}
+
+	switch (gameState.hud.name) {
+	case '':
+		break;
+
+	case 'cc':
+		canvas.fillStyle = '#000';
+		canvas.beginPath();
+		canvas.moveTo((w/2-3.5)*tileSize, (h/2-5)*tileSize);
+		canvas.lineTo((w/2+4)*tileSize, (h/2-5)*tileSize);
+		canvas.lineTo((w/2+4.5)*tileSize, (h/2-4)*tileSize);
+		canvas.lineTo((w/2-4)*tileSize, (h/2-4)*tileSize);
+		canvas.closePath();
+		canvas.fill();
+		canvas.beginPath();
+		canvas.moveTo((w/2-3.5)*tileSize, (h/2+2.6)*tileSize);
+		canvas.lineTo((w/2+4)*tileSize, (h/2+2.6)*tileSize);
+		canvas.lineTo((w/2+4.5)*tileSize, (h/2+2)*tileSize);
+		canvas.lineTo((w/2-4)*tileSize, (h/2+2)*tileSize);
+		canvas.closePath();
+		canvas.fill();
+		canvas.fillStyle = 'rgba(0,0,0,.7)';
+		canvas.fillRect((w/2-4)*tileSize, (h/2-4)*tileSize, 8.5*tileSize, 6*tileSize);
+		canvas.fillStyle = '#fff';
+		canvas.fillRect((w/2-3.5)*tileSize, (h/2-4)*tileSize, 3*tileSize, 4*tileSize);
+		gameState.hud.data['S'].forEach(function(sprite) {
+			drawSprite(-4, -4, sprite['S'], sprite['C'], sprite['E']);
+		});
+		drawText(-1.25, -4.125, 'Character', '#ccc', {'T': true});
+		drawText(0, -3.5, 'change gender (' + gameState.hud.data['G'] + ')', mouseX >= -2 && mouseX <= 2.5 && mouseY >= -3.5 && mouseY <= -3 ? '#fff' : '#ccc');
+		drawText(0, -2.5, 'change skin color', mouseX >= 0 && mouseX <= 4.5 && mouseY >= -2.5 && mouseY <= -2 ? '#fff' : '#ccc');
+		drawText(0, -1.5, 'change shirt color', mouseX >= 0 && mouseX <= 4.5 && mouseY >= -1.5 && mouseY <= -1 ? '#fff' : '#ccc');
+		drawText(0, -0.5, 'change pants color', mouseX >= 0 && mouseX <= 4.5 && mouseY >= -0.5 && mouseY <= 0 ? '#fff' : '#ccc');
+		drawText(-3, 1, gameState.hud.data['N'], mouseX >= -3.5 && mouseX <= 5 && mouseY >= 0.5 && mouseY <= 2 ? '#fff' : '#ccc', {'T': true});
+		drawText(-1.5, 1.5, 'change name', mouseX >= -3.5 && mouseX <= 5 && mouseY >= 0.5 && mouseY <= 2 ? '#fff' : '#ccc');
+		drawText(-2.25, 2.5, 'look out, world! here I come!', mouseX >= -3.5 && mouseX <= 5 && mouseY >= 2.5 && mouseY <= 3 ? '#fff' : '#ccc');
+		break;
+	}
 },
 loginForm = document.querySelector('form'),
 loginField = loginForm.querySelector('#username'),
@@ -294,14 +356,46 @@ setInterval(function() {
 }, 50);
 
 canvas.canvas.onclick = function(e) {
-	var x = e.offsetX / tileSize + gameState.player.x - w/2 + 0.5;
-	var y = e.offsetY / tileSize + gameState.player.y - h/2 + 0.5;
-	var fx = floor(x);
-	var fy = floor(y);
-	if (fx >= 0 && fx < 256 && fy >= 0 && fy < 256) {
-		send({'Walk': {'X': fx, 'Y': fy}});
+	var x = e.offsetX / tileSize - w/2 + 0.5;
+	var y = e.offsetY / tileSize - h/2 + 0.5;
+	var tx = floor(x + gameState.player.x);
+	var ty = floor(y + gameState.player.y);
+	switch (gameState.hud.name) {
+	case '':
+		break;
+
+	case 'cc':
+		if (x >= 0 && x <= 4.5 && y >= -3.5 && y <= -3) {
+			send({'HUD': {'N': gameState.hud.name, 'D': 'gender'}});
+		}
+		if (x >= 0 && x <= 4.5 && y >= -2.5 && y <= -2) {
+			send({'HUD': {'N': gameState.hud.name, 'D': 'skin'}});
+		}
+		if (x >= 0 && x <= 4.5 && y >= -1.5 && y <= -1) {
+			send({'HUD': {'N': gameState.hud.name, 'D': 'shirt'}});
+		}
+		if (x >= 0 && x <= 4.5 && y >= -0.5 && y <= 0) {
+			send({'HUD': {'N': gameState.hud.name, 'D': 'pants'}});
+		}
+		if (x >= -3.5 && x <= 5 && y >= 0.5 && y <= 2) {
+			send({'HUD': {'N': gameState.hud.name, 'D': 'name'}});
+		}
+		if (x >= -3.5 && x <= 5 && y >= 2.5 && y <= 3) {
+			send({'HUD': {'N': gameState.hud.name, 'D': 'accept'}});
+		}
+		return;
+	}
+
+	if (tx >= 0 && tx < 256 && ty >= 0 && ty < 256) {
+		send({'Walk': {'X': tx, 'Y': ty}});
 	}
 };
+
+canvas.canvas.onmousemove = function(e) {
+	mouseX = e.offsetX / tileSize - w/2 + 0.5;
+	mouseY = e.offsetY / tileSize - h/2 + 0.5;
+	repaint();
+}
 
 this['admin'] = function(command) {
 	send({'Admin': command});

@@ -16,6 +16,10 @@ type clientPacket struct {
 	Walk  *struct {
 		X, Y uint8
 	}
+	HUD *struct {
+		Name string      `json:"N"`
+		Data interface{} `json:"D"`
+	}
 }
 
 type packetKick struct {
@@ -77,6 +81,10 @@ func addSprites(u *packetUpdateObject, obj world.Visible) *packetUpdateObject {
 	return u
 }
 
+type packetHUD struct {
+	HUD hero.HUD
+}
+
 func socketHandler(ws *websocket.Conn) {
 	defer ws.Close()
 
@@ -111,6 +119,7 @@ func socketHandler(ws *websocket.Conn) {
 		player      *hero.Player
 		zone        *world.Zone
 		kick        <-chan string
+		hud         <-chan hero.HUD
 		updateQueue packetUpdate
 	)
 	updateTick := time.NewTicker(time.Second / 10)
@@ -232,7 +241,7 @@ func socketHandler(ws *websocket.Conn) {
 					return
 				}
 				world.InitObject(player)
-				kick = player.InitPlayer()
+				kick, hud = player.InitPlayer()
 				zx, tx, zy, ty := player.LoginPosition()
 				defer hero.PlayerDisconnected(player)
 
@@ -240,6 +249,8 @@ func socketHandler(ws *websocket.Conn) {
 				zone.AddListener(listener)
 				if player.CanSpawn() {
 					zone.Tile(tx, ty).Add(player)
+				} else {
+					player.CharacterCreation("")
 				}
 				defer func() {
 					if t := player.Position(); t != nil {
@@ -262,11 +273,27 @@ func socketHandler(ws *websocket.Conn) {
 					}
 				}
 			}
+			if packet.HUD != nil {
+				switch packet.HUD.Name {
+				default:
+					return
+
+				case "cc":
+					if cmd, ok := packet.HUD.Data.(string); ok {
+						player.CharacterCreation(cmd)
+					} else {
+						return
+					}
+				}
+			}
 			log.Printf("%s: %+v", addr, packet)
 
 		case message := <-kick:
 			websocket.JSON.Send(ws, packetKick{message})
 			return
+
+		case h := <-hud:
+			websocket.JSON.Send(ws, packetHUD{h})
 
 		case update := <-updates:
 			updateQueue.Update = append(updateQueue.Update, update...)
