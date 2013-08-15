@@ -9,17 +9,24 @@ loggedIn = false,
 connected = false,
 inRepaint = true,
 w = 32, h = 16,
-gameState = {
-	objects: new Array(256 * 256),
-	player: {x: 127, y: 127}
-},
-canvas = document.createElement('canvas').getContext('2d'),
 floor = function(n) {
 	return Math.floor(n);
 },
 time = function() {
 	return +new Date() / 50;
 },
+lerpPosition = function(a, b, t) {
+	t -= time();
+	if (t < -16 || a == b)
+		return b;
+	repaint();
+	return (a * (16 + t) + b * -t) / 16;
+},
+gameState = {
+	objects: new Array(256 * 256),
+	player: {x: 127, y: 127, prevX: 127, prevY: 127, lastMove: time()}
+},
+canvas = document.createElement('canvas').getContext('2d'),
 send = function(packet) {
 	if (!connected)
 		return;
@@ -39,11 +46,12 @@ wsclose = function() {
 },
 wsmessage = function(e) {
 	var msg = JSON.parse(e.data), p;
+	console.log(msg);
 	if (p = msg['Kick']) {
 		ws.onclose = wsopen = wsclose = wsmessage = function() {};
 		ws.close();
 		inRepaint = true;
-		canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
+		canvas.canvas.parentNode.removeChild(canvas.canvas);
 		delete sessionStorage['rnoadm_username'];
 		delete sessionStorage['rnoadm_password'];
 		alert(p);
@@ -58,15 +66,25 @@ wsmessage = function(e) {
 		}
 	}
 	if (p = msg['Update']) {
-		gameState.player.x = msg['PlayerX'];
-		gameState.player.y = msg['PlayerY'];
+		var playerX = msg['PlayerX'], playerY = msg['PlayerY'];
+		if (playerX != gameState.player.x || playerY != gameState.player.y) {
+			gameState.player.lastMove = time();
+			gameState.player.prevX = gameState.player.x;
+			gameState.player.prevY = gameState.player.y;
+			gameState.player.x = playerX;
+			gameState.player.y = playerY;
+		}
 		p.forEach(function(update) {
 			var i = update['X'] | (update['Y'] << 8);
 			if (!gameState.objects[i]) {
 				gameState.objects[i] = {};
 			}
 			if (!gameState.objects[i][update['I']]) {
-				gameState.objects[i][update['I']] = {};
+				gameState.objects[i][update['I']] = {
+					prevX: update['X'],
+					prevY: update['Y'],
+					lastMove: time()
+				};
 			}
 			if (update['R']) {
 				delete gameState.objects[i][update['I']];
@@ -75,12 +93,14 @@ wsmessage = function(e) {
 			} else {
 				var from = update['Fx'] | (update['Fy'] << 8);
 				gameState.objects[i][update['I']] = gameState.objects[from][update['I']];
+				gameState.objects[i][update['I']].prevX = update['Fx'];
+				gameState.objects[i][update['I']].prevY = update['Fy'];
+				gameState.objects[i][update['I']].lastMove = time();
 				delete gameState.objects[from][update['I']];
 			}
 		});
 		repaint();
 	}
-	console.log(msg);
 },
 connect = function() {
 	ws = new WebSocket('ws://' + location.host + '/ws');
@@ -220,14 +240,14 @@ paint = function() {
 	inRepaint = false;
 	canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
 
-	var w2 = floor(w/2 + 1);
-	var h2 = floor(h/2 + 1);
-	var playerX = gameState.player.x;
-	var playerY = gameState.player.y;
-	var startX = Math.max(playerX - w2, 0);
-	var endX = Math.min(playerX + w2, 256);
-	var startY = Math.max(playerX - h2, 0);
-	var endY = Math.min(playerY + h2, 256);
+	var w2 = w/2 + 1;
+	var h2 = h/2 + 1;
+	var playerX = lerpPosition(gameState.player.prevX, gameState.player.x, gameState.player.lastMove);
+	var playerY = lerpPosition(gameState.player.prevY, gameState.player.y, gameState.player.lastMove);
+	var startX = Math.max(floor(playerX - w2), 0);
+	var endX = Math.min(floor(playerX + w2), 256);
+	var startY = Math.max(floor(playerX - h2), 0);
+	var endY = Math.min(floor(playerY + h2), 256);
 
 	playerX += 0.5;
 	playerY += 0.5;
@@ -243,8 +263,10 @@ paint = function() {
 			var objects = gameState.objects[x | (y << 8)] || {};
 
 			for (var i in objects) {
+				var x_ = lerpPosition(objects[i].prevX, x, objects[i].lastMove) - playerX;
+				var y_ = lerpPosition(objects[i].prevY, y, objects[i].lastMove) - playerY;
 				(objects[i].sprite || []).forEach(function(sprite) {
-					drawSprite(x - playerX, y - playerY, sprite['S'], sprite['C'], sprite['E']);
+					drawSprite(x_, y_, sprite['S'], sprite['C'], sprite['E']);
 				});
 			}
 		}
@@ -270,6 +292,16 @@ setInterval(function() {
 		repaint();
 	}
 }, 50);
+
+canvas.canvas.onclick = function(e) {
+	var x = e.offsetX / tileSize + gameState.player.x - w/2 + 0.5;
+	var y = e.offsetY / tileSize + gameState.player.y - h/2 + 0.5;
+	var fx = floor(x);
+	var fy = floor(y);
+	if (fx >= 0 && fx < 256 && fy >= 0 && fy < 256) {
+		send({'Walk': {'X': fx, 'Y': fy}});
+	}
+};
 
 this['admin'] = function(command) {
 	send({'Admin': command});

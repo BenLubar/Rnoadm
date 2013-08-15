@@ -195,6 +195,17 @@ func ReleaseZone(z *Zone) {
 	})
 }
 
+func Think() {
+	var wg sync.WaitGroup
+	zoneCritical(func() {
+		for _, lz := range loadedZones {
+			wg.Add(1)
+			go lz.zone.think(&wg)
+		}
+	})
+	wg.Wait()
+}
+
 func SaveAllZones() {
 	zoneCritical(func() {
 		for _, lz := range loadedZones {

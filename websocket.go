@@ -13,6 +13,9 @@ import (
 type clientPacket struct {
 	Admin *string
 	Auth  *hero.LoginPacket
+	Walk  *struct {
+		X, Y uint8
+	}
 }
 
 type packetKick struct {
@@ -32,8 +35,8 @@ type packetUpdateUpdate struct {
 	ID     uint64              `json:"I,string"`
 	X      uint8               `json:"X"`
 	Y      uint8               `json:"Y"`
-	FromX  *uint8              `json:"Fy,omitempty"`
-	FromY  *uint8              `json:"Fx,omitempty"`
+	FromX  *uint8              `json:"Fx,omitempty"`
+	FromY  *uint8              `json:"Fy,omitempty"`
 	Remove bool                `json:"R,omitempty"`
 	Object *packetUpdateObject `json:"O,omitempty"`
 }
@@ -186,6 +189,29 @@ func socketHandler(ws *websocket.Conn) {
 				}
 			}
 		},
+		Update: func(t *world.Tile, obj world.ObjectLike) {
+			o, ok := obj.(world.Visible)
+			if !ok {
+				return
+			}
+			x, y := t.Position()
+			newUpdates := []packetUpdateUpdate{
+				{
+					ID:     o.NetworkID(),
+					X:      x,
+					Y:      y,
+					Object: addSprites(&packetUpdateObject{}, o),
+				},
+			}
+			for {
+				select {
+				case updates <- newUpdates:
+					return
+				case other := <-updates:
+					newUpdates = append(other, newUpdates...)
+				}
+			}
+		},
 	}
 
 	for {
@@ -225,6 +251,16 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			if player == nil {
 				continue
+			}
+			if packet.Walk != nil {
+				if t := player.Position(); t != nil {
+					x, y := t.Position()
+					if packet.Walk.X == x && packet.Walk.Y == y {
+						player.ClearSchedule()
+					} else {
+						player.SetSchedule(world.NewWalkSchedule(x, y, packet.Walk.X, packet.Walk.Y))
+					}
+				}
 			}
 			log.Printf("%s: %+v", addr, packet)
 

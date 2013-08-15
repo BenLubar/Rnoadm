@@ -73,5 +73,13 @@ func (o *LivingObject) Think() {
 	sched := o.schedule
 	o.mtx.Unlock()
 
-	o.delay = sched.Act(o.Outer().(Living))
+	if sched == nil {
+		return
+	}
+
+	var ok bool
+	o.delay, ok = sched.Act(o.Outer().(Living))
+	if !ok {
+		o.ClearSchedule()
+	}
 }

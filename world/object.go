@@ -10,6 +10,8 @@ type ObjectLike interface {
 	notifyOuter(ObjectLike)
 	notifyPosition(*Tile) *Tile
 
+	NotifyPosition(*Tile, *Tile)
+
 	Outer() ObjectLike
 
 	// Position returns the tile this object is located in.
@@ -55,9 +57,14 @@ func (o *Object) notifyPosition(t *Tile) *Tile {
 	for {
 		old := atomic.LoadPointer(&o.tile)
 		if atomic.CompareAndSwapPointer(&o.tile, old, unsafe.Pointer(t)) {
+			go o.outer.NotifyPosition((*Tile)(old), t)
 			return (*Tile)(old)
 		}
 	}
+}
+
+func (o *Object) NotifyPosition(old, new *Tile) {
+	// do nothing
 }
 
 func (o *Object) Position() *Tile {

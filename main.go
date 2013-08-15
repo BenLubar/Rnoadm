@@ -25,6 +25,12 @@ func main() {
 		}
 	}()
 
+	go func() {
+		for _ = range time.Tick(time.Second / 5) {
+			world.Think()
+		}
+	}()
+
 	defer world.SaveAllZones()
 	defer hero.SaveAllPlayers()
 

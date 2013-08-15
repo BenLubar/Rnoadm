@@ -16,6 +16,7 @@ type ZoneListener struct {
 	Add    func(*Tile, ObjectLike)
 	Remove func(*Tile, ObjectLike)
 	Move   func(*Tile, *Tile, ObjectLike)
+	Update func(*Tile, ObjectLike)
 }
 
 func (z *Zone) lock()   { z.mtx.Lock() }
@@ -108,5 +109,28 @@ func (z *Zone) notifyMove(from *Tile, to *Tile, obj ObjectLike) {
 			l.Move(from, to, obj)
 		}
 		z.lock()
+	}
+}
+
+func (z *Zone) Update(t *Tile, obj ObjectLike) {
+	z.lock()
+	defer z.unlock()
+
+	for l := range z.listeners {
+		z.unlock()
+		if l.Update != nil {
+			l.Update(t, obj)
+		}
+		z.lock()
+	}
+}
+
+func (z *Zone) think(wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for x := 0; x < 256; x++ {
+		for y := 0; y < 256; y++ {
+			z.Tile(uint8(x), uint8(y)).think()
+		}
 	}
 }

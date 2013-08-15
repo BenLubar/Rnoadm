@@ -66,14 +66,12 @@ func (p *Player) Save() (uint, interface{}, []world.ObjectLike) {
 }
 
 func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLike) {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-
 	switch version {
 	case 0:
 		dataMap := data.(map[string]interface{})
-		attached[0].(*Hero).mtx.Lock()
 		p.Hero = *attached[0].(*Hero)
+		p.mtx.Lock()
+		defer p.mtx.Unlock()
 		p.ancestry = *attached[1].(*PlayerAncestry)
 		p.characterCreation = dataMap["creation"].(bool)
 		p.zoneX, p.zoneY = dataMap["zx"].(int64), dataMap["zy"].(int64)
@@ -94,6 +92,9 @@ func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLik
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
+	}
+	for _, e := range p.Hero.equipped {
+		e.wearer = &p.Hero
 	}
 }
 

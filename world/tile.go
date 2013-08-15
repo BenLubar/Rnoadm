@@ -89,6 +89,12 @@ func (t *Tile) Zone() *Zone {
 	return t.zone
 }
 
+func (t *Tile) think() {
+	for _, o := range t.Objects() {
+		o.Think()
+	}
+}
+
 func SaveConvert(o ObjectLike) interface{} {
 	version, data, attached := o.Save()
 	attachedData := make([]interface{}, len(attached))

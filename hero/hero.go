@@ -32,6 +32,10 @@ type Hero struct {
 	birth time.Time
 	death time.Time
 
+	facing         uint   // not saved
+	animation      string // not saved
+	animationTicks uint   // not saved
+
 	mtx sync.Mutex
 }
 
@@ -182,10 +186,72 @@ func (h *Hero) Attached() []world.Visible {
 	return attached
 }
 
+func (h *Hero) Think() {
+	h.CombatObject.Think()
+
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+	if h.animationTicks > 0 {
+		h.animationTicks--
+		if h.animationTicks == 0 {
+			h.animation = ""
+			if t := h.Position(); t != nil {
+				go t.Zone().Update(t, h.Outer())
+			}
+		}
+	}
+}
+
 func (h *Hero) AnimationType() string {
-	return "ccr"
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	return h.animation
+}
+
+func (h *Hero) SpritePos() (uint, uint) {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	return h.facing, 0
 }
 
 func (h *Hero) MaxHealth() uint64 {
 	return h.Race().BaseHealth()
+}
+
+func (h *Hero) NotifyPosition(old, new *world.Tile) {
+	if old == nil || new == nil {
+		h.mtx.Lock()
+		h.animationTicks = 0
+		h.animation = ""
+		h.facing = 0
+		h.mtx.Unlock()
+		return
+	}
+	ox, oy := old.Position()
+	nx, ny := new.Position()
+
+	h.mtx.Lock()
+	switch {
+	case ox-1 == nx && oy == ny:
+		h.animationTicks = 4
+		h.animation = "wa" // walk (alternating)
+		h.facing = 6
+	case ox+1 == nx && oy == ny:
+		h.animationTicks = 4
+		h.animation = "wa" // walk (alternating)
+		h.facing = 9
+	case ox == nx && oy-1 == ny:
+		h.animationTicks = 4
+		h.animation = "wa" // walk (alternating)
+		h.facing = 3
+	case ox == nx && oy+1 == ny:
+		h.animationTicks = 4
+		h.animation = "wa" // walk (alternating)
+		h.facing = 0
+	}
+	h.mtx.Unlock()
+
+	new.Zone().Update(new, h.Outer())
 }
