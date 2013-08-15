@@ -235,19 +235,19 @@ func (h *Hero) NotifyPosition(old, new *world.Tile) {
 	h.mtx.Lock()
 	switch {
 	case ox-1 == nx && oy == ny:
-		h.animationTicks = 4
+		h.animationTicks = 5
 		h.animation = "wa" // walk (alternating)
 		h.facing = 6
 	case ox+1 == nx && oy == ny:
-		h.animationTicks = 4
+		h.animationTicks = 5
 		h.animation = "wa" // walk (alternating)
 		h.facing = 9
 	case ox == nx && oy-1 == ny:
-		h.animationTicks = 4
+		h.animationTicks = 5
 		h.animation = "wa" // walk (alternating)
 		h.facing = 3
 	case ox == nx && oy+1 == ny:
-		h.animationTicks = 4
+		h.animationTicks = 5
 		h.animation = "wa" // walk (alternating)
 		h.facing = 0
 	}

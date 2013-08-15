@@ -165,8 +165,8 @@ drawSprite = function(x, y, sprite, color, extra, ctx) {
 		},
 		'wa': function() {
 			// walk (alternating)
-			col += [0, 1, 0, 2][floor(time() / 4) % 4];
-			nextRepaint = Math.min(nextRepaint, floor(time() / 4 + 1) * 2);
+			col += [0, 1, 0, 2][floor(time() / 3) % 4];
+			nextRepaint = Math.min(nextRepaint, floor(time() / 3 + 1) * 3);
 		}
 	})[extra['a'] || '']();
 	if (!images[sprite]) {
