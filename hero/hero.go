@@ -26,7 +26,7 @@ type Hero struct {
 	occupation Occupation
 	skinTone   uint
 
-	equipped []*Equippable
+	equipped map[EquipSlot]*Equip
 	items    []world.Visible
 
 	birth time.Time
@@ -93,9 +93,10 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 
 		equipCount, ok := dataMap["equipped"].(uint)
 		if ok {
-			h.equipped = make([]*Equippable, equipCount)
-			for i, e := range attached[1 : equipCount+1] {
-				h.equipped[i] = e.(*Equippable)
+			h.equipped = make(map[EquipSlot]*Equip, equipCount)
+			for _, o := range attached[1 : equipCount+1] {
+				e := o.(*Equip)
+				h.equipped[e.slot] = e
 			}
 			itemCount := dataMap["items"].(uint)
 			h.items = make([]world.Visible, itemCount)
@@ -104,18 +105,18 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 			}
 		} else {
 			r := rand.New(rand.NewSource(rand.Int63()))
-			h.equipped = []*Equippable{
-				{
+			h.equipped = map[EquipSlot]*Equip{
+				SlotShirt: {
 					slot:         SlotShirt,
 					kind:         0,
 					customColors: []string{randomColor(r)},
 				},
-				{
+				SlotPants: {
 					slot:         SlotPants,
 					kind:         0,
 					customColors: []string{randomColor(r)},
 				},
-				{
+				SlotFeet: {
 					slot: SlotFeet,
 					kind: 0,
 				},
@@ -163,10 +164,17 @@ func (h *Hero) Sprite() string {
 }
 
 func (h *Hero) Colors() []string {
-	return []string{h.Race().SkinTones()[h.skinTone]}
+	h.mtx.Lock()
+	tone := h.skinTone
+	h.mtx.Unlock()
+
+	return []string{h.Race().SkinTones()[tone]}
 }
 
 func (h *Hero) Attached() []world.Visible {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
 	attached := make([]world.Visible, len(h.equipped))
 	for i, e := range h.equipped {
 		attached[i] = e

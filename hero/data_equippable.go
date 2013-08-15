@@ -1,6 +1,6 @@
 package hero
 
-var equippables = [equippableSlotCount][]struct {
+var equippables = [equipSlotCount][]struct {
 	name   string
 	sprite string
 	colors []string

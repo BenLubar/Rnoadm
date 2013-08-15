@@ -5,21 +5,21 @@ import (
 	"github.com/BenLubar/Rnoadm/world"
 )
 
-type EquippableSlot uint16
+type EquipSlot uint16
 
 const (
-	SlotHead EquippableSlot = iota
+	SlotHead EquipSlot = iota
 	SlotShirt
 	SlotPants
 	SlotFeet
 
-	equippableSlotCount
+	equipSlotCount
 )
 
-type Equippable struct {
+type Equip struct {
 	world.VisibleObject
 
-	slot EquippableSlot
+	slot EquipSlot
 	kind uint64
 
 	customColors []string
@@ -28,10 +28,10 @@ type Equippable struct {
 }
 
 func init() {
-	world.Register("equip", world.Visible((*Equippable)(nil)))
+	world.Register("equip", world.Visible((*Equip)(nil)))
 }
 
-func (e *Equippable) Save() (uint, interface{}, []world.ObjectLike) {
+func (e *Equip) Save() (uint, interface{}, []world.ObjectLike) {
 	colors := make([]interface{}, len(e.customColors))
 	for i, c := range e.customColors {
 		colors[i] = c
@@ -43,12 +43,12 @@ func (e *Equippable) Save() (uint, interface{}, []world.ObjectLike) {
 	}, nil
 }
 
-func (e *Equippable) Load(version uint, data interface{}, attached []world.ObjectLike) {
+func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
 		dataMap := data.(map[string]interface{})
 
-		e.slot = EquippableSlot(dataMap["s"].(uint16))
+		e.slot = EquipSlot(dataMap["s"].(uint16))
 		e.kind = dataMap["k"].(uint64)
 		colors := dataMap["c"].([]interface{})
 		if len(colors) > 0 {
@@ -62,11 +62,11 @@ func (e *Equippable) Load(version uint, data interface{}, attached []world.Objec
 	}
 }
 
-func (e *Equippable) Sprite() string {
+func (e *Equip) Sprite() string {
 	return equippables[e.slot][e.kind].sprite
 }
 
-func (e *Equippable) Colors() []string {
+func (e *Equip) Colors() []string {
 	defaultColors := equippables[e.slot][e.kind].colors
 	colors := make([]string, len(defaultColors))
 	copy(colors, defaultColors)
@@ -81,14 +81,14 @@ func (e *Equippable) Colors() []string {
 	return colors
 }
 
-func (e *Equippable) AnimationType() string {
+func (e *Equip) AnimationType() string {
 	if e.wearer == nil {
 		return ""
 	}
 	return e.wearer.AnimationType()
 }
 
-func (e *Equippable) SpritePos() (uint, uint) {
+func (e *Equip) SpritePos() (uint, uint) {
 	if e.wearer == nil {
 		return 16, 0
 	}

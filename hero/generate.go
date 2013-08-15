@@ -25,23 +25,24 @@ func GenerateHeroOccupation(r *rand.Rand, race Race, occupation Occupation) *Her
 	case RaceHuman:
 		hero.name = *GenerateHumanName(r, hero.gender)
 	}
-	hero.equipped = append(hero.equipped, &Equippable{
+	hero.equipped = make(map[EquipSlot]*Equip)
+	hero.equipped[SlotShirt] = &Equip{
 		slot:         SlotShirt,
 		kind:         0,
 		wearer:       hero,
 		customColors: []string{randomColor(r)},
-	})
-	hero.equipped = append(hero.equipped, &Equippable{
+	}
+	hero.equipped[SlotPants] = &Equip{
 		slot:         SlotPants,
 		kind:         0,
 		wearer:       hero,
 		customColors: []string{randomColor(r)},
-	})
-	hero.equipped = append(hero.equipped, &Equippable{
+	}
+	hero.equipped[SlotFeet] = &Equip{
 		slot:   SlotFeet,
 		kind:   0,
 		wearer: hero,
-	})
+	}
 	world.InitObject(hero)
 	return hero
 }

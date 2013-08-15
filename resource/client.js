@@ -215,6 +215,7 @@ drawSprite = function(x, y, sprite, color, extra, ctx) {
 		floor(width * scale),
 		floor(height * scale));
 },
+html = document.body.parentNode,
 paint = function() {
 	inRepaint = false;
 	canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
@@ -233,7 +234,7 @@ paint = function() {
 
 	for (var x = 0; x < 256; x += 512/tileSize) {
 		for (var y = 0; y < 256; y += 512/tileSize) {
-			drawSprite(x - playerX, y - playerY, 'grass', '#4dbd33', {'h': 512, 'w': 512});
+			drawSprite(x - playerX, y - playerY, 'grass', html.style.background = '#4dbd33', {'h': 512, 'w': 512});
 		}
 	}
 
