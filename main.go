@@ -6,6 +6,7 @@ import (
 	"github.com/BenLubar/Rnoadm/world"
 	"log"
 	"net/http"
+	"math/rand"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -13,6 +14,8 @@ import (
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	http.Handle("/ws", websocket.Handler(socketHandler))
 	http.HandleFunc("/", staticHandler)
 	go func() {

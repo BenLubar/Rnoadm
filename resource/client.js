@@ -6,6 +6,7 @@ clientHash,
 username = sessionStorage['rnoadm_username'] || '',
 password = sessionStorage['rnoadm_password'] || '',
 loggedIn = false,
+everConnected = false,
 connected = false,
 inRepaint = true,
 w = 32, h = 16,
@@ -37,6 +38,7 @@ send = function(packet) {
 	ws.send(JSON.stringify(packet));
 },
 wsopen = function() {
+	everConnected = true;
 	connected = true;
 	if (loggedIn) {
 		send({'Auth': {'U': username, 'P': password}});
@@ -45,6 +47,7 @@ wsopen = function() {
 },
 wsclose = function() {
 	connected = false;
+	repaint();
 	setTimeout(connect, 100);
 },
 wsmessage = function(e) {
@@ -263,6 +266,11 @@ html = document.body.parentNode,
 paint = function() {
 	inRepaint = false;
 	canvas.clearRect(0, 0, canvas.canvas.width, canvas.canvas.height);
+
+	if (everConnected && !connected) {
+		drawText(-2, 0, 'lost connection', '#fff', {'T': true});
+		return;
+	}
 
 	var w2 = w/2 + 1;
 	var h2 = h/2 + 1;
