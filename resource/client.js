@@ -17,10 +17,10 @@ time = function() {
 },
 lerpPosition = function(a, b, t) {
 	t -= time();
-	if (t < -16 || a == b)
+	if (t < -8 || a == b)
 		return b;
 	repaint();
-	return (a * (16 + t) + b * -t) / 16;
+	return (a * (8 + t) + b * -t) / 8;
 },
 mouseX = -Infinity,
 mouseY = -Infinity,
@@ -355,6 +355,8 @@ setInterval(function() {
 	}
 }, 50);
 
+canvas.canvas.style.display = 'none';
+document.body.appendChild(canvas.canvas);
 canvas.canvas.onclick = function(e) {
 	var x = e.offsetX / tileSize - w/2 + 0.5;
 	var y = e.offsetY / tileSize - h/2 + 0.5;
@@ -405,7 +407,7 @@ var onlogin = function() {
 	loggedIn = true;
 	var parent = loginForm.parentNode;
 	parent.removeChild(loginForm);
-	parent.appendChild(canvas.canvas);
+	canvas.canvas.style.display = '';
 	parent.style.overflow = 'hidden';
 	inRepaint = false;
 	repaint();

@@ -88,7 +88,7 @@ func (s *walkSchedule) Act(o Living) (uint, bool) {
 		}
 	}
 	t.Move(o, t.Zone().Tile(s.sx, s.sy))
-	return 4, true
+	return 2, true
 }
 
 func (s *walkSchedule) ShouldSave() bool {

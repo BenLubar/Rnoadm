@@ -272,6 +272,42 @@ func (p *Player) CharacterCreation(command string) {
 	})
 }
 
+func (p *Player) AdminCommand(addr string, command ...string) {
+	if !p.admin {
+		p.Kick("I'm sorry, Dave. I'm afraid you can't do that.")
+		return
+	}
+
+	if len(command) == 0 {
+		return
+	}
+	switch command[0] {
+	case "give admin":
+		if len(command) != 2 {
+			return
+		}
+		loginLock.Lock()
+		defer loginLock.Unlock()
+		player, err := getPlayerKick(command[1], "You have been given admin. Please refresh the page and log back in.")
+		if err != nil {
+			return
+		}
+		player.admin = true
+		savePlayer(player)
+	case "kick":
+		if len(command) < 2 || len(command) > 3 {
+			return
+		}
+		message := "kicked by admin"
+		if len(command) > 2 {
+			message = command[2]
+		}
+		loginLock.Lock()
+		defer loginLock.Unlock()
+		getPlayerKick(command[1], message)
+	}
+}
+
 type HUD struct {
 	Name string                 `json:"N"`
 	Data map[string]interface{} `json:"D,omitempty"`

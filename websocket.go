@@ -126,6 +126,16 @@ func socketHandler(ws *websocket.Conn) {
 	defer updateTick.Stop()
 	updates := make(chan []packetUpdateUpdate, 1)
 
+	sendUpdates := func(newUpdates ...packetUpdateUpdate) {
+		for {
+			select {
+			case updates <- newUpdates:
+				return
+			case other := <-updates:
+				newUpdates = append(other, newUpdates...)
+			}
+		}
+	}
 	listener := &world.ZoneListener{
 		Add: func(t *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)
@@ -133,22 +143,12 @@ func socketHandler(ws *websocket.Conn) {
 				return
 			}
 			x, y := t.Position()
-			newUpdates := []packetUpdateUpdate{
-				{
-					ID:     o.NetworkID(),
-					X:      x,
-					Y:      y,
-					Object: addSprites(&packetUpdateObject{}, o),
-				},
-			}
-			for {
-				select {
-				case updates <- newUpdates:
-					return
-				case other := <-updates:
-					newUpdates = append(other, newUpdates...)
-				}
-			}
+			sendUpdates(packetUpdateUpdate{
+				ID:     o.NetworkID(),
+				X:      x,
+				Y:      y,
+				Object: addSprites(&packetUpdateObject{}, o),
+			})
 		},
 		Remove: func(t *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)
@@ -156,22 +156,12 @@ func socketHandler(ws *websocket.Conn) {
 				return
 			}
 			x, y := t.Position()
-			newUpdates := []packetUpdateUpdate{
-				{
-					ID:     o.NetworkID(),
-					X:      x,
-					Y:      y,
-					Remove: true,
-				},
-			}
-			for {
-				select {
-				case updates <- newUpdates:
-					return
-				case other := <-updates:
-					newUpdates = append(other, newUpdates...)
-				}
-			}
+			sendUpdates(packetUpdateUpdate{
+				ID:     o.NetworkID(),
+				X:      x,
+				Y:      y,
+				Remove: true,
+			})
 		},
 		Move: func(from, to *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)
@@ -180,23 +170,13 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			fx, fy := from.Position()
 			tx, ty := to.Position()
-			newUpdates := []packetUpdateUpdate{
-				{
-					ID:    o.NetworkID(),
-					X:     tx,
-					Y:     ty,
-					FromX: &fx,
-					FromY: &fy,
-				},
-			}
-			for {
-				select {
-				case updates <- newUpdates:
-					return
-				case other := <-updates:
-					newUpdates = append(other, newUpdates...)
-				}
-			}
+			sendUpdates(packetUpdateUpdate{
+				ID:    o.NetworkID(),
+				X:     tx,
+				Y:     ty,
+				FromX: &fx,
+				FromY: &fy,
+			})
 		},
 		Update: func(t *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)
@@ -204,22 +184,12 @@ func socketHandler(ws *websocket.Conn) {
 				return
 			}
 			x, y := t.Position()
-			newUpdates := []packetUpdateUpdate{
-				{
-					ID:     o.NetworkID(),
-					X:      x,
-					Y:      y,
-					Object: addSprites(&packetUpdateObject{}, o),
-				},
-			}
-			for {
-				select {
-				case updates <- newUpdates:
-					return
-				case other := <-updates:
-					newUpdates = append(other, newUpdates...)
-				}
-			}
+			sendUpdates(packetUpdateUpdate{
+				ID:     o.NetworkID(),
+				X:      x,
+				Y:      y,
+				Object: addSprites(&packetUpdateObject{}, o),
+			})
 		},
 	}
 
@@ -286,7 +256,9 @@ func socketHandler(ws *websocket.Conn) {
 					}
 				}
 			}
-			log.Printf("%s: %+v", addr, packet)
+			if len(packet.Admin) > 0 {
+				player.AdminCommand(addr, packet.Admin...)
+			}
 
 		case message := <-kick:
 			websocket.JSON.Send(ws, packetKick{message})

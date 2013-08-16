@@ -14,6 +14,10 @@ type HeroLike interface {
 	Race() Race
 	Gender() Gender
 	Occupation() Occupation
+
+	Inventory() []world.Visible
+	GiveItem(world.Visible) bool
+	RemoveItem(world.Visible) bool
 }
 
 type Hero struct {
@@ -235,23 +239,55 @@ func (h *Hero) NotifyPosition(old, new *world.Tile) {
 	h.mtx.Lock()
 	switch {
 	case ox-1 == nx && oy == ny:
-		h.animationTicks = 5
+		h.animationTicks = 3
 		h.animation = "wa" // walk (alternating)
 		h.facing = 6
 	case ox+1 == nx && oy == ny:
-		h.animationTicks = 5
+		h.animationTicks = 3
 		h.animation = "wa" // walk (alternating)
 		h.facing = 9
 	case ox == nx && oy-1 == ny:
-		h.animationTicks = 5
+		h.animationTicks = 3
 		h.animation = "wa" // walk (alternating)
 		h.facing = 3
 	case ox == nx && oy+1 == ny:
-		h.animationTicks = 5
+		h.animationTicks = 3
 		h.animation = "wa" // walk (alternating)
 		h.facing = 0
 	}
 	h.mtx.Unlock()
 
 	new.Zone().Update(new, h.Outer())
+}
+
+func (h *Hero) Inventory() []world.Visible {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	inventory := make([]world.Visible, len(h.items))
+	copy(inventory, h.items)
+	return inventory
+}
+
+func (h *Hero) GiveItem(item world.Visible) bool {
+	h.mtx.Lock()
+	h.items = append(h.items, item)
+	h.mtx.Unlock()
+
+	return true
+}
+
+func (h *Hero) RemoveItem(item world.Visible) bool {
+	found := false
+	h.mtx.Lock()
+	for i, o := range h.items {
+		if o == item {
+			h.items = append(h.items[:i], h.items[i+1:]...)
+			found = true
+			break
+		}
+	}
+	h.mtx.Unlock()
+
+	return found
 }

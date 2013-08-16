@@ -208,3 +208,36 @@ func SaveAllPlayers() {
 		savePlayer(p)
 	}
 }
+
+func getPlayerKick(login, message string) (*Player, error) {
+	filename := loginToFilename(login)
+
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	g, err := gzip.NewReader(f)
+	if err != nil {
+		panic(err)
+	}
+	defer g.Close()
+
+	var data interface{}
+	err = gob.NewDecoder(g).Decode(&data)
+	if err != nil {
+		panic(err)
+	}
+
+	p := world.LoadConvert(data).(*Player)
+
+	if o, ok := onlinePlayers[p.login]; ok {
+		p = o
+		savePlayer(p)
+		p.Kick(message)
+		delete(onlinePlayers, p.login)
+	}
+
+	return p, nil
+}
