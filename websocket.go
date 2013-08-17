@@ -46,6 +46,7 @@ type packetUpdateUpdate struct {
 }
 
 type packetUpdateObject struct {
+	Name    string               `json:"N"`
 	Sprites []packetUpdateSprite `json:"S"`
 }
 
@@ -53,6 +54,10 @@ type packetUpdateSprite struct {
 	Sheet string                 `json:"S"`
 	Color string                 `json:"C"`
 	Extra map[string]interface{} `json:"E,omitempty"`
+}
+
+type packetInventory struct {
+	Inventory []*packetUpdateObject
 }
 
 func addSprites(u *packetUpdateObject, obj world.Visible) *packetUpdateObject {
@@ -120,6 +125,7 @@ func socketHandler(ws *websocket.Conn) {
 		zone        *world.Zone
 		kick        <-chan string
 		hud         <-chan hero.HUD
+		inventory   <-chan []world.Visible
 		updateQueue packetUpdate
 	)
 	updateTick := time.NewTicker(time.Second / 10)
@@ -147,7 +153,7 @@ func socketHandler(ws *websocket.Conn) {
 				ID:     o.NetworkID(),
 				X:      x,
 				Y:      y,
-				Object: addSprites(&packetUpdateObject{}, o),
+				Object: addSprites(&packetUpdateObject{Name: o.Name()}, o),
 			})
 		},
 		Remove: func(t *world.Tile, obj world.ObjectLike) {
@@ -188,7 +194,7 @@ func socketHandler(ws *websocket.Conn) {
 				ID:     o.NetworkID(),
 				X:      x,
 				Y:      y,
-				Object: addSprites(&packetUpdateObject{}, o),
+				Object: addSprites(&packetUpdateObject{Name: o.Name()}, o),
 			})
 		},
 	}
@@ -211,7 +217,7 @@ func socketHandler(ws *websocket.Conn) {
 					return
 				}
 				world.InitObject(player)
-				kick, hud = player.InitPlayer()
+				kick, hud, inventory = player.InitPlayer()
 				zx, tx, zy, ty := player.LoginPosition()
 				defer hero.PlayerDisconnected(player)
 
@@ -229,6 +235,12 @@ func socketHandler(ws *websocket.Conn) {
 					zone.RemoveListener(listener)
 					world.ReleaseZone(zone)
 				}()
+
+				inventoryObjects := []*packetUpdateObject{}
+				for _, item := range player.Inventory() {
+					inventoryObjects = append(inventoryObjects, addSprites(&packetUpdateObject{Name: item.Name()}, item))
+				}
+				websocket.JSON.Send(ws, packetInventory{inventoryObjects})
 			}
 			if player == nil {
 				continue
@@ -266,6 +278,13 @@ func socketHandler(ws *websocket.Conn) {
 
 		case h := <-hud:
 			websocket.JSON.Send(ws, packetHUD{h})
+
+		case items := <-inventory:
+			objects := make([]*packetUpdateObject, len(items))
+			for i, item := range items {
+				objects[i] = addSprites(&packetUpdateObject{Name: item.Name()}, item)
+			}
+			websocket.JSON.Send(ws, packetInventory{objects})
 
 		case update := <-updates:
 			updateQueue.Update = append(updateQueue.Update, update...)

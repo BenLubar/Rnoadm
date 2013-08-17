@@ -3,6 +3,7 @@ package hero
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"log"
 	"math/rand"
 	"sync"
 	"time"
@@ -23,8 +24,9 @@ type Player struct {
 	registered time.Time
 	lastLogin  time.Time
 
-	kick chan string
-	hud  chan HUD
+	kick      chan string
+	hud       chan HUD
+	inventory chan []world.Visible
 }
 
 var _ world.NoSaveObject = (*Player)(nil)
@@ -156,11 +158,13 @@ func (p *Player) ClearHUD() {
 	p.SetHUD("", nil)
 }
 
-func (p *Player) InitPlayer() (kick <-chan string, hud <-chan HUD) {
+func (p *Player) InitPlayer() (kick <-chan string, hud <-chan HUD, inventory <-chan []world.Visible) {
 	p.kick = make(chan string, 1)
 	kick = p.kick
 	p.hud = make(chan HUD, 1)
 	hud = p.hud
+	p.inventory = make(chan []world.Visible, 1)
+	inventory = p.inventory
 	return
 }
 
@@ -273,10 +277,15 @@ func (p *Player) CharacterCreation(command string) {
 }
 
 func (p *Player) AdminCommand(addr string, command ...string) {
+	p.mtx.Lock()
 	if !p.admin {
 		p.Kick("I'm sorry, Dave. I'm afraid you can't do that.")
+		p.mtx.Unlock()
 		return
 	}
+
+	log.Printf("[ADMIN:%q] %q %+v", p.login, addr, command)
+	p.mtx.Unlock()
 
 	if len(command) == 0 {
 		return
@@ -305,6 +314,28 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		loginLock.Lock()
 		defer loginLock.Unlock()
 		getPlayerKick(command[1], message)
+	case "spawn item":
+		if len(command) != 2 {
+			return
+		}
+		item := world.Spawn(command[1])
+		if item != nil {
+			p.mtx.Lock()
+			p.giveItem(item)
+			p.mtx.Unlock()
+		}
+	}
+}
+
+func (p *Player) notifyInventoryChanged() {
+	inventory := make([]world.Visible, len(p.items))
+	copy(inventory, p.items)
+	for {
+		select {
+		case p.inventory <- inventory:
+			return
+		case <-p.inventory:
+		}
 	}
 }
 

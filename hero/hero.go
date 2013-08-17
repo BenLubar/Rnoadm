@@ -18,6 +18,7 @@ type HeroLike interface {
 	Inventory() []world.Visible
 	GiveItem(world.Visible) bool
 	RemoveItem(world.Visible) bool
+	notifyInventoryChanged()
 }
 
 type Hero struct {
@@ -45,6 +46,16 @@ type Hero struct {
 
 func init() {
 	world.Register("hero", HeroLike((*Hero)(nil)))
+
+	world.RegisterSpawnFunc(func(s string) world.Visible {
+		for i := range raceInfo {
+			r := Race(i)
+			if r.Name() == s {
+				return world.InitObject(GenerateHeroRace(rand.New(rand.NewSource(rand.Int63())), r)).(world.Visible)
+			}
+		}
+		return nil
+	})
 }
 
 func (h *Hero) Save() (uint, interface{}, []world.ObjectLike) {
@@ -269,12 +280,23 @@ func (h *Hero) Inventory() []world.Visible {
 	return inventory
 }
 
+func (h *Hero) notifyInventoryChanged() {
+	// do nothing
+}
+
 func (h *Hero) GiveItem(item world.Visible) bool {
 	h.mtx.Lock()
-	h.items = append(h.items, item)
+	if true {
+		h.giveItem(item)
+	}
 	h.mtx.Unlock()
 
 	return true
+}
+
+func (h *Hero) giveItem(item world.Visible) {
+	h.items = append(h.items, item)
+	h.Outer().(HeroLike).notifyInventoryChanged()
 }
 
 func (h *Hero) RemoveItem(item world.Visible) bool {
@@ -284,6 +306,7 @@ func (h *Hero) RemoveItem(item world.Visible) bool {
 		if o == item {
 			h.items = append(h.items[:i], h.items[i+1:]...)
 			found = true
+			h.Outer().(HeroLike).notifyInventoryChanged()
 			break
 		}
 	}

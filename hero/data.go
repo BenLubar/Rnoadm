@@ -26,6 +26,7 @@ const (
 )
 
 var raceInfo = [raceCount]struct {
+	name        string
 	sprite      string
 	baseHealth  uint64
 	genders     []Gender
@@ -33,6 +34,7 @@ var raceInfo = [raceCount]struct {
 	skinTones   []string
 }{
 	RaceHuman: {
+		name:        "human",
 		sprite:      "body_human",
 		baseHealth:  10000,
 		genders:     []Gender{GenderMale, GenderFemale},
@@ -59,6 +61,7 @@ var occupationInfo = [occupationCount]struct {
 	OccupationKnight:     {},
 }
 
+func (r Race) Name() string              { return raceInfo[r].name }
 func (r Race) Sprite() string            { return raceInfo[r].sprite }
 func (r Race) BaseHealth() uint64        { return raceInfo[r].baseHealth }
 func (r Race) Genders() []Gender         { return raceInfo[r].genders }

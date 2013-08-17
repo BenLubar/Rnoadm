@@ -1,5 +1,5 @@
 (function() {
-const GRAPHICS_REVISION = 6;
+const GRAPHICS_REVISION = 7;
 const tileSize = 32;
 var ws,
 clientHash,
@@ -26,9 +26,10 @@ lerpPosition = function(a, b, t) {
 mouseX = -Infinity,
 mouseY = -Infinity,
 gameState = {
-	objects: new Array(256 * 256),
-	player:  {x: 127, y: 127, prevX: 127, prevY: 127, lastMove: time()},
-	hud:     {name: '', data: {}}
+	objects:   new Array(256 * 256),
+	player:    {x: 127, y: 127, prevX: 127, prevY: 127, lastMove: time()},
+	hud:       {name: '', data: {}},
+	inventory: []
 },
 canvas = document.createElement('canvas').getContext('2d'),
 send = function(packet) {
@@ -96,6 +97,7 @@ wsmessage = function(e) {
 				delete gameState.objects[i][update['I']];
 			} else if (update['O']) {
 				gameState.objects[i][update['I']].sprite = update['O']['S'];
+				gameState.objects[i][update['I']].name = update['O']['N'];
 			} else {
 				var from = update['Fx'] | (update['Fy'] << 8);
 				gameState.objects[i][update['I']] = gameState.objects[from][update['I']];
@@ -110,6 +112,10 @@ wsmessage = function(e) {
 	if (p = msg['HUD']) {
 		gameState.hud.name = p['N'];
 		gameState.hud.data = p['D'] || {};
+		repaint();
+	}
+	if (p = msg['Inventory']) {
+		gameState.inventory = p;
 		repaint();
 	}
 },
@@ -306,6 +312,38 @@ paint = function() {
 
 	switch (gameState.hud.name) {
 	case '':
+		if (mouseX >= -w/2 + 0.5 && mouseX <= -w/2 + 1.5 && mouseY >= -h/2 + 0.5 && mouseY <= -h/2 + 1.5) {
+			drawSprite(-w/2, -h/2, 'ui_icons', '#aaa', {'x': 0, 'y': 0});
+			drawText(-w/2, -h/2 + 1.5, 'Inventory', '#fff');
+		} else {
+			drawSprite(-w/2, -h/2, 'ui_icons', '#888', {'x': 0, 'y': 0});
+		}
+		break;
+
+	case 'inv':
+		canvas.fillStyle = '#000';
+		canvas.beginPath();
+		canvas.moveTo(0, 0);
+		canvas.lineTo(tileSize * 8, 0);
+		canvas.lineTo(tileSize * 8, tileSize);
+		canvas.lineTo(tileSize * 1.5, tileSize);
+		canvas.closePath();
+		canvas.fill();
+		canvas.fillStyle = 'rgba(0,0,0,.7)';
+		canvas.fillRect(0, 0, tileSize * 8, canvas.canvas.height);
+		gameState.inventory.forEach(function(item, i) {
+			(item['S'] || []).forEach(function(sprite) {
+				drawSprite(-w/2, -h/2 + 1 + i, sprite['S'], sprite['C'], sprite['E']);
+			});
+			drawText(-w/2 + 1, -h/2 + 1.75 + i, item['N'], '#aaa');
+		});
+		if (mouseX >= -w/2 + 0.5 && mouseX <= -w/2 + 1.5 && mouseY >= -h/2 + 0.5 && mouseY <= -h/2 + 1.5) {
+			drawSprite(-w/2, -h/2, 'ui_icons', '#aaa', {'x': 0, 'y': 0});
+			drawText(-w/2, -h/2 + 1.5, 'Close', '#fff');
+		} else {
+			drawSprite(-w/2, -h/2, 'ui_icons', '#444', {'x': 0, 'y': 0});
+		}
+		drawText(-w/2 + 1.5, -h/2 + 0.8, 'Inventory', '#ccc', {'T': true});
 		break;
 
 	case 'cc':
@@ -372,7 +410,21 @@ canvas.canvas.onclick = function(e) {
 	var ty = floor(y + gameState.player.y);
 	switch (gameState.hud.name) {
 	case '':
+		if (x >= -w/2 + 0.5 && x <= -w/2 + 1.5 && y >= -h/2 + 0.5 && y <= -h/2 + 1.5) {
+			gameState.hud.name = 'inv';
+			gameState.hud.data = {};
+			repaint();
+			return;
+		}
 		break;
+
+	case 'inv':
+		if ((x >= -w/2 + 0.5 && x <= -w/2 + 1.5 && y >= -h/2 + 0.5 && y <= -h/2 + 1.5) || x > -w/2 + 8.5) {
+			gameState.hud.name = '';
+			repaint();
+			return;
+		}
+		return;
 
 	case 'cc':
 		if (x >= 0 && x <= 4.5 && y >= -3.5 && y <= -3) {
@@ -401,11 +453,17 @@ canvas.canvas.onclick = function(e) {
 	}
 };
 
+canvas.canvas.onmouseout = function() {
+	mouseX = -Infinity;
+	mouseY = -Infinity;
+	repaint();
+};
+
 canvas.canvas.onmousemove = function(e) {
 	mouseX = e.offsetX / tileSize - w/2 + 0.5;
 	mouseY = e.offsetY / tileSize - h/2 + 0.5;
 	repaint();
-}
+};
 
 this['admin'] = function() {
 	send({'Admin': [].slice.call(arguments)});

@@ -29,6 +29,20 @@ type Equip struct {
 
 func init() {
 	world.Register("equip", world.Visible((*Equip)(nil)))
+
+	world.RegisterSpawnFunc(func(s string) world.Visible {
+		for t := range equippables {
+			for i, e := range equippables[t] {
+				if e.name == s {
+					return world.InitObject(&Equip{
+						slot: EquipSlot(t),
+						kind: uint64(i),
+					}).(world.Visible)
+				}
+			}
+		}
+		return nil
+	})
 }
 
 func (e *Equip) Save() (uint, interface{}, []world.ObjectLike) {
@@ -60,6 +74,10 @@ func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+}
+
+func (e *Equip) Name() string {
+	return equippables[e.slot][e.kind].name
 }
 
 func (e *Equip) Sprite() string {
