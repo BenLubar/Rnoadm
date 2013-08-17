@@ -24,11 +24,8 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 <title>Rnoadm</title>
 <link href="http://fonts.googleapis.com/css?family=Jolly+Lodger|Open+Sans+Condensed:300&amp;subset=latin,latin-ext,cyrillic,cyrillic-ext,greek-ext,greek,vietnamese" rel="stylesheet">
 <style>
-html {
+html, body {
 	background: #000;
-	transition: 2s;
-}
-body {
 	text-align: center;
 	margin: 0;
 }

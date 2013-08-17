@@ -112,3 +112,7 @@ func (e *Equip) SpritePos() (uint, uint) {
 	}
 	return e.wearer.SpritePos()
 }
+
+func (e *Equip) SpriteSize() (uint, uint) {
+	return equippables[e.slot][e.kind].width, equippables[e.slot][e.kind].height
+}

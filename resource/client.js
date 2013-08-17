@@ -332,10 +332,13 @@ paint = function() {
 		canvas.fillStyle = 'rgba(0,0,0,.7)';
 		canvas.fillRect(0, 0, tileSize * 8, canvas.canvas.height);
 		gameState.inventory.forEach(function(item, i) {
+			if (i < gameState.hud.data.scroll || i > gameState.hud.data.scroll + h - 2) {
+				return;
+			}
 			(item['S'] || []).forEach(function(sprite) {
-				drawSprite(-w/2, -h/2 + 1 + i, sprite['S'], sprite['C'], sprite['E']);
+				drawSprite(-w/2, -h/2 + 1 + i - gameState.hud.data.scroll, sprite['S'], sprite['C'], sprite['E']);
 			});
-			drawText(-w/2 + 1, -h/2 + 1.75 + i, item['N'], '#aaa');
+			drawText(-w/2 + 1, -h/2 + 1.75 + i - gameState.hud.data.scroll, item['N'], '#aaa');
 		});
 		if (mouseX >= -w/2 + 0.5 && mouseX <= -w/2 + 1.5 && mouseY >= -h/2 + 0.5 && mouseY <= -h/2 + 1.5) {
 			drawSprite(-w/2, -h/2, 'ui_icons', '#aaa', {'x': 0, 'y': 0});
@@ -344,6 +347,12 @@ paint = function() {
 			drawSprite(-w/2, -h/2, 'ui_icons', '#444', {'x': 0, 'y': 0});
 		}
 		drawText(-w/2 + 1.5, -h/2 + 0.8, 'Inventory', '#ccc', {'T': true});
+		if (gameState.hud.data.scroll > 0) {
+			drawText(-w/2 + 7.5, -h/2 + 1.5, '▲', mouseX >= -w/2 + 7.75 && mouseX <= -w/2 + 8.75 && mouseY >= -h/2 + 1.25 && mouseY <= -h/2 + 2.25 ? '#fff' : '#aaa');
+		}
+		if (h < gameState.inventory.length - gameState.hud.data.scroll + 1) {
+			drawText(-w/2 + 7.5, h/2 - 0.25, '▼', mouseX >= -w/2 + 7.75 && mouseX <= -w/2 + 8.75 && mouseY >= h/2 - 0.5 && mouseY <= h/2 + 0.5 ? '#fff' : '#aaa');
+		}
 		break;
 
 	case 'cc':
@@ -386,10 +395,10 @@ passField = loginForm.querySelector('#password'),
 pass2Field = loginForm.querySelector('#password2');
 
 onresize = function() {
-	w = floor(innerWidth / tileSize);
-	h = floor(innerHeight / tileSize);
-	canvas.canvas.width  = tileSize*w;
-	canvas.canvas.height = tileSize*h;
+	w = innerWidth / tileSize;
+	h = innerHeight / tileSize;
+	canvas.canvas.width  = innerWidth;
+	canvas.canvas.height = innerHeight;
 	repaint();
 };
 onresize();
@@ -412,7 +421,7 @@ canvas.canvas.onclick = function(e) {
 	case '':
 		if (x >= -w/2 + 0.5 && x <= -w/2 + 1.5 && y >= -h/2 + 0.5 && y <= -h/2 + 1.5) {
 			gameState.hud.name = 'inv';
-			gameState.hud.data = {};
+			gameState.hud.data = {scroll: 0};
 			repaint();
 			return;
 		}
@@ -421,6 +430,17 @@ canvas.canvas.onclick = function(e) {
 	case 'inv':
 		if ((x >= -w/2 + 0.5 && x <= -w/2 + 1.5 && y >= -h/2 + 0.5 && y <= -h/2 + 1.5) || x > -w/2 + 8.5) {
 			gameState.hud.name = '';
+			gameState.hud.data = {};
+			repaint();
+			return;
+		}
+		if (x >= -w/2 + 7.75 && x <= -w/2 + 8.75 && y >= -h/2 + 1.25 && y <= -h/2 + 2.25 && gameState.hud.data.scroll > 0) {
+			gameState.hud.data.scroll--;
+			repaint();
+			return;
+		}
+		if (x >= -w/2 + 7.75 && x <= -w/2 + 8.75 && y >= h/2 - 0.5 && y <= h/2 + 0.5 && h < gameState.inventory.length - gameState.hud.data.scroll + 1) {
+			gameState.hud.data.scroll++;
 			repaint();
 			return;
 		}
@@ -475,6 +495,7 @@ var onlogin = function() {
 	parent.removeChild(loginForm);
 	canvas.canvas.style.display = '';
 	parent.style.overflow = 'hidden';
+	parent.style.fontSize = '0';
 	inRepaint = false;
 	repaint();
 };

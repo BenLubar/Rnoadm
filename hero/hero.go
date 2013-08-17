@@ -2,6 +2,7 @@ package hero
 
 import (
 	"fmt"
+	"github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
 	"math/rand"
 	"sync"
@@ -15,9 +16,7 @@ type HeroLike interface {
 	Gender() Gender
 	Occupation() Occupation
 
-	Inventory() []world.Visible
-	GiveItem(world.Visible) bool
-	RemoveItem(world.Visible) bool
+	material.InventoryLike
 	notifyInventoryChanged()
 }
 

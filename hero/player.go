@@ -284,7 +284,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		return
 	}
 
-	log.Printf("[ADMIN:%q] %q %+v", p.login, addr, command)
+	log.Printf("[ADMIN:%q] %q %#v", p.login, addr, command)
 	p.mtx.Unlock()
 
 	if len(command) == 0 {
