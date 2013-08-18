@@ -1,18 +1,20 @@
 goog.provide('rnoadm.login');
 
+goog.require('goog.asserts');
+goog.require('rnoadm.gfx');
 goog.require('rnoadm.net');
 
 
 /**
  * @type {string}
  */
-rnoadm.login.username = sessionStorage['rnoadm_username'] || '';
+rnoadm.login.username = window.sessionStorage['rnoadm_username'] || '';
 
 
 /**
  * @type {string}
  */
-rnoadm.login.password = sessionStorage['rnoadm_password'] || '';
+rnoadm.login.password = window.sessionStorage['rnoadm_password'] || '';
 
 
 /**
@@ -20,7 +22,9 @@ rnoadm.login.password = sessionStorage['rnoadm_password'] || '';
  * @private
  * @const
  */
-rnoadm.login.form_ = document.querySelector('form');
+rnoadm.login.form_ = goog.asserts.assertInstanceof(
+    document.querySelector('form'),
+    HTMLFormElement);
 
 
 /**
@@ -28,7 +32,9 @@ rnoadm.login.form_ = document.querySelector('form');
  * @private
  * @const
  */
-rnoadm.login.username_ = rnoadm.login.form_.querySelector('#username');
+rnoadm.login.username_ = goog.asserts.assertInstanceof(
+    rnoadm.login.form_.querySelector('#username'),
+    HTMLInputElement);
 
 
 /**
@@ -36,7 +42,9 @@ rnoadm.login.username_ = rnoadm.login.form_.querySelector('#username');
  * @private
  * @const
  */
-rnoadm.login.password_ = rnoadm.login.form_.querySelector('#password');
+rnoadm.login.password_ = goog.asserts.assertInstanceof(
+    rnoadm.login.form_.querySelector('#password'),
+    HTMLInputElement);
 
 
 /**
@@ -44,7 +52,9 @@ rnoadm.login.password_ = rnoadm.login.form_.querySelector('#password');
  * @private
  * @const
  */
-rnoadm.login.dummy_ = rnoadm.login.form_.querySelector('#password2');
+rnoadm.login.dummy_ = goog.asserts.assertInstanceof(
+    rnoadm.login.form_.querySelector('#password2'),
+    HTMLInputElement);
 
 
 /**
@@ -66,6 +76,7 @@ rnoadm.login.onlogin_ = function() {
   parent.removeChild(rnoadm.login.form_);
   parent.style.overflow = 'hidden';
   parent.style.fontSize = '0';
+  parent.appendChild(rnoadm.gfx.canvas);
 };
 
 
@@ -91,8 +102,8 @@ rnoadm.login.form_.onsubmit = function() {
     rnoadm.login.password_.focus();
     return;
   }
-  sessionStorage['rnoadm_username'] = rnoadm.login.username;
-  sessionStorage['rnoadm_password'] = rnoadm.login.password;
+  window.sessionStorage['rnoadm_username'] = rnoadm.login.username;
+  window.sessionStorage['rnoadm_password'] = rnoadm.login.password;
   rnoadm.net.send({'Auth': {
     'U': rnoadm.login.username,
     'P': rnoadm.login.password

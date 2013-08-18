@@ -81,7 +81,7 @@ rnoadm.net.onclose_ = function() {
 /**
  * A 1-to-1 map of name => handler.
  *
- * @type {Object.<string, function>}
+ * @type {Object.<string, Function>}
  * @private
  * @const
  */
@@ -92,7 +92,7 @@ rnoadm.net.handlers_ = {};
  * Adds a handler for a specific packet type.
  *
  * @param {string} name the name of the packet type.
- * @param {function} fn the function to handle the packet type.
+ * @param {Function} fn the function to handle the packet type.
  */
 rnoadm.net.addHandler = function(name, fn) {
   rnoadm.net.handlers_[name] = fn;

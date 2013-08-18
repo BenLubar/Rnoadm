@@ -21,9 +21,11 @@ python closure-library/closure/bin/build/closurebuilder.py \
 	--output_mode=compiled \
 	--compiler_jar=compiler.jar \
 	--compiler_flags="--define=goog.DEBUG" \
+	--compiler_flags="--define=goog.asserts.ENABLE_ASSERTS" \
 	--compiler_flags="--accept_const_keyword" \
 	--compiler_flags="--compilation_level=ADVANCED_OPTIMIZATIONS" \
 	--compiler_flags="--language_in=ECMASCRIPT5_STRICT" \
+	--compiler_flags="--warning_level=VERBOSE" \
 	--compiler_flags="--use_types_for_optimization" \
 	> ../resource/client.js
 

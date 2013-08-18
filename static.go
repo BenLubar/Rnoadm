@@ -1,19 +1,45 @@
 package main
 
 import (
+	"bytes"
 	"github.com/BenLubar/Rnoadm/resource"
 	"hash/crc64"
+	"compress/gzip"
 	"net/http"
+	"strings"
+	"strconv"
+	"time"
 )
+
+var clientGzip []byte
 
 func init() {
 	hash := crc64.New(crc64.MakeTable(crc64.ISO))
-	hash.Write(resource.Resource["client.js"])
+	_, err := hash.Write(resource.Resource["client.js"])
+	if err != nil {
+		panic(err)
+	}
 	packetClientHash.ClientHash = hash.Sum64()
+
+	var buf bytes.Buffer
+	g, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
+	if err != nil {
+		panic(err)
+	}
+	_, err = g.Write(resource.Resource["client.js"])
+	if err != nil {
+		panic(err)
+	}
+	err = g.Close()
+	if err != nil {
+		panic(err)
+	}
+	clientGzip = buf.Bytes()
 }
 
 func staticHandler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/blank" {
+		w.Header().Set("Expires", time.Now().AddDate(2, 0, 0).Format(http.TimeFormat))
 		return
 	}
 	if r.URL.Path == "/" {
@@ -28,9 +54,6 @@ html, body {
 	background: #000;
 	text-align: center;
 	margin: 0;
-}
-canvas {
-	margin: auto;
 }
 form {
 	padding-top: 20px;
@@ -78,7 +101,18 @@ input[type="submit"] {
 </html>`))
 		return
 	}
+	if r.URL.Path == "/client.js" {
+		w.Header().Set("Vary", "Accept-Encoding")
+		w.Header().Set("Content-Type", "application/javascript")
+		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			w.Header().Set("Content-Length", strconv.Itoa(len(clientGzip)))
+			w.Header().Set("Content-Encoding", "gzip")
+			w.Write(clientGzip)
+			return
+		}
+	}
 	if b, ok := resource.Resource[r.URL.Path[1:]]; ok {
+		w.Header().Set("Content-Length", strconv.Itoa(len(b)))
 		w.Write(b)
 		return
 	}
