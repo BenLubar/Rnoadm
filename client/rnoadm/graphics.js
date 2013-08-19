@@ -147,6 +147,10 @@ rnoadm.gfx.mouseMovedHud;
 rnoadm.gfx.clickHud;
 
 
+/** @type {function(number, number, number, number):boolean} */
+rnoadm.gfx.clickObject;
+
+
 rnoadm.gfx.canvas.onmousemove = function(e) {
   if (rnoadm.gfx.mouseMovedHud(e.offsetX, e.offsetY,
                                rnoadm.gfx.width_,
@@ -167,6 +171,10 @@ rnoadm.gfx.canvas.onclick = function(e) {
   if (rnoadm.gfx.clickHud(e.offsetX, e.offsetY,
                           rnoadm.gfx.width_,
                           rnoadm.gfx.height_))
+    return;
+  if (rnoadm.gfx.clickObject(e.offsetX, e.offsetY,
+                             rnoadm.gfx.width_,
+                             rnoadm.gfx.height_))
     return;
 };
 

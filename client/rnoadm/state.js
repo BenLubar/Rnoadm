@@ -47,7 +47,7 @@ rnoadm.state.Object = function(x, y, id, net) {
   this.prevY = y;
 
   /** @type {number} */
-  this.lastChange = Date.now();
+  this.lastChange = 0;
 
   /** @type {string} */
   this.name = net['N'];
@@ -108,10 +108,11 @@ rnoadm.state.Object.prototype.paint = function(xOffset, yOffset) {
   var y = this.y;
 
   /** @type {number} */
-  var time = Date.now()- this.lastChange;
+  var time = Date.now() - this.lastChange;
   if (time < 500) {
     x = (time * x + (500 - time) * this.prevX) / 500;
     y = (time * y + (500 - time) * this.prevY) / 500;
+    rnoadm.gfx.repaint();
   }
 
   this.sprites.forEach(function(sprite) {
@@ -213,13 +214,36 @@ rnoadm.net.addHandler('Update', function(updates) {
  * @type {number}
  * @private
  */
+rnoadm.state.playerLastMove_ = 0;
+
+
+/**
+ * @type {number}
+ * @private
+ */
+rnoadm.state.playerPrevX_ = 127;
+
+
+/**
+ * @type {number}
+ * @private
+ */
 rnoadm.state.playerX_ = 127;
 
 
 rnoadm.net.addHandler('PlayerX', function(x) {
+  rnoadm.state.playerPrevX_ = rnoadm.state.playerX_;
   rnoadm.state.playerX_ = x;
+  rnoadm.state.playerLastMove_ = Date.now();
   rnoadm.gfx.repaint();
 });
+
+
+/**
+ * @type {number}
+ * @private
+ */
+rnoadm.state.playerPrevY_ = 127;
 
 
 /**
@@ -230,7 +254,9 @@ rnoadm.state.playerY_ = 127;
 
 
 rnoadm.net.addHandler('PlayerY', function(y) {
+  rnoadm.state.playerPrevY_ = rnoadm.state.playerY_;
   rnoadm.state.playerY_ = y;
+  rnoadm.state.playerLastMove_ = Date.now();
   rnoadm.gfx.repaint();
 });
 
@@ -245,8 +271,21 @@ rnoadm.state.grass_ = new rnoadm.gfx.Sprite('grass', '#268f1e', '',
 
 
 rnoadm.gfx.paintObjects = function(w, h) {
-  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerX_;
-  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerY_;
+  /** @type {number} */
+  var playerX = rnoadm.state.playerX_;
+  /** @type {number} */
+  var playerY = rnoadm.state.playerY_;
+
+  /** @type {number} */
+  var time = Date.now() - rnoadm.state.playerLastMove_;
+  if (time < 500) {
+    playerX = (time * playerX + (500 - time) * rnoadm.state.playerPrevX_) / 500;
+    playerY = (time * playerY + (500 - time) * rnoadm.state.playerPrevY_) / 500;
+    rnoadm.gfx.repaint();
+  }
+
+  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - playerX;
+  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - playerY;
   for (var x = 0; x < 256; x += 512 / rnoadm.gfx.TILE_SIZE) {
     for (var y = 0; y < 256; y += 512 / rnoadm.gfx.TILE_SIZE) {
       rnoadm.state.grass_.paint(xOffset + x + 512 / rnoadm.gfx.TILE_SIZE / 2,
@@ -267,6 +306,17 @@ rnoadm.gfx.paintObjects = function(w, h) {
       }
     }
   }
+};
+
+rnoadm.gfx.clickObject = function(x, y, w, h) {
+  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerX_;
+  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerY_;
+  x = Math.floor(x / rnoadm.gfx.TILE_SIZE - xOffset);
+  y = Math.ceil(y / rnoadm.gfx.TILE_SIZE - yOffset);
+  if (x < 0 || x >= 256 || y < 0 || y >= 256)
+    return false;
+  rnoadm.net.send({'Walk': {'X': x, 'Y': y}});
+  return true;
 };
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:
