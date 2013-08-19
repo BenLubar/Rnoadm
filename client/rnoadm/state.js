@@ -233,6 +233,8 @@ rnoadm.state.playerX_ = 127;
 
 
 rnoadm.net.addHandler('PlayerX', function(x) {
+  if (rnoadm.state.playerX_ == x)
+    return;
   rnoadm.state.playerPrevX_ = rnoadm.state.playerX_;
   rnoadm.state.playerX_ = x;
   rnoadm.state.playerLastMove_ = Date.now();
@@ -255,6 +257,8 @@ rnoadm.state.playerY_ = 127;
 
 
 rnoadm.net.addHandler('PlayerY', function(y) {
+  if (rnoadm.state.playerY_ == y)
+    return;
   rnoadm.state.playerPrevY_ = rnoadm.state.playerY_;
   rnoadm.state.playerY_ = y;
   rnoadm.state.playerLastMove_ = Date.now();
