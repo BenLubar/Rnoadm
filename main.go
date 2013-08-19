@@ -1,62 +1,43 @@
 package main
 
 import (
-	"flag"
+	"code.google.com/p/go.net/websocket"
+	"github.com/BenLubar/Rnoadm/hero"
+	"github.com/BenLubar/Rnoadm/world"
 	"log"
+	"math/rand"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"time"
 )
 
-var Seed int64
-
 func main() {
-	flag.Int64Var(&Seed, "seed", 0, "the world seed")
+	rand.Seed(time.Now().UnixNano())
 
-	flag.Parse()
-
-	os.MkdirAll(seedFilename(), 755)
-	f, err := os.OpenFile(filepath.Join(seedFilename(), "admin.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		panic(err)
-	}
-	AdminLog = log.New(f, "[ADMIN] ", log.Ldate|log.Ltime|log.Lshortfile)
-
-	go func() {
-		for _ = range time.Tick(10 * time.Minute) {
-			EachLoadedZone(func(z *Zone) {
-				err := z.Save()
-				if err != nil {
-					log.Printf("ZONE %d %d: %v", z.X, z.Y, err)
-				}
-			})
-		}
-	}()
-
-	go func() {
-		for _ = range time.Tick(200 * time.Millisecond) {
-			EachLoadedZone(func(z *Zone) {
-				z.Think()
-			})
-		}
-	}()
-
+	http.Handle("/ws", websocket.Handler(socketHandler))
+	http.HandleFunc("/", staticHandler)
 	go func() {
 		for {
-			log.Print(http.ListenAndServe(":2064", nil))
-			time.Sleep(time.Second)
+			err := http.ListenAndServe(":2064", nil)
+			if err != nil {
+				log.Print(err)
+				time.Sleep(time.Second)
+			}
 		}
 	}()
 
-	sigkill := make(chan os.Signal, 1)
-	signal.Notify(sigkill, os.Kill, os.Interrupt)
-	<-sigkill
-	EachLoadedZone(func(z *Zone) {
-		err := z.Save()
-		if err != nil {
-			log.Printf("ZONE %d %d: %v", z.X, z.Y, err)
+	go func() {
+		for _ = range time.Tick(time.Second / 5) {
+			world.Think()
 		}
-	})
+	}()
+
+	defer world.SaveAllZones()
+	defer hero.SaveAllPlayers()
+
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, os.Kill)
+	<-sigCh
 }
