@@ -82,12 +82,10 @@ rnoadm.gfx.Sprite = function(image, color, animation, xOffset, yOffset,
    */
   this.scale_ = scale;
 
-  /**
-   * @type {Image}
-   * @const
-   */
-  var img = new Image();
-  img.onload = function() {
+  /** @type {Image} */
+  var img;
+
+  function init() {
     if (!img.width || !img.height) {
       return;
     }
@@ -161,9 +159,28 @@ rnoadm.gfx.Sprite = function(image, color, animation, xOffset, yOffset,
     ctx.putImageData(scaled, 0, 0);
 
     rnoadm.gfx.repaint();
-  };
-  img.src = image + '.png?' + rnoadm.gfx.GRAPHICS_REVISION;
+  }
+
+  image = image + '.png?' + rnoadm.gfx.GRAPHICS_REVISION;
+  if (img = rnoadm.gfx.Sprite.cache_[image]) {
+    init();
+  } else {
+    img = new Image();
+    img.onload = function() {
+      rnoadm.gfx.Sprite.cache_[image] = img;
+      init();
+    };
+    img.src = image;
+  }
 };
+
+
+/**
+ * @type {Object.<string, Image>}
+ * @private
+ * @const
+ */
+rnoadm.gfx.Sprite.cache_ = {};
 
 
 /**

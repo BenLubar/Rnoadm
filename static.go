@@ -2,12 +2,12 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"github.com/BenLubar/Rnoadm/resource"
 	"hash/crc64"
-	"compress/gzip"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
 )
 

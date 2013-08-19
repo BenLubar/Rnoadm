@@ -138,4 +138,36 @@ rnoadm.gfx.paintObjects;
 /** @type {function(number, number)} */
 rnoadm.gfx.paintHuds;
 
+
+/** @type {function(number, number, number, number):boolean} */
+rnoadm.gfx.mouseMovedHud;
+
+
+/** @type {function(number, number, number, number):boolean} */
+rnoadm.gfx.clickHud;
+
+
+rnoadm.gfx.canvas.onmousemove = function(e) {
+  if (rnoadm.gfx.mouseMovedHud(e.offsetX, e.offsetY,
+                               rnoadm.gfx.width_,
+                               rnoadm.gfx.height_))
+    return;
+};
+
+
+rnoadm.gfx.canvas.onmouseout = function() {
+  if (rnoadm.gfx.mouseMovedHud(-Infinity, -Infinity,
+                               rnoadm.gfx.width_,
+                               rnoadm.gfx.height_))
+    return;
+};
+
+
+rnoadm.gfx.canvas.onclick = function(e) {
+  if (rnoadm.gfx.clickHud(e.offsetX, e.offsetY,
+                          rnoadm.gfx.width_,
+                          rnoadm.gfx.height_))
+    return;
+};
+
 // vim: set tabstop=2 shiftwidth=2 expandtab:

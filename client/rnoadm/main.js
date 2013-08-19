@@ -8,7 +8,9 @@ goog.require('rnoadm.net');
 goog.require('rnoadm.state');
 
 
-new goog.debug.FancyWindow();
+if (goog.DEBUG) {
+  new goog.debug.FancyWindow();
+}
 
 
 /**

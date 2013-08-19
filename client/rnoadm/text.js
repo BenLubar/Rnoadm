@@ -23,11 +23,30 @@ rnoadm.gfx.Text = function(text, color, title) {
   this.color_ = color;
 
   /**
+   * @type {number}
+   * @private
+   * @const
+   */
+  this.height_ = title ? 1 : 0.5;
+
+  /**
    * @type {string}
    * @private
    * @const
    */
-  this.font_ = title ? '32px "Jolly Lodger"' : '16px "Open Sans Condensed"';
+  this.font_ = (this.height_ * rnoadm.gfx.TILE_SIZE) + 'px ' + (title ?
+      '"Jolly Lodger"' : '"Open Sans Condensed"');
+};
+
+
+rnoadm.gfx.Text.prototype.width = function() {
+  rnoadm.gfx.ctx.font = this.font_;
+  return rnoadm.gfx.ctx.measureText(this.text_).width / rnoadm.gfx.TILE_SIZE;
+};
+
+
+rnoadm.gfx.Text.prototype.height = function() {
+  return this.height_;
 };
 
 
