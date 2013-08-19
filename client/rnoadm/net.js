@@ -129,6 +129,8 @@ rnoadm.net.onmessage_ = function(e) {
   var msg = JSON.parse(e.message), handler, name;
   for (name in msg) {
     if (handler = rnoadm.net.handlers_[name]) {
+      if (name == 'Kick')
+        rnoadm.net.socket_.close();
       handler(msg[name]);
     } else {
       rnoadm.net.logger_.info('Unhandled: ' + name);

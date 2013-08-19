@@ -7,6 +7,7 @@ goog.require('rnoadm.gfx.Text');
 goog.require('rnoadm.net');
 
 
+
 /**
  * @constructor
  * @struct
@@ -268,26 +269,26 @@ rnoadm.hud.huds_['cc'] = function(data) {
     return true;
   }, function(x, y, w, h) {
     switch (true) {
-    case hover_name:
-      rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'name'}});
-      break;
-    case hover_gender:
-      rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'gender'}});
-      break;
-    case hover_skin:
-      rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'skin'}});
-      break;
-    case hover_shirt:
-      rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'shirt'}});
-      break;
-    case hover_pants:
-      rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'pants'}});
-      break;
-    case hover_confirm:
-      rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'accept'}});
-      break;
-    case hover_none:
-      break;
+      case hover_name:
+        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'name'}});
+        break;
+      case hover_gender:
+        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'gender'}});
+        break;
+      case hover_skin:
+        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'skin'}});
+        break;
+      case hover_shirt:
+        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'shirt'}});
+        break;
+      case hover_pants:
+        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'pants'}});
+        break;
+      case hover_confirm:
+        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'accept'}});
+        break;
+      case hover_none:
+        break;
     }
 
     // No interaction with anything other than this hud while it's up.
@@ -314,6 +315,7 @@ rnoadm.gfx.paintHuds = function(w, h) {
     hud.paint_(w, h);
   });
 };
+
 
 /**
  * @type {Array.<number>}

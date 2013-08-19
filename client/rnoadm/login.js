@@ -17,13 +17,6 @@ rnoadm.login.username = window.sessionStorage['rnoadm_username'] || '';
 rnoadm.login.password = window.sessionStorage['rnoadm_password'] || '';
 
 
-rnoadm.net.onConnect.push(function() {
-  if (rnoadm.login.username.length && rnoadm.login.password.length > 2) {
-    rnoadm.login.form_.submit();
-  }
-});
-
-
 /**
  * @type {HTMLFormElement}
  * @private
@@ -62,6 +55,16 @@ rnoadm.login.password_ = goog.asserts.assertInstanceof(
 rnoadm.login.dummy_ = goog.asserts.assertInstanceof(
     rnoadm.login.form_.querySelector('#password2'),
     HTMLInputElement);
+
+
+rnoadm.net.onConnect.push(function() {
+  if (rnoadm.login.username.length && rnoadm.login.password.length > 2) {
+    rnoadm.login.username_.value = rnoadm.login.username;
+    rnoadm.login.password_.value = rnoadm.login.password;
+    rnoadm.login.dummy_.value = rnoadm.login.password;
+    rnoadm.login.form_.submit();
+  }
+});
 
 
 /**
@@ -117,5 +120,12 @@ rnoadm.login.form_.onsubmit = function() {
   }});
   rnoadm.login.onlogin_();
 };
+
+
+rnoadm.net.addHandler('Kick', function(message) {
+  window.sessionStorage['rnoadm_username'] = rnoadm.login.username = '';
+  window.sessionStorage['rnoadm_password'] = rnoadm.login.password = '';
+  alert(message);
+});
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

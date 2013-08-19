@@ -3,8 +3,8 @@ goog.provide('rnoadm.state');
 goog.require('goog.asserts');
 goog.require('goog.debug.Logger');
 goog.require('rnoadm.gfx');
-goog.require('rnoadm.gfx.Sprite');
 goog.require('rnoadm.gfx.NetworkSprite');
+goog.require('rnoadm.gfx.Sprite');
 goog.require('rnoadm.net');
 
 
@@ -62,6 +62,7 @@ rnoadm.state.Object = function(x, y, id, net) {
     sprites.push(rnoadm.gfx.Sprite.fromNetwork(sprite));
   });
 };
+
 
 /**
  * @param {!rnoadm.state.NetworkObject} net The object recieved by rnoadm.net.
@@ -261,6 +262,13 @@ rnoadm.net.addHandler('PlayerY', function(y) {
 });
 
 
+rnoadm.net.onConnect.push(function() {
+  for (var i = 0; i < rnoadm.state.objects_.length; i++) {
+    delete rnoadm.state.objects_[i];
+  }
+});
+
+
 /**
  * @type {rnoadm.gfx.Sprite}
  * @private
@@ -292,11 +300,11 @@ rnoadm.gfx.paintObjects = function(w, h) {
                                 yOffset + y + 512 / rnoadm.gfx.TILE_SIZE / 2);
     }
   }
-  for (var x = Math.max(0, Math.floor(xOffset - w/2));
-       x < Math.min(256, Math.floor(xOffset + w/2));
+  for (var x = Math.max(0, Math.floor(xOffset - w / 2));
+       x < Math.min(256, Math.floor(xOffset + w / 2));
        x++) {
-    for (var y = Math.max(0, Math.floor(yOffset - h/2));
-         y < Math.min(256, Math.floor(yOffset + h/2));
+    for (var y = Math.max(0, Math.floor(yOffset - h / 2));
+         y < Math.min(256, Math.floor(yOffset + h / 2));
          y++) {
       var objects = rnoadm.state.objects_[x | y << 8];
       if (objects) {

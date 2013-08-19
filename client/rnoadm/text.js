@@ -3,6 +3,7 @@ goog.provide('rnoadm.gfx.Text');
 goog.require('rnoadm.gfx');
 
 
+
 /**
  * @constructor
  * @struct

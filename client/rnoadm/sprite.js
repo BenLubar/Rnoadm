@@ -1,5 +1,5 @@
-goog.provide('rnoadm.gfx.Sprite');
 goog.provide('rnoadm.gfx.NetworkSprite');
+goog.provide('rnoadm.gfx.Sprite');
 
 goog.require('goog.asserts');
 goog.require('rnoadm.gfx');
@@ -194,24 +194,24 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
   var sy = this.yOffset_;
 
   switch (this.animation_) {
-  case '':
-    break;
-  case 'ccr': // character creation rotation
-    sx += [0, 6, 3, 9][Math.floor(Date.now() / 1500) % 4];
-    rnoadm.gfx.repaint(1500 - Date.now() % 1500);
-    break;
-  case 'wa': // walk (alternating)
-    sx += [0, 1, 0, 2][Math.floor(Date.now() / 150) % 4];
-    rnoadm.gfx.repaint(150 - Date.now() % 150);
-    break;
-  case 'l2': // loop (three frames)
-    sx += Math.floor(Date.now() / 150) % 2;
-    rnoadm.gfx.repaint(150 - Date.now() % 150);
-    break;
-  case 'l3': // loop (three frames)
-    sx += Math.floor(Date.now() / 150) % 3;
-    rnoadm.gfx.repaint(150 - Date.now() % 150);
-    break;
+    case '':
+      break;
+    case 'ccr': // character creation rotation
+      sx += [0, 6, 3, 9][Math.floor(Date.now() / 1500) % 4];
+      rnoadm.gfx.repaint(1500 - Date.now() % 1500);
+      break;
+    case 'wa': // walk (alternating)
+      sx += [0, 1, 0, 2][Math.floor(Date.now() / 150) % 4];
+      rnoadm.gfx.repaint(150 - Date.now() % 150);
+      break;
+    case 'l2': // loop (three frames)
+      sx += Math.floor(Date.now() / 150) % 2;
+      rnoadm.gfx.repaint(150 - Date.now() % 150);
+      break;
+    case 'l3': // loop (three frames)
+      sx += Math.floor(Date.now() / 150) % 3;
+      rnoadm.gfx.repaint(150 - Date.now() % 150);
+      break;
   }
 
   rnoadm.gfx.ctx.drawImage(this.canvas_,
@@ -220,7 +220,7 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
       Math.floor(this.width_ * this.scale_),
       Math.floor(this.height_ * this.scale_),
       Math.floor(x * rnoadm.gfx.TILE_SIZE -
-        (this.width_ * this.scale_ - rnoadm.gfx.TILE_SIZE) / 2),
+      (this.width_ * this.scale_ - rnoadm.gfx.TILE_SIZE) / 2),
       Math.floor(y * rnoadm.gfx.TILE_SIZE - this.height_ * this.scale_),
       Math.floor(this.width_ * this.scale_),
       Math.floor(this.height_ * this.scale_));
@@ -233,10 +233,10 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
  */
 rnoadm.gfx.Sprite.fromNetwork = function(sprite) {
   return new rnoadm.gfx.Sprite(sprite['S'], sprite['C'],
-        sprite['E']['a'] || '', sprite['E']['x'] || 0, sprite['E']['y'] || 0,
-        sprite['E']['w'] || rnoadm.gfx.TILE_SIZE,
-        sprite['E']['h'] || rnoadm.gfx.TILE_SIZE,
-        sprite['E']['s'] || 1);
+      sprite['E']['a'] || '', sprite['E']['x'] || 0, sprite['E']['y'] || 0,
+      sprite['E']['w'] || rnoadm.gfx.TILE_SIZE,
+      sprite['E']['h'] || rnoadm.gfx.TILE_SIZE,
+      sprite['E']['s'] || 1);
 };
 
 
