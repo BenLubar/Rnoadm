@@ -59,12 +59,29 @@ goog.events.listen(rnoadm.net.socket_,
 
 
 /**
+ * @type {Array.<function()>}
+ * @const
+ */
+rnoadm.net.onConnect = [];
+
+
+/**
+ * @type {Array.<function()>}
+ * @const
+ */
+rnoadm.net.onDisconnect = [];
+
+
+/**
  * Called when the socket is opened.
  *
  * @private
  */
 rnoadm.net.onopen_ = function() {
   rnoadm.net.connected_ = true;
+  rnoadm.net.onConnect.forEach(function(f) {
+    f();
+  });
 };
 
 
@@ -75,6 +92,9 @@ rnoadm.net.onopen_ = function() {
  */
 rnoadm.net.onclose_ = function() {
   rnoadm.net.connected_ = false;
+  rnoadm.net.onDisconnect.forEach(function(f) {
+    f();
+  });
 };
 
 

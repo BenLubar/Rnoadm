@@ -25,6 +25,7 @@ var equippables = [equipSlotCount][]struct {
 			name:   "plain shirt",
 			sprite: "shirt_basic",
 			colors: []string{"#986"},
+			height: 48,
 		},
 	},
 	SlotPants: {
@@ -32,6 +33,7 @@ var equippables = [equipSlotCount][]struct {
 			name:   "plain pants",
 			sprite: "pants_basic",
 			colors: []string{"#754"},
+			height: 48,
 		},
 	},
 	SlotFeet: {
@@ -39,6 +41,7 @@ var equippables = [equipSlotCount][]struct {
 			name:   "plain shoes",
 			sprite: "shoes_basic",
 			colors: []string{"#cec"},
+			height: 48,
 		},
 	},
 }

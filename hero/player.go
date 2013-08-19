@@ -244,12 +244,15 @@ func (p *Player) CharacterCreation(command string) {
 
 	var sprites []map[string]interface{}
 
+	w, h := p.race.SpriteSize()
 	sprites = append(sprites, map[string]interface{}{
 		"C": p.race.SkinTones()[p.skinTone],
 		"S": p.race.Sprite(),
 		"E": map[string]interface{}{
 			"a": "ccr",
 			"s": 4,
+			"w": w,
+			"h": h,
 		},
 	})
 

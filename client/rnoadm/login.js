@@ -17,6 +17,13 @@ rnoadm.login.username = window.sessionStorage['rnoadm_username'] || '';
 rnoadm.login.password = window.sessionStorage['rnoadm_password'] || '';
 
 
+rnoadm.net.onConnect.push(function() {
+  if (rnoadm.login.username.length && rnoadm.login.password.length > 2) {
+    rnoadm.login.form_.submit();
+  }
+});
+
+
 /**
  * @type {HTMLFormElement}
  * @private
@@ -61,11 +68,11 @@ rnoadm.login.dummy_ = goog.asserts.assertInstanceof(
  * @param {...string} var_args
  * @private
  */
-rnoadm.net.admin_ = function(var_args) {
+rnoadm.login.admin_ = function(var_args) {
   rnoadm.net.send({'Admin': [].slice.call(arguments)});
 };
 
-goog.exportSymbol('admin', rnoadm.net.admin_);
+goog.exportSymbol('admin', rnoadm.login.admin_);
 
 
 /**

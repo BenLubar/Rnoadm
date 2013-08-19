@@ -2,6 +2,7 @@ goog.provide('rnoadm.main');
 
 goog.require('goog.debug.FancyWindow');
 goog.require('goog.debug.Logger');
+goog.require('rnoadm.hud');
 goog.require('rnoadm.login');
 goog.require('rnoadm.net');
 goog.require('rnoadm.state');

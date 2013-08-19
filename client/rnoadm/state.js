@@ -4,6 +4,7 @@ goog.require('goog.asserts');
 goog.require('goog.debug.Logger');
 goog.require('rnoadm.gfx');
 goog.require('rnoadm.gfx.Sprite');
+goog.require('rnoadm.gfx.NetworkSprite');
 goog.require('rnoadm.net');
 
 
@@ -52,10 +53,29 @@ rnoadm.state.Object = function(x, y, id, net) {
   this.name = net['N'];
 
   /** @type {Array.<rnoadm.gfx.Sprite>} */
-  this.sprites = [];
+  var sprites = [];
+
+  /** @type {Array.<rnoadm.gfx.Sprite>} */
+  this.sprites = sprites;
 
   net['S'].forEach(function(sprite) {
-    this.sprites.push(new rnoadm.gfx.Sprite(sprite['S'], sprite['C'],
+    sprites.push(rnoadm.gfx.Sprite.fromNetwork(sprite));
+  });
+};
+
+/**
+ * @param {!rnoadm.state.NetworkObject} net The object recieved by rnoadm.net.
+ */
+rnoadm.state.Object.prototype.update = function(net) {
+  this.name = net['N'];
+
+  /** @type {Array.<rnoadm.gfx.Sprite>} */
+  var sprites = this.sprites;
+
+  sprites.length = 0;
+
+  net['S'].forEach(function(sprite) {
+    sprites.push(new rnoadm.gfx.Sprite(sprite['S'], sprite['C'],
         sprite['E']['a'], sprite['E']['x'], sprite['E']['y'],
         sprite['E']['w'] || rnoadm.gfx.TILE_SIZE,
         sprite['E']['h'] || rnoadm.gfx.TILE_SIZE,
@@ -68,7 +88,8 @@ rnoadm.state.Object = function(x, y, id, net) {
  * @param {number} x The current X coordinate of the object.
  * @param {number} y The current Y coordinate of the object.
  */
-rnoadm.state.Object.prototype.update = function(x, y) {
+rnoadm.state.Object.prototype.move = function(x, y) {
+  this.lastChange = Date.now();
   this.prevX = this.x;
   this.prevY = this.y;
   this.x = x;
@@ -77,12 +98,29 @@ rnoadm.state.Object.prototype.update = function(x, y) {
 
 
 /**
- * @typedef {{S:string, C:string, E:{a:string, w:number, h:number,
- *                                   x:number, y:number, s:number}}} */
-rnoadm.state.NetworkSprite;
+ * @param {number} xOffset
+ * @param {number} yOffset
+ */
+rnoadm.state.Object.prototype.paint = function(xOffset, yOffset) {
+  /** @type {number} */
+  var x = this.x;
+  /** @type {number} */
+  var y = this.y;
+
+  /** @type {number} */
+  var time = Date.now()- this.lastChange;
+  if (time < 500) {
+    x = (time * x + (500 - time) * this.prevX) / 500;
+    y = (time * y + (500 - time) * this.prevY) / 500;
+  }
+
+  this.sprites.forEach(function(sprite) {
+    sprite.paint(x + xOffset, y + yOffset);
+  });
+};
 
 
-/** @typedef {{N:string, S:Array.<rnoadm.state.NetworkSprite>}} */
+/** @typedef {{N:string, S:Array.<rnoadm.gfx.NetworkSprite>}} */
 rnoadm.state.NetworkObject;
 
 rnoadm.net.addHandler('Update', function(updates) {
@@ -149,8 +187,12 @@ rnoadm.net.addHandler('Update', function(updates) {
     if (goog.isDef(object)) {
       goog.asserts.assert(!goog.isDef(fromX) && !goog.isDef(fromY),
                           'update: contradictory update');
-      rnoadm.state.objects_[index][id] = new rnoadm.state.Object(x, y, id,
-                                                                 object);
+      if (id in rnoadm.state.objects_[index]) {
+        rnoadm.state.objects_[index][id].update(object);
+      } else {
+        rnoadm.state.objects_[index][id] = new rnoadm.state.Object(x, y, id,
+                                                                   object);
+      }
       return;
     }
 
@@ -161,8 +203,70 @@ rnoadm.net.addHandler('Update', function(updates) {
                         'update: move of nonexistent object');
     rnoadm.state.objects_[index][id] = rnoadm.state.objects_[fromIndex][id];
     delete rnoadm.state.objects_[fromIndex][id];
-    rnoadm.state.objects_[index][id].update(x, y);
+    rnoadm.state.objects_[index][id].move(x, y);
   });
+  rnoadm.gfx.repaint();
 });
+
+
+/**
+ * @type {number}
+ * @private
+ */
+rnoadm.state.playerX_ = 127;
+
+
+rnoadm.net.addHandler('PlayerX', function(x) {
+  rnoadm.state.playerX_ = x;
+  rnoadm.gfx.repaint();
+});
+
+
+/**
+ * @type {number}
+ * @private
+ */
+rnoadm.state.playerY_ = 127;
+
+
+rnoadm.net.addHandler('PlayerY', function(y) {
+  rnoadm.state.playerY_ = y;
+  rnoadm.gfx.repaint();
+});
+
+
+/**
+ * @type {rnoadm.gfx.Sprite}
+ * @private
+ * @const
+ */
+rnoadm.state.grass_ = new rnoadm.gfx.Sprite('grass', '#268f1e', '',
+                                            0, 0, 512, 512);
+
+
+rnoadm.gfx.paintObjects = function(w, h) {
+  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerX_;
+  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerY_;
+  for (var x = 0; x < 256; x += 512 / rnoadm.gfx.TILE_SIZE) {
+    for (var y = 0; y < 256; y += 512 / rnoadm.gfx.TILE_SIZE) {
+      rnoadm.state.grass_.paint(xOffset + x + 512 / rnoadm.gfx.TILE_SIZE / 2,
+                                yOffset + y + 512 / rnoadm.gfx.TILE_SIZE / 2);
+    }
+  }
+  for (var x = Math.max(0, Math.floor(xOffset - w/2));
+       x < Math.min(256, Math.floor(xOffset + w/2));
+       x++) {
+    for (var y = Math.max(0, Math.floor(yOffset - h/2));
+         y < Math.min(256, Math.floor(yOffset + h/2));
+         y++) {
+      var objects = rnoadm.state.objects_[x | y << 8];
+      if (objects) {
+        for (var id in objects) {
+          objects[id].paint(xOffset, yOffset);
+        }
+      }
+    }
+  }
+};
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

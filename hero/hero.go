@@ -230,6 +230,10 @@ func (h *Hero) SpritePos() (uint, uint) {
 	return h.facing, 0
 }
 
+func (h *Hero) SpriteSize() (uint, uint) {
+	return h.Race().SpriteSize()
+}
+
 func (h *Hero) MaxHealth() uint64 {
 	return h.Race().BaseHealth()
 }
