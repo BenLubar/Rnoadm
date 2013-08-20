@@ -332,6 +332,14 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 			p.giveItem(item)
 			p.mtx.Unlock()
 		}
+	case "spawn drop":
+		if len(command) != 2 {
+			return
+		}
+		obj := world.Spawn(command[1])
+		if obj != nil {
+			p.Position().Add(obj)
+		}
 	case "clear inventory":
 		if len(command) != 1 {
 			return
