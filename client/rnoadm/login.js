@@ -62,7 +62,7 @@ rnoadm.net.onConnect.push(function() {
     rnoadm.login.username_.value = rnoadm.login.username;
     rnoadm.login.password_.value = rnoadm.login.password;
     rnoadm.login.dummy_.value = rnoadm.login.password;
-    rnoadm.login.form_.submit();
+    rnoadm.login.form_.onsubmit();
   }
 });
 
@@ -83,6 +83,8 @@ goog.exportSymbol('admin', rnoadm.login.admin_);
  */
 rnoadm.login.onlogin_ = function() {
   var parent = rnoadm.login.form_.parentNode;
+  if (!parent)
+    return;
   parent.removeChild(rnoadm.login.form_);
   parent.style.overflow = 'hidden';
   parent.style.fontSize = '0';

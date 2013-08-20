@@ -27,9 +27,12 @@ type Player struct {
 	kick      chan string
 	hud       chan HUD
 	inventory chan []world.Visible
+	messages  chan []Message
 }
 
 var _ world.NoSaveObject = (*Player)(nil)
+var _ world.AdminLike = (*Player)(nil)
+var _ world.SendMessageLike = (*Player)(nil)
 
 func init() {
 	world.Register("player", HeroLike((*Player)(nil)))
@@ -158,13 +161,15 @@ func (p *Player) ClearHUD() {
 	p.SetHUD("", nil)
 }
 
-func (p *Player) InitPlayer() (kick <-chan string, hud <-chan HUD, inventory <-chan []world.Visible) {
+func (p *Player) InitPlayer() (kick <-chan string, hud <-chan HUD, inventory <-chan []world.Visible, messages <-chan []Message) {
 	p.kick = make(chan string, 1)
 	kick = p.kick
 	p.hud = make(chan HUD, 1)
 	hud = p.hud
 	p.inventory = make(chan []world.Visible, 1)
 	inventory = p.inventory
+	p.messages = make(chan []Message, 1)
+	messages = p.messages
 	return
 }
 
@@ -327,6 +332,13 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 			p.giveItem(item)
 			p.mtx.Unlock()
 		}
+	case "clear inventory":
+		if len(command) != 1 {
+			return
+		}
+		for _, item := range p.Inventory() {
+			p.RemoveItem(item)
+		}
 	}
 }
 
@@ -342,7 +354,49 @@ func (p *Player) notifyInventoryChanged() {
 	}
 }
 
+func (p *Player) SendMessage(message string) {
+	p.SendMessageColor(message, "#ddd")
+}
+
+func (p *Player) SendMessageColor(message, color string) {
+	messages := []Message{{
+		Text:  message,
+		Color: color,
+	}}
+	for {
+		select {
+		case p.messages <- messages:
+			return
+		default:
+			select {
+			case p.messages <- messages:
+				return
+			case other := <-p.messages:
+				messages = append(other, messages...)
+			}
+		}
+	}
+}
+
+func (p *Player) Chat(message string) {
+	if pos := p.Position(); pos != nil {
+		pos.Zone().Chat(p, message)
+	}
+}
+
+func (p *Player) IsAdmin() bool {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	return p.admin
+}
+
 type HUD struct {
 	Name string                 `json:"N"`
 	Data map[string]interface{} `json:"D,omitempty"`
+}
+
+type Message struct {
+	Text  string `json:"T"`
+	Color string `json:"C"`
 }

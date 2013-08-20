@@ -1,6 +1,7 @@
 package world
 
 import (
+	"strings"
 	"sync"
 )
 
@@ -131,6 +132,33 @@ func (z *Zone) think(wg *sync.WaitGroup) {
 	for x := 0; x < 256; x++ {
 		for y := 0; y < 256; y++ {
 			z.Tile(uint8(x), uint8(y)).think()
+		}
+	}
+}
+
+func (z *Zone) Chat(sender Visible, message string) {
+	message = strings.Join(strings.Fields(message), "")
+	if message == "" {
+		return
+	}
+	message = "‹" + sender.Name() + "› says, “" + message + "”"
+	color := "#ccc"
+	if a, ok := sender.(AdminLike); ok {
+		if a.IsAdmin() {
+			color = "#fd8"
+		} else {
+			color = "#eee"
+		}
+	}
+
+	z.lock()
+	defer z.unlock()
+
+	for i := range z.tiles {
+		for _, o := range z.tiles[i].objects {
+			if recipient, ok := o.(SendMessageLike); ok {
+				recipient.SendMessageColor(message, color)
+			}
 		}
 	}
 }

@@ -67,7 +67,9 @@ rnoadm.hud.text_ = {
   change_pants_color: new rnoadm.gfx.Text('change pants color', '#aaa', false),
   change_pants_colorh: new rnoadm.gfx.Text('change pants color', '#fff', false),
   confirmt: new rnoadm.gfx.Text('Confirm', '#aaa', true),
-  confirmth: new rnoadm.gfx.Text('Confirm', '#fff', true)
+  confirmth: new rnoadm.gfx.Text('Confirm', '#fff', true),
+  push_enter_to_chat: new rnoadm.gfx.Text('[push enter to chat]', '#ccc',
+      false, true)
 };
 
 
@@ -311,6 +313,18 @@ rnoadm.net.addHandler('HUD', function(data) {
 });
 
 rnoadm.gfx.paintHuds = function(w, h) {
+  if (rnoadm.hud.chat_ == null) {
+    if (rnoadm.hud.activeHuds_.length == 0) {
+      rnoadm.hud.text_.push_enter_to_chat.paint(0.1,
+          h / rnoadm.gfx.TILE_SIZE - 0.1);
+    }
+  } else {
+    new rnoadm.gfx.Text(rnoadm.hud.chat_ + '_', '#fff', false, true).paint(
+        0.1, h / rnoadm.gfx.TILE_SIZE - 0.1);
+  }
+  rnoadm.hud.messages_.forEach(function(message, i) {
+    message.paint(0.1, h / rnoadm.gfx.TILE_SIZE - i / 2 - 0.6);
+  });
   rnoadm.hud.activeHuds_.forEach(function(hud) {
     hud.paint_(w, h);
   });
@@ -340,5 +354,77 @@ rnoadm.gfx.clickHud = function(x, y, w, h) {
   }
   return false;
 };
+
+rnoadm.net.addHandler('Inventory', function(inventory) {
+  window['console']['log'](inventory);
+});
+
+
+window.addEventListener('keydown', function(e) {
+  if (e.ctrlKey || e.altKey) return;
+  if (e.keyCode < 20) e.preventDefault();
+  switch (e.keyCode) {
+  case 8: // backspace
+    if (rnoadm.hud.chat_ !== null && rnoadm.hud.chat_.length > 0) {
+      rnoadm.hud.chat_ = rnoadm.hud.chat_.substring(0,
+        rnoadm.hud.chat_.length - 1);
+      rnoadm.gfx.repaint();
+    }
+    break;
+  case 13: // enter
+    if (rnoadm.hud.chat_ === null) {
+      rnoadm.hud.chat_ = '';
+    } else {
+      rnoadm.net.send({'Chat': rnoadm.hud.chat_});
+      rnoadm.hud.chat_ = null;
+    }
+    rnoadm.gfx.repaint();
+    break;
+  case 27: // esc
+    if (rnoadm.hud.chat_ !== null) {
+      rnoadm.hud.chat_ = null;
+      rnoadm.gfx.repaint();
+    }
+    break;
+  }
+}, false);
+
+
+window.addEventListener('keypress', function(e) {
+  if (rnoadm.hud.chat_ !== null) {
+    rnoadm.hud.chat_ += String.fromCharCode(e.charCode);
+    rnoadm.gfx.repaint();
+  }
+}, false);
+
+
+rnoadm.net.onConnect.push(function() {
+  rnoadm.hud.chat_ = null;
+});
+
+
+/**
+ * @type {?string}
+ * @private
+ */
+rnoadm.hud.chat_ = null;
+
+
+/**
+ * @type {Array.<rnoadm.gfx.Text>}
+ * @private
+ * @const
+ */
+rnoadm.hud.messages_ = [];
+
+rnoadm.net.addHandler('Msg', function(messages) {
+  messages.forEach(function(message) {
+    rnoadm.hud.messages_.unshift(new rnoadm.gfx.Text(message['T'], message['C'], false, true));
+    window.setTimeout(function() {
+      rnoadm.hud.messages_.pop();
+    }, 60000);
+    rnoadm.gfx.repaint();
+  });
+});
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

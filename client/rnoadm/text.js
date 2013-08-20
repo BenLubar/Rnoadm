@@ -5,10 +5,14 @@ goog.require('rnoadm.gfx');
 
 
 /**
+ * @param {string} text
+ * @param {string} color
+ * @param {boolean} title
+ * @param {boolean=} opt_left
  * @constructor
  * @struct
  */
-rnoadm.gfx.Text = function(text, color, title) {
+rnoadm.gfx.Text = function(text, color, title, opt_left) {
   /**
    * @type {string}
    * @private
@@ -37,6 +41,13 @@ rnoadm.gfx.Text = function(text, color, title) {
    */
   this.font_ = (this.height_ * rnoadm.gfx.TILE_SIZE) + 'px ' + (title ?
       '"Jolly Lodger"' : '"Open Sans Condensed"');
+
+  /**
+   * @type {boolean}
+   * @private
+   * @const
+   */
+  this.center_ = !opt_left;
 };
 
 
@@ -54,7 +65,7 @@ rnoadm.gfx.Text.prototype.height = function() {
 rnoadm.gfx.Text.prototype.paint = function(x, y) {
   rnoadm.gfx.ctx.font = this.font_;
   var w = rnoadm.gfx.ctx.measureText(this.text_).width;
-  x = Math.floor(x * rnoadm.gfx.TILE_SIZE - w / 2);
+  x = Math.floor(x * rnoadm.gfx.TILE_SIZE - (this.center_ ? w / 2 : 0));
   y = Math.floor(y * rnoadm.gfx.TILE_SIZE);
 
   rnoadm.gfx.ctx.fillStyle = 'rgba(0,0,0,.2)';

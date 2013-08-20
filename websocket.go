@@ -20,6 +20,7 @@ type clientPacket struct {
 		Name string      `json:"N"`
 		Data interface{} `json:"D"`
 	}
+	Chat *string
 }
 
 type packetKick struct {
@@ -58,6 +59,10 @@ type packetUpdateSprite struct {
 
 type packetInventory struct {
 	Inventory []*packetUpdateObject
+}
+
+type packetMessage struct {
+	Message []hero.Message `json:"Msg"`
 }
 
 func addSprites(u *packetUpdateObject, obj world.Visible) *packetUpdateObject {
@@ -126,6 +131,7 @@ func socketHandler(ws *websocket.Conn) {
 		kick        <-chan string
 		hud         <-chan hero.HUD
 		inventory   <-chan []world.Visible
+		messages    <-chan []hero.Message
 		updateQueue packetUpdate
 	)
 	updateTick := time.NewTicker(time.Second / 10)
@@ -217,7 +223,7 @@ func socketHandler(ws *websocket.Conn) {
 					return
 				}
 				world.InitObject(player)
-				kick, hud, inventory = player.InitPlayer()
+				kick, hud, inventory, messages = player.InitPlayer()
 				zx, tx, zy, ty := player.LoginPosition()
 				defer hero.PlayerDisconnected(player)
 
@@ -268,6 +274,9 @@ func socketHandler(ws *websocket.Conn) {
 					}
 				}
 			}
+			if packet.Chat != nil {
+				player.Chat(*packet.Chat)
+			}
 			if len(packet.Admin) > 0 {
 				player.AdminCommand(addr, packet.Admin...)
 			}
@@ -312,6 +321,9 @@ func socketHandler(ws *websocket.Conn) {
 			websocket.JSON.Send(ws, updateQueue)
 
 			updateQueue.Update = leftover
+
+		case msg := <-messages:
+			websocket.JSON.Send(ws, packetMessage{msg})
 		}
 	}
 }

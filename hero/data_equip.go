@@ -12,6 +12,7 @@ var equippables = [equipSlotCount][]struct {
 			name:   "novelty foam chicken hat",
 			sprite: "hat_novelty_foam_chicken",
 			colors: []string{"#fff", "#fd0", "#f00"},
+			height: 64,
 		},
 		{
 			name:   "bear riding a unicycle",

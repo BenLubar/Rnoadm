@@ -110,9 +110,9 @@ rnoadm.state.Object.prototype.paint = function(xOffset, yOffset) {
 
   /** @type {number} */
   var time = Date.now() - this.lastChange;
-  if (time < 500) {
-    x = (time * x + (500 - time) * this.prevX) / 500;
-    y = (time * y + (500 - time) * this.prevY) / 500;
+  if (time < 400) {
+    x = (time * x + (400 - time) * this.prevX) / 400;
+    y = (time * y + (400 - time) * this.prevY) / 400;
     rnoadm.gfx.repaint();
   }
 
@@ -215,7 +215,7 @@ rnoadm.net.addHandler('Update', function(updates) {
  * @type {number}
  * @private
  */
-rnoadm.state.playerLastMove_ = 0;
+rnoadm.state.playerLastMoveX_ = 0;
 
 
 /**
@@ -237,9 +237,16 @@ rnoadm.net.addHandler('PlayerX', function(x) {
     return;
   rnoadm.state.playerPrevX_ = rnoadm.state.playerX_;
   rnoadm.state.playerX_ = x;
-  rnoadm.state.playerLastMove_ = Date.now();
+  rnoadm.state.playerLastMoveX_ = Date.now();
   rnoadm.gfx.repaint();
 });
+
+
+/**
+ * @type {number}
+ * @private
+ */
+rnoadm.state.playerLastMoveY_ = 0;
 
 
 /**
@@ -261,12 +268,12 @@ rnoadm.net.addHandler('PlayerY', function(y) {
     return;
   rnoadm.state.playerPrevY_ = rnoadm.state.playerY_;
   rnoadm.state.playerY_ = y;
-  rnoadm.state.playerLastMove_ = Date.now();
+  rnoadm.state.playerLastMoveY_ = Date.now();
   rnoadm.gfx.repaint();
 });
 
 
-rnoadm.net.onConnect.push(function() {
+rnoadm.net.onDisconnect.push(function() {
   for (var i = 0; i < rnoadm.state.objects_.length; i++) {
     delete rnoadm.state.objects_[i];
   }
@@ -289,10 +296,14 @@ rnoadm.gfx.paintObjects = function(w, h) {
   var playerY = rnoadm.state.playerY_;
 
   /** @type {number} */
-  var time = Date.now() - rnoadm.state.playerLastMove_;
-  if (time < 500) {
-    playerX = (time * playerX + (500 - time) * rnoadm.state.playerPrevX_) / 500;
-    playerY = (time * playerY + (500 - time) * rnoadm.state.playerPrevY_) / 500;
+  var time = Date.now() - rnoadm.state.playerLastMoveX_;
+  if (time < 400) {
+    playerX = (time * playerX + (400 - time) * rnoadm.state.playerPrevX_) / 400;
+    rnoadm.gfx.repaint();
+  }
+  time = Date.now() - rnoadm.state.playerLastMoveY_;
+  if (time < 400) {
+    playerY = (time * playerY + (400 - time) * rnoadm.state.playerPrevY_) / 400;
     rnoadm.gfx.repaint();
   }
 
@@ -304,12 +315,12 @@ rnoadm.gfx.paintObjects = function(w, h) {
                                 yOffset + y + 512 / rnoadm.gfx.TILE_SIZE / 2);
     }
   }
-  for (var x = Math.max(0, Math.floor(xOffset - w / 2));
-       x < Math.min(256, Math.floor(xOffset + w / 2));
-       x++) {
-    for (var y = Math.max(0, Math.floor(yOffset - h / 2));
-         y < Math.min(256, Math.floor(yOffset + h / 2));
-         y++) {
+  for (var y = Math.max(0, Math.floor(yOffset - h / 2));
+       y < Math.min(256, Math.floor(yOffset + h / 2));
+       y++) {
+    for (var x = Math.max(0, Math.floor(xOffset - w / 2));
+         x < Math.min(256, Math.floor(xOffset + w / 2));
+         x++) {
       var objects = rnoadm.state.objects_[x | y << 8];
       if (objects) {
         for (var id in objects) {
