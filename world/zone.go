@@ -137,7 +137,7 @@ func (z *Zone) think(wg *sync.WaitGroup) {
 }
 
 func (z *Zone) Chat(sender Visible, message string) {
-	message = strings.Join(strings.Fields(message), "")
+	message = strings.Join(strings.Fields(message), " ")
 	if message == "" {
 		return
 	}
