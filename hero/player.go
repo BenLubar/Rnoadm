@@ -217,7 +217,7 @@ func (p *Player) CharacterCreation(command string) {
 		p.mtx.Lock()
 		switch p.race {
 		case RaceHuman:
-			p.name = *GenerateHumanName(rand.New(rand.NewSource(rand.Int63())), p.gender)
+			p.name = GenerateHumanName(rand.New(rand.NewSource(rand.Int63())), p.gender)
 		}
 		p.mtx.Unlock()
 	case "skin":

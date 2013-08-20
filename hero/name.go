@@ -50,6 +50,8 @@ func (n *HeroName) unserialize(data map[string]interface{}) {
 	}
 }
 
+// Name converts a numeric HeroName into a human-readable string. If Name would
+// return an empty string, it instead returns the string "unknown".
 func (n *HeroName) Name() string {
 	if n == nil {
 		return "unknown"
@@ -75,8 +77,14 @@ func (n *HeroName) Name() string {
 	return string(buf[1:])
 }
 
-func GenerateHumanName(r *rand.Rand, gender Gender) *HeroName {
-	n := &HeroName{}
+// GenerateHumanName randomly generates a name suitable for a human. The first
+// name is chosen from a gender-specific list. There is a 3% chance of no
+// surname. For the other 97% of names, 25% have a surname beginning with
+// a male first name and ending with "son". An additional 5% have a surname
+// of a single English word, such as "smith" or "cook". The remaining 70% have
+// a surname generated from two syllables.
+func GenerateHumanName(r *rand.Rand, gender Gender) HeroName {
+	var n HeroName
 	switch gender {
 	case GenderMale:
 		n.FirstT = NameMaleHuman
