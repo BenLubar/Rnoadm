@@ -315,11 +315,11 @@ rnoadm.gfx.paintObjects = function(w, h) {
                                 yOffset + y + 512 / rnoadm.gfx.TILE_SIZE / 2);
     }
   }
-  for (var y = Math.max(0, Math.floor(yOffset - h / 2));
-       y < Math.min(256, Math.floor(yOffset + h / 2));
+  for (var y = Math.max(0, Math.floor(-h / 2 - yOffset));
+       y < Math.min(256, Math.floor(h / 2 - yOffset));
        y++) {
-    for (var x = Math.max(0, Math.floor(xOffset - w / 2));
-         x < Math.min(256, Math.floor(xOffset + w / 2));
+    for (var x = Math.max(0, Math.floor(-w/2 - xOffset));
+         x < Math.min(256, Math.floor(w/2 - xOffset));
          x++) {
       var objects = rnoadm.state.objects_[x | y << 8];
       if (objects) {
