@@ -6,6 +6,9 @@ var equippables = [equipSlotCount][]struct {
 	colors []string
 	height uint // default 32
 	width  uint // default 32
+
+	animationOverrides map[string]string
+	adminOnly          bool
 }{
 	SlotHead: {
 		{
@@ -13,12 +16,35 @@ var equippables = [equipSlotCount][]struct {
 			sprite: "hat_novelty_foam_chicken",
 			colors: []string{"#fff", "#fd0", "#f00"},
 			height: 64,
+
+			adminOnly: true,
 		},
 		{
 			name:   "bear riding a unicycle",
 			sprite: "hat_bear_riding_a_unicycle",
 			colors: []string{"#ccf", "#ecb", "#fff"},
 			height: 87,
+
+			adminOnly: true,
+		},
+		{
+			name:   "unusual strange vintage hound dog",
+			sprite: "hat_unusual_strange_vintage_hound_dog",
+			colors: []string{"#fff", "#fff"},
+			height: 32,
+
+			adminOnly: true,
+		},
+		{
+			name:   "crown of the Origin",
+			sprite: "hat_admin_crown",
+			colors: []string{"#ff0", "#0ff", "#f00", "#f0f", "#0f0", "#00f"},
+			height: 64,
+
+			animationOverrides: map[string]string{
+				"": "_ac",
+			},
+			adminOnly: true,
 		},
 	},
 	SlotShirt: {

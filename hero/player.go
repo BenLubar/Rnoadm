@@ -299,7 +299,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		return
 	}
 	switch command[0] {
-	case "give admin":
+	case "grant admin":
 		if len(command) != 2 {
 			return
 		}
@@ -310,6 +310,22 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 			return
 		}
 		player.admin = true
+		savePlayer(player)
+	case "revoke admin":
+		if len(command) != 2 {
+			return
+		}
+		loginLock.Lock()
+		defer loginLock.Unlock()
+		player, err := getPlayerKick(command[1], "demoted by admin")
+		if err != nil {
+			return
+		}
+		if player.login == "BenLubar" {
+			p.Kick("lolnope")
+			return
+		}
+		player.admin = false
 		savePlayer(player)
 	case "kick":
 		if len(command) < 2 || len(command) > 3 {
@@ -339,6 +355,22 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		obj := world.Spawn(command[1])
 		if obj != nil {
 			p.Position().Add(obj)
+		}
+	case "spawn equip":
+		if len(command) != 2 {
+			return
+		}
+		obj := world.Spawn(command[1])
+		if e, ok := obj.(*Equip); ok {
+			p.mtx.Lock()
+			if old, ok := p.equipped[e.slot]; ok {
+				old.wearer = nil
+				p.giveItem(old)
+			}
+			e.wearer = &p.Hero
+			p.equipped[e.slot] = e
+			p.mtx.Unlock()
+			p.Position().Zone().Update(p.Position(), p)
 		}
 	case "clear inventory":
 		if len(command) != 1 {

@@ -57,8 +57,13 @@ type packetUpdateSprite struct {
 	Extra map[string]interface{} `json:"E,omitempty"`
 }
 
+type packetInventoryItem struct {
+	ID     uint64              `json:"I,string"`
+	Object *packetUpdateObject `json:"O"`
+}
+
 type packetInventory struct {
-	Inventory []*packetUpdateObject
+	Inventory []*packetInventoryItem
 }
 
 type packetMessage struct {
@@ -245,9 +250,14 @@ func socketHandler(ws *websocket.Conn) {
 					world.ReleaseZone(zone)
 				}()
 
-				inventoryObjects := []*packetUpdateObject{}
+				inventoryObjects := []*packetInventoryItem{}
 				for _, item := range player.Inventory() {
-					inventoryObjects = append(inventoryObjects, addSprites(&packetUpdateObject{Name: item.Name()}, item))
+					inventoryObjects = append(inventoryObjects, &packetInventoryItem{
+						ID: item.NetworkID(),
+						Object: addSprites(&packetUpdateObject{
+							Name: item.Name(),
+						}, item),
+					})
 				}
 				websocket.JSON.Send(ws, packetInventory{inventoryObjects})
 			}
@@ -292,9 +302,14 @@ func socketHandler(ws *websocket.Conn) {
 			websocket.JSON.Send(ws, packetHUD{h})
 
 		case items := <-inventory:
-			objects := make([]*packetUpdateObject, len(items))
+			objects := make([]*packetInventoryItem, len(items))
 			for i, item := range items {
-				objects[i] = addSprites(&packetUpdateObject{Name: item.Name()}, item)
+				objects[i] = &packetInventoryItem{
+					ID: item.NetworkID(),
+					Object: addSprites(&packetUpdateObject{
+						Name: item.Name(),
+					}, item),
+				}
 			}
 			websocket.JSON.Send(ws, packetInventory{objects})
 

@@ -5,6 +5,7 @@ goog.require('rnoadm.gfx');
 goog.require('rnoadm.gfx.Sprite');
 goog.require('rnoadm.gfx.Text');
 goog.require('rnoadm.net');
+goog.require('rnoadm.state.Object');
 
 
 
@@ -52,11 +53,10 @@ rnoadm.hud.activeHuds_ = [];
 
 
 /**
- * @private
  * @struct
  * @const
  */
-rnoadm.hud.text_ = {
+rnoadm.hud.text = {
   charactert: new rnoadm.gfx.Text('Character', '#ccc', true),
   change_name: new rnoadm.gfx.Text('change name', '#aaa', false),
   change_nameh: new rnoadm.gfx.Text('change name', '#fff', false),
@@ -80,242 +80,88 @@ rnoadm.hud.text_ = {
  */
 rnoadm.hud.huds_ = {};
 
-rnoadm.hud.huds_['cc'] = function(data) {
-  /**
-   * @type {Array.<rnoadm.gfx.Sprite>}
-   * @const
-   */
-  var sprites = [];
 
-  data['S'].forEach(function(sprite) {
-    sprites.push(rnoadm.gfx.Sprite.fromNetwork(sprite));
-  });
-
-  /**
-   * @type {rnoadm.gfx.Text}
-   * @const
-   */
-  var name = new rnoadm.gfx.Text(data['N'], '#aaa', true);
-
-  /**
-   * @type {rnoadm.gfx.Text}
-   * @const
-   */
-  var nameh = new rnoadm.gfx.Text(data['N'], '#fff', true);
-
-  /**
-   * @type {rnoadm.gfx.Text}
-   * @const
-   */
-  var change_gender = new rnoadm.gfx.Text('change gender (' + data['G'] + ')',
-                                          '#aaa', false);
-
-  /**
-   * @type {rnoadm.gfx.Text}
-   * @const
-   */
-  var change_genderh = new rnoadm.gfx.Text('change gender (' + data['G'] + ')',
-                                           '#fff', false);
-
-  /** @type {boolean} */
-  var hover_name = false;
-
-  /** @type {boolean} */
-  var hover_gender = false;
-
-  /** @type {boolean} */
-  var hover_skin = false;
-
-  /** @type {boolean} */
-  var hover_shirt = false;
-
-  /** @type {boolean} */
-  var hover_pants = false;
-
-  /** @type {boolean} */
-  var hover_confirm = false;
-
-  /** @type {boolean} */
-  var hover_none = true;
-
-  return new rnoadm.hud.HUD('cc', function(w, h) {
-    rnoadm.gfx.ctx.fillStyle = 'rgba(0,0,0,.7)';
-    rnoadm.gfx.ctx.fillRect(0, 0, w, h);
-    w /= rnoadm.gfx.TILE_SIZE * 2;
-    h /= rnoadm.gfx.TILE_SIZE * 2;
-    sprites.forEach(function(sprite) {
-      sprite.paint(w - 3, h + 1);
-    });
-    rnoadm.hud.text_.charactert.paint(w + 2, h - 4);
-    if (hover_name) {
-      nameh.paint(w, h + 2);
-      rnoadm.hud.text_.change_nameh.paint(w, h + 2.5);
-    } else {
-      name.paint(w, h + 2);
-      rnoadm.hud.text_.change_name.paint(w, h + 2.5);
-    }
-    if (hover_gender) {
-      change_genderh.paint(w + 2, h - 3);
-    } else {
-      change_gender.paint(w + 2, h - 3);
-    }
-    if (hover_skin) {
-      rnoadm.hud.text_.change_skin_colorh.paint(w + 2, h - 2);
-    } else {
-      rnoadm.hud.text_.change_skin_color.paint(w + 2, h - 2);
-    }
-    if (hover_shirt) {
-      rnoadm.hud.text_.change_shirt_colorh.paint(w + 2, h - 1);
-    } else {
-      rnoadm.hud.text_.change_shirt_color.paint(w + 2, h - 1);
-    }
-    if (hover_pants) {
-      rnoadm.hud.text_.change_pants_colorh.paint(w + 2, h);
-    } else {
-      rnoadm.hud.text_.change_pants_color.paint(w + 2, h);
-    }
-    if (hover_confirm) {
-      rnoadm.hud.text_.confirmth.paint(w, h + 4);
-    } else {
-      rnoadm.hud.text_.confirmt.paint(w, h + 4);
-    }
-  }, function(x, y, w, h) {
-    x /= rnoadm.gfx.TILE_SIZE;
-    y /= rnoadm.gfx.TILE_SIZE;
-    w /= rnoadm.gfx.TILE_SIZE * 2;
-    h /= rnoadm.gfx.TILE_SIZE * 2;
-
-    if (y >= h + 2 - name.height() && y <= h + 2.5 && Math.abs(w - x) <=
-        Math.max(name.width(), rnoadm.hud.text_.change_name.width()) / 2) {
-      if (!hover_name)
-        rnoadm.gfx.repaint();
-      hover_name = true;
-      hover_gender = false;
-      hover_skin = false;
-      hover_shirt = false;
-      hover_pants = false;
-      hover_confirm = false;
-      hover_none = false;
-    } else if (y >= h - 3 - change_gender.height() && y <= h - 3 &&
-        Math.abs(w + 2 - x) <= change_gender.width() / 2) {
-      if (!hover_gender)
-        rnoadm.gfx.repaint();
-      hover_name = false;
-      hover_gender = true;
-      hover_skin = false;
-      hover_shirt = false;
-      hover_pants = false;
-      hover_confirm = false;
-      hover_none = false;
-    } else if (y >= h - 2 - rnoadm.hud.text_.change_skin_color.height() &&
-        y <= h - 2 && Math.abs(w + 2 - x) <=
-        rnoadm.hud.text_.change_skin_color.width() / 2) {
-      if (!hover_skin)
-        rnoadm.gfx.repaint();
-      hover_name = false;
-      hover_gender = false;
-      hover_skin = true;
-      hover_shirt = false;
-      hover_pants = false;
-      hover_confirm = false;
-      hover_none = false;
-    } else if (y >= h - 1 - rnoadm.hud.text_.change_shirt_color.height() &&
-        y <= h - 1 && Math.abs(w + 2 - x) <=
-        rnoadm.hud.text_.change_shirt_color.width() / 2) {
-      if (!hover_shirt)
-        rnoadm.gfx.repaint();
-      hover_name = false;
-      hover_gender = false;
-      hover_skin = false;
-      hover_shirt = true;
-      hover_pants = false;
-      hover_confirm = false;
-      hover_none = false;
-    } else if (y >= h - rnoadm.hud.text_.change_pants_color.height() &&
-        y <= h && Math.abs(w + 2 - x) <=
-        rnoadm.hud.text_.change_pants_color.width() / 2) {
-      if (!hover_pants)
-        rnoadm.gfx.repaint();
-      hover_name = false;
-      hover_gender = false;
-      hover_skin = false;
-      hover_shirt = false;
-      hover_pants = true;
-      hover_confirm = false;
-      hover_none = false;
-    } else if (y >= h + 4 - rnoadm.hud.text_.confirmt.height() &&
-        y <= h + 4 && Math.abs(w - x) <=
-        rnoadm.hud.text_.confirmt.width() / 2) {
-      if (!hover_confirm)
-        rnoadm.gfx.repaint();
-      hover_name = false;
-      hover_gender = false;
-      hover_skin = false;
-      hover_shirt = false;
-      hover_pants = false;
-      hover_confirm = true;
-      hover_none = false;
-    } else {
-      if (!hover_none)
-        rnoadm.gfx.repaint();
-      hover_name = false;
-      hover_gender = false;
-      hover_skin = false;
-      hover_shirt = false;
-      hover_pants = false;
-      hover_confirm = false;
-      hover_none = true;
-    }
-
-    // No interaction with anything other than this hud while it's up.
-    return true;
-  }, function(x, y, w, h) {
-    switch (true) {
-      case hover_name:
-        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'name'}});
-        break;
-      case hover_gender:
-        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'gender'}});
-        break;
-      case hover_skin:
-        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'skin'}});
-        break;
-      case hover_shirt:
-        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'shirt'}});
-        break;
-      case hover_pants:
-        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'pants'}});
-        break;
-      case hover_confirm:
-        rnoadm.net.send({'HUD': {'N': 'cc', 'D': 'accept'}});
-        break;
-      case hover_none:
-        break;
-    }
-
-    // No interaction with anything other than this hud while it's up.
-    return true;
-  });
+/**
+ * @param {string} id
+ * @param {function(Object):rnoadm.hud.HUD} f
+ */
+rnoadm.hud.register = function(id, f) {
+  goog.asserts.assert(!(id in rnoadm.hud.huds_), 'double hud register: ' + id);
+  rnoadm.hud.huds_[id] = f;
 };
 
-
-rnoadm.net.addHandler('HUD', function(data) {
-  rnoadm.hud.activeHuds_.length = 0;
-  if (data['N'].length) {
-    goog.asserts.assert(data['N'] in rnoadm.hud.huds_,
-                        'unknown hud: ' + data['N']);
-    var hud = rnoadm.hud.huds_[data['N']](data['D'] || {});
-    hud.mouseMoved_(rnoadm.hud.lastMouseMove_[0], rnoadm.hud.lastMouseMove_[1],
-                    rnoadm.hud.lastMouseMove_[2], rnoadm.hud.lastMouseMove_[3]);
+/**
+ * @param {string} id
+ * @param {Object=} opt_data
+ */
+rnoadm.hud.show = function(id, opt_data) {
+  goog.asserts.assert(id in rnoadm.hud.huds_,
+                      'unknown hud: ' + id);
+  var hud = rnoadm.hud.huds_[id](opt_data || {});
+  hud.mouseMoved_(rnoadm.hud.lastMouseMove_[0], rnoadm.hud.lastMouseMove_[1],
+                  rnoadm.hud.lastMouseMove_[2], rnoadm.hud.lastMouseMove_[3]);
+  var found = false;
+  rnoadm.hud.activeHuds_.forEach(function(h, i) {
+    if (h.name_ == id) {
+      found = true;
+      rnoadm.hud.activeHuds_[i] = hud;
+      return false;
+    }
+  });
+  if (!found) {
     rnoadm.hud.activeHuds_.push(hud);
   }
   rnoadm.gfx.repaint();
+};
+
+/**
+ * @param {string} id
+ */
+rnoadm.hud.hide = function(id) {
+  rnoadm.hud.activeHuds_.forEach(function(h, i) {
+    if (h.name_ == id) {
+      rnoadm.hud.activeHuds_.splice(i, 1);
+      rnoadm.gfx.repaint();
+      return false;
+    }
+  });
+};
+
+rnoadm.net.addHandler('HUD', function(data) {
+  rnoadm.hud.activeHuds_.length = 0;
+  rnoadm.gfx.repaint();
+  if (data['N'].length) {
+    rnoadm.hud.show(data['N'], data['D']);
+  }
 });
+
+/**
+ * @type {boolean}
+ * @private
+ */
+rnoadm.hud.hover_inventory_ = false;
+
+/**
+ * @type {rnoadm.gfx.Sprite}
+ * @private
+ * @const
+ */
+rnoadm.hud.inventoryIcon_ = new rnoadm.gfx.Sprite('ui_icons', '#888', '',
+                                                  0, 0, 32, 32);
+
+/**
+ * @type {rnoadm.gfx.Sprite}
+ * @private
+ * @const
+ */
+rnoadm.hud.inventoryIconh_ = new rnoadm.gfx.Sprite('ui_icons', '#bbb', '',
+                                                   0, 0, 32, 32);
+
 
 rnoadm.gfx.paintHuds = function(w, h) {
   if (rnoadm.hud.chat_ == null) {
     if (rnoadm.hud.activeHuds_.length == 0) {
-      rnoadm.hud.text_.push_enter_to_chat.paint(0.1,
+      rnoadm.hud.text.push_enter_to_chat.paint(0.1,
           h / rnoadm.gfx.TILE_SIZE - 0.1);
     }
   } else {
@@ -325,6 +171,15 @@ rnoadm.gfx.paintHuds = function(w, h) {
   rnoadm.hud.messages_.forEach(function(message, i) {
     message.paint(0.1, h / rnoadm.gfx.TILE_SIZE - i / 2 - 0.6);
   });
+  if (!rnoadm.hud.activeHuds_.length) {
+    if (rnoadm.hud.hover_inventory_) {
+      rnoadm.hud.inventoryIconh_.paint(w / rnoadm.gfx.TILE_SIZE - 1,
+                                       h / rnoadm.gfx.TILE_SIZE);
+    } else {
+      rnoadm.hud.inventoryIcon_.paint(w / rnoadm.gfx.TILE_SIZE - 1,
+                                      h / rnoadm.gfx.TILE_SIZE);
+    }
+  }
   rnoadm.hud.activeHuds_.forEach(function(hud) {
     hud.paint_(w, h);
   });
@@ -339,6 +194,17 @@ rnoadm.hud.lastMouseMove_ = [-Infinity, -Infinity, 1, 1];
 
 rnoadm.gfx.mouseMovedHud = function(x, y, w, h) {
   rnoadm.hud.lastMouseMove_ = [x, y, w, h];
+  if (rnoadm.hud.activeHuds_.length == 0 && x >= w - rnoadm.gfx.TILE_SIZE &&
+      x <= w && y >= h - rnoadm.gfx.TILE_SIZE && y <= h) {
+    if (!rnoadm.hud.hover_inventory_) {
+      rnoadm.hud.hover_inventory_ = true;
+      rnoadm.gfx.repaint();
+    }
+    return true;
+  } else if (rnoadm.hud.hover_inventory_) {
+    rnoadm.hud.hover_inventory_ = false;
+    rnoadm.gfx.repaint();
+  }
   for (var i = rnoadm.hud.activeHuds_.length - 1; i >= 0; i--) {
     if (rnoadm.hud.activeHuds_[i].mouseMoved_(x, y, w, h))
       return true;
@@ -348,6 +214,10 @@ rnoadm.gfx.mouseMovedHud = function(x, y, w, h) {
 
 rnoadm.gfx.clickHud = function(x, y, w, h) {
   rnoadm.gfx.mouseMovedHud(x, y, w, h);
+  if (rnoadm.hud.hover_inventory_) {
+    rnoadm.hud.show('inv');
+    return true;
+  }
   for (var i = rnoadm.hud.activeHuds_.length - 1; i >= 0; i--) {
     if (rnoadm.hud.activeHuds_[i].click_(x, y, w, h))
       return true;
@@ -355,37 +225,33 @@ rnoadm.gfx.clickHud = function(x, y, w, h) {
   return false;
 };
 
-rnoadm.net.addHandler('Inventory', function(inventory) {
-  window['console']['log'](inventory);
-});
-
 
 window.addEventListener('keydown', function(e) {
   if (e.ctrlKey || e.altKey) return;
   if (e.keyCode < 20) e.preventDefault();
   switch (e.keyCode) {
-  case 8: // backspace
-    if (rnoadm.hud.chat_ !== null && rnoadm.hud.chat_.length > 0) {
-      rnoadm.hud.chat_ = rnoadm.hud.chat_.substring(0,
-        rnoadm.hud.chat_.length - 1);
+    case 8: // backspace
+      if (rnoadm.hud.chat_ !== null && rnoadm.hud.chat_.length > 0) {
+        rnoadm.hud.chat_ = rnoadm.hud.chat_.substring(0,
+            rnoadm.hud.chat_.length - 1);
+        rnoadm.gfx.repaint();
+      }
+      break;
+    case 13: // enter
+      if (rnoadm.hud.chat_ === null) {
+        rnoadm.hud.chat_ = '';
+      } else {
+        rnoadm.net.send({'Chat': rnoadm.hud.chat_});
+        rnoadm.hud.chat_ = null;
+      }
       rnoadm.gfx.repaint();
-    }
-    break;
-  case 13: // enter
-    if (rnoadm.hud.chat_ === null) {
-      rnoadm.hud.chat_ = '';
-    } else {
-      rnoadm.net.send({'Chat': rnoadm.hud.chat_});
-      rnoadm.hud.chat_ = null;
-    }
-    rnoadm.gfx.repaint();
-    break;
-  case 27: // esc
-    if (rnoadm.hud.chat_ !== null) {
-      rnoadm.hud.chat_ = null;
-      rnoadm.gfx.repaint();
-    }
-    break;
+      break;
+    case 27: // esc
+      if (rnoadm.hud.chat_ !== null) {
+        rnoadm.hud.chat_ = null;
+        rnoadm.gfx.repaint();
+      }
+      break;
   }
 }, false);
 

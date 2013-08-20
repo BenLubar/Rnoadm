@@ -103,3 +103,11 @@ func (l *Logs) Load(version uint, data interface{}, attached []world.ObjectLike)
 func (l *Logs) Name() string {
 	return l.kind.Name() + " logs"
 }
+
+func (l *Logs) Sprite() string {
+	return "item_logs"
+}
+
+func (l *Logs) Colors() []string {
+	return []string{l.kind.BarkColor()}
+}

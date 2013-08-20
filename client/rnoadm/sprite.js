@@ -212,6 +212,20 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
       sx += Math.floor(Date.now() / 150) % 3;
       rnoadm.gfx.repaint(150 - Date.now() % 150);
       break;
+    case '_ac': // special (admin crown)
+      if (sy < 2)
+        break;
+      var time = Date.now() / 10000;
+      switch (sy) {
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+        y += Math.sin(time * 5 + Math.cos(time * 3) * 7 + sy) / 8;
+        break;
+      }
+      rnoadm.gfx.repaint();
+      break;
   }
 
   rnoadm.gfx.ctx.drawImage(this.canvas_,

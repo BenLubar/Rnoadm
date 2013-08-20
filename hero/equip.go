@@ -100,10 +100,14 @@ func (e *Equip) Colors() []string {
 }
 
 func (e *Equip) AnimationType() string {
-	if e.wearer == nil {
-		return ""
+	var animation string
+	if e.wearer != nil {
+		animation = e.wearer.AnimationType()
 	}
-	return e.wearer.AnimationType()
+	if a, ok := equippables[e.slot][e.kind].animationOverrides[animation]; ok {
+		animation = a
+	}
+	return animation
 }
 
 func (e *Equip) SpritePos() (uint, uint) {
