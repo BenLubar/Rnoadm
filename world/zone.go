@@ -35,7 +35,9 @@ func (z *Zone) AddListener(l *ZoneListener) {
 		for i := range z.tiles {
 			t := &z.tiles[i]
 			for _, o := range t.objects {
+				z.unlock()
 				l.Add(t, o)
+				z.lock()
 			}
 		}
 	}
@@ -50,7 +52,9 @@ func (z *Zone) RemoveListener(l *ZoneListener) {
 		for i := range z.tiles {
 			t := &z.tiles[i]
 			for _, o := range t.objects {
+				z.unlock()
 				l.Remove(t, o)
+				z.lock()
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"code.google.com/p/go.net/websocket"
 	"github.com/BenLubar/Rnoadm/hero"
+	"github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
 	"io"
 	"log"
@@ -156,7 +157,45 @@ func socketHandler(ws *websocket.Conn) {
 			}
 		}
 	}
-	listener := &world.ZoneListener{
+	var listener *world.ZoneListener
+	updateWalls := func(t *world.Tile, obj world.ObjectLike) {
+		if _, ok := obj.(material.IsWall); ok {
+			x, y := t.Position()
+			if x > 0 {
+				tile := t.Zone().Tile(x-1, y)
+				for _, w := range tile.Objects() {
+					if _, ok := w.(material.IsWall); ok {
+						listener.Update(tile, w)
+					}
+				}
+			}
+			if x < 255 {
+				tile := t.Zone().Tile(x+1, y)
+				for _, w := range tile.Objects() {
+					if _, ok := w.(material.IsWall); ok {
+						listener.Update(tile, w)
+					}
+				}
+			}
+			if y > 0 {
+				tile := t.Zone().Tile(x, y-1)
+				for _, w := range tile.Objects() {
+					if _, ok := w.(material.IsWall); ok {
+						listener.Update(tile, w)
+					}
+				}
+			}
+			if y < 255 {
+				tile := t.Zone().Tile(x, y+1)
+				for _, w := range tile.Objects() {
+					if _, ok := w.(material.IsWall); ok {
+						listener.Update(tile, w)
+					}
+				}
+			}
+		}
+	}
+	listener = &world.ZoneListener{
 		Add: func(t *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)
 			if !ok {
@@ -169,6 +208,7 @@ func socketHandler(ws *websocket.Conn) {
 				Y:      y,
 				Object: addSprites(&packetUpdateObject{Name: o.Name()}, o),
 			})
+			updateWalls(t, obj)
 		},
 		Remove: func(t *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)
@@ -182,6 +222,7 @@ func socketHandler(ws *websocket.Conn) {
 				Y:      y,
 				Remove: true,
 			})
+			updateWalls(t, obj)
 		},
 		Move: func(from, to *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)
@@ -197,6 +238,8 @@ func socketHandler(ws *websocket.Conn) {
 				FromX: &fx,
 				FromY: &fy,
 			})
+			updateWalls(from, obj)
+			updateWalls(to, obj)
 		},
 		Update: func(t *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)

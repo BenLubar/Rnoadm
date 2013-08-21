@@ -222,10 +222,20 @@ rnoadm.gfx.paintObjects = function(w, h) {
   for (var y = Math.max(0, Math.floor(-h / 2 - yOffset));
        y < Math.min(256, Math.floor(h / 2 - yOffset));
        y++) {
-    for (var x = Math.max(0, Math.floor(-w / 2 - xOffset));
-         x < Math.min(256, Math.floor(w / 2 - xOffset));
+    for (var x = Math.max(0, Math.floor((-w / 2 - xOffset) / 2));
+         x < Math.min(128, Math.floor((w / 2 - xOffset) / 2));
          x++) {
-      var objects = rnoadm.state.objects_[x | y << 8];
+      var objects = rnoadm.state.objects_[x << 1 | y << 8];
+      if (objects) {
+        for (var id in objects) {
+          objects[id].paint(xOffset, yOffset);
+        }
+      }
+    }
+    for (var x = Math.max(0, Math.floor((-w / 2 - xOffset) / 2));
+         x < Math.min(128, Math.floor((w / 2 - xOffset) / 2));
+         x++) {
+      var objects = rnoadm.state.objects_[x << 1 | y << 8 | 1];
       if (objects) {
         for (var id in objects) {
           objects[id].paint(xOffset, yOffset);

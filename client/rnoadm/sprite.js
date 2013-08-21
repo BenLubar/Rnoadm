@@ -224,7 +224,7 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
         y += Math.sin(time * 5 + Math.cos(time * 3) * 7 + sy) / 8;
         break;
       }
-      rnoadm.gfx.repaint();
+      rnoadm.gfx.repaint(100);
       break;
   }
 
