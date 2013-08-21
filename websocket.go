@@ -50,6 +50,7 @@ type packetUpdateUpdate struct {
 type packetUpdateObject struct {
 	Name    string               `json:"N"`
 	Sprites []packetUpdateSprite `json:"S"`
+	Actions []string             `json:"A"`
 }
 
 type packetUpdateSprite struct {
@@ -203,10 +204,13 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			x, y := t.Position()
 			sendUpdates(packetUpdateUpdate{
-				ID:     o.NetworkID(),
-				X:      x,
-				Y:      y,
-				Object: addSprites(&packetUpdateObject{Name: o.Name()}, o),
+				ID: o.NetworkID(),
+				X:  x,
+				Y:  y,
+				Object: addSprites(&packetUpdateObject{
+					Name:    o.Name(),
+					Actions: o.Actions(),
+				}, o),
 			})
 			updateWalls(t, obj)
 		},
@@ -248,10 +252,13 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			x, y := t.Position()
 			sendUpdates(packetUpdateUpdate{
-				ID:     o.NetworkID(),
-				X:      x,
-				Y:      y,
-				Object: addSprites(&packetUpdateObject{Name: o.Name()}, o),
+				ID: o.NetworkID(),
+				X:  x,
+				Y:  y,
+				Object: addSprites(&packetUpdateObject{
+					Name:    o.Name(),
+					Actions: o.Actions(),
+				}, o),
 			})
 		},
 	}
@@ -298,7 +305,8 @@ func socketHandler(ws *websocket.Conn) {
 					inventoryObjects = append(inventoryObjects, &packetInventoryItem{
 						ID: item.NetworkID(),
 						Object: addSprites(&packetUpdateObject{
-							Name: item.Name(),
+							Name:    item.Name(),
+							Actions: item.Actions(),
 						}, item),
 					})
 				}
@@ -350,7 +358,8 @@ func socketHandler(ws *websocket.Conn) {
 				objects[i] = &packetInventoryItem{
 					ID: item.NetworkID(),
 					Object: addSprites(&packetUpdateObject{
-						Name: item.Name(),
+						Name:    item.Name(),
+						Actions: item.Actions(),
 					}, item),
 				}
 			}

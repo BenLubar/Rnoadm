@@ -13,7 +13,7 @@ goog.require('rnoadm.state.Object');
  * @constructor
  * @struct
  */
-rnoadm.hud.HUD = function(name, paint, mouseMoved, click) {
+rnoadm.hud.HUD = function(name, paint, mouseMoved, click, rightClick) {
   /**
    * @type {string}
    * @private
@@ -41,6 +41,13 @@ rnoadm.hud.HUD = function(name, paint, mouseMoved, click) {
    * @const
    */
   this.click_ = click;
+
+  /**
+   * @type {function(number, number, number, number):boolean}
+   * @private
+   * @const
+   */
+  this.rightClick_ = rightClick;
 };
 
 
@@ -226,7 +233,18 @@ rnoadm.gfx.clickHud = function(x, y, w, h) {
 };
 
 
+rnoadm.gfx.rightClickHud = function(x, y, w, h) {
+  rnoadm.gfx.mouseMovedHud(x, y, w, h);
+  for (var i = rnoadm.hud.activeHuds_.length - 1; i >= 0; i--) {
+    if (rnoadm.hud.activeHuds_[i].rightClick_(x, y, w, h))
+      return true;
+  }
+  return false;
+};
+
+
 window.addEventListener('keydown', function(e) {
+  if (!rnoadm.gfx.canvas.parentNode) return;
   if (e.ctrlKey || e.altKey) return;
   if (e.keyCode < 20) e.preventDefault();
   switch (e.keyCode) {

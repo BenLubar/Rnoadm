@@ -27,6 +27,8 @@ type Equip struct {
 	wearer *Hero // not saved
 }
 
+var _ world.Item = (*Equip)(nil)
+
 func init() {
 	world.Register("equip", world.Visible((*Equip)(nil)))
 
@@ -119,4 +121,28 @@ func (e *Equip) SpritePos() (uint, uint) {
 
 func (e *Equip) SpriteSize() (uint, uint) {
 	return equippables[e.slot][e.kind].width, equippables[e.slot][e.kind].height
+}
+
+func (e *Equip) Volume() uint64 {
+	return 1 // TODO
+}
+
+func (e *Equip) Weight() uint64 {
+	return 0 // TODO
+}
+
+func (e *Equip) AdminOnly() bool {
+	return equippables[e.slot][e.kind].adminOnly
+}
+
+func (e *Equip) Actions() []string {
+	actions := e.VisibleObject.Actions()
+	if e.Position() == nil {
+		if e.wearer == nil {
+			actions = append(actions, "equip")
+		} else {
+			actions = append(actions, "unequip")
+		}
+	}
+	return actions
 }

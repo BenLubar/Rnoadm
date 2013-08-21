@@ -37,6 +37,8 @@ type Visible interface {
 	Attached() []Visible
 
 	Blocking() bool
+
+	Actions() []string
 }
 
 type VisibleObject struct {
@@ -97,4 +99,16 @@ func (o *VisibleObject) Attached() []Visible {
 
 func (o *VisibleObject) Blocking() bool {
 	return false
+}
+
+func (o *VisibleObject) Actions() []string {
+	var actions []string
+	if _, ok := o.Outer().(Item); ok {
+		if o.Position() == nil {
+			actions = append(actions, "drop")
+		} else {
+			actions = append(actions, "take")
+		}
+	}
+	return actions
 }

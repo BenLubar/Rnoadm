@@ -288,6 +288,10 @@ func (h *Hero) notifyInventoryChanged() {
 }
 
 func (h *Hero) GiveItem(item world.Visible) bool {
+	if i, ok := item.(world.Item); !ok || i.AdminOnly() {
+		return false
+	}
+
 	h.mtx.Lock()
 	if true {
 		h.giveItem(item)

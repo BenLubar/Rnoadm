@@ -224,6 +224,9 @@ rnoadm.hud.register('cc', function(data) {
 
     // No interaction with anything other than this hud while it's up.
     return true;
+  }, function(x, y, w, h) {
+    // No interaction with anything other than this hud while it's up.
+    return true;
   });
 });
 

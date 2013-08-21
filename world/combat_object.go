@@ -113,6 +113,11 @@ func (o *CombatObject) Hurt(amount uint64, attacker Combat) {
 	o.damaged += amount
 	o.mtx.Unlock()
 }
+
 func (o *CombatObject) Die() {
 	o.Position().Remove(o.Outer())
+}
+
+func (o *CombatObject) Actions() []string {
+	return append(o.LivingObject.Actions(), "assault")
 }

@@ -47,6 +47,9 @@ rnoadm.state.Object = function(x, y, id, net) {
   net['S'].forEach(function(sprite) {
     sprites.push(rnoadm.gfx.Sprite.fromNetwork(sprite));
   });
+
+  /** @type {Array.<string>} */
+  this.actions = net['A'] || [];
 };
 
 
@@ -54,7 +57,11 @@ rnoadm.state.Object = function(x, y, id, net) {
  * @param {!rnoadm.state.NetworkObject} net The object recieved by rnoadm.net.
  */
 rnoadm.state.Object.prototype.update = function(net) {
+  /** @type {string} */
   this.name = net['N'];
+
+  /** @type {Array.<string>} */
+  this.actions = net['A'] || [];
 
   /** @type {Array.<rnoadm.gfx.Sprite>} */
   var sprites = this.sprites;
@@ -76,11 +83,11 @@ rnoadm.state.Object.prototype.update = function(net) {
  * @param {number} y The current Y coordinate of the object.
  */
 rnoadm.state.Object.prototype.move = function(x, y) {
-  this.lastChange = Date.now();
-  this.prevX = this.x;
-  this.prevY = this.y;
+  this.prevX = rnoadm.state.lerp(this.x, this.prevX, this.lastChange);
+  this.prevY = rnoadm.state.lerp(this.y, this.prevY, this.lastChange);
   this.x = x;
   this.y = y;
+  this.lastChange = Date.now();
 };
 
 
@@ -90,17 +97,9 @@ rnoadm.state.Object.prototype.move = function(x, y) {
  */
 rnoadm.state.Object.prototype.paint = function(xOffset, yOffset) {
   /** @type {number} */
-  var x = this.x;
+  var x = rnoadm.state.lerp(this.x, this.prevX, this.lastChange);
   /** @type {number} */
-  var y = this.y;
-
-  /** @type {number} */
-  var time = Date.now() - this.lastChange;
-  if (time < 400) {
-    x = (time * x + (400 - time) * this.prevX) / 400;
-    y = (time * y + (400 - time) * this.prevY) / 400;
-    rnoadm.gfx.repaint();
-  }
+  var y = rnoadm.state.lerp(this.y, this.prevY, this.lastChange);
 
   this.sprites.forEach(function(sprite) {
     sprite.paint(x + xOffset, y + yOffset);
@@ -108,7 +107,23 @@ rnoadm.state.Object.prototype.paint = function(xOffset, yOffset) {
 };
 
 
-/** @typedef {{N:string, S:Array.<rnoadm.gfx.NetworkSprite>}} */
+/** @typedef {{N:string, S:Array.<rnoadm.gfx.NetworkSprite>,
+ *             A:Array.<string>}} */
 rnoadm.state.NetworkObject;
+
+/**
+ * @param {number} current
+ * @param {number} prev
+ * @param {number} t
+ * @return {number}
+ */
+rnoadm.state.lerp = function(current, prev, t) {
+  var time = Date.now() - t;
+  if (time < 400) {
+    rnoadm.gfx.repaint();
+    return (time * current + (400 - time) * prev) / 400;
+  }
+  return current;
+};
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

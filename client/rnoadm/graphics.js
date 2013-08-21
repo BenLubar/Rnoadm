@@ -151,6 +151,10 @@ rnoadm.gfx.clickHud;
 rnoadm.gfx.clickObject;
 
 
+/** @type {function(number, number, number, number):boolean} */
+rnoadm.gfx.rightClickHud;
+
+
 rnoadm.gfx.canvas.onmousemove = function(e) {
   if (rnoadm.gfx.mouseMovedHud(e.offsetX, e.offsetY,
                                rnoadm.gfx.width_,
@@ -175,6 +179,15 @@ rnoadm.gfx.canvas.onclick = function(e) {
   if (rnoadm.gfx.clickObject(e.offsetX, e.offsetY,
                              rnoadm.gfx.width_,
                              rnoadm.gfx.height_))
+    return;
+};
+
+
+rnoadm.gfx.canvas.oncontextmenu = function(e) {
+  e.preventDefault();
+  if (rnoadm.gfx.rightClickHud(e.offsetX, e.offsetY,
+                               rnoadm.gfx.width_,
+                               rnoadm.gfx.height_))
     return;
 };
 

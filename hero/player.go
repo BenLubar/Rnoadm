@@ -101,7 +101,19 @@ func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLik
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
 	for _, e := range p.Hero.equipped {
-		e.wearer = &p.Hero
+		if e.AdminOnly() && !p.admin {
+			delete(p.Hero.equipped, e.slot)
+		} else {
+			e.wearer = &p.Hero
+		}
+	}
+	if !p.admin {
+		for i := 0; i < len(p.Hero.items); i++ {
+			if item, ok := p.Hero.items[i].(world.Item); !ok || item.AdminOnly() {
+				p.Hero.items = append(p.Hero.items[:i], p.Hero.items[i+1:]...)
+				i--
+			}
+		}
 	}
 }
 

@@ -139,7 +139,8 @@ rnoadm.state.playerX_ = 127;
 rnoadm.net.addHandler('PlayerX', function(x) {
   if (rnoadm.state.playerX_ == x)
     return;
-  rnoadm.state.playerPrevX_ = rnoadm.state.playerX_;
+  rnoadm.state.playerPrevX_ = rnoadm.state.lerp(rnoadm.state.playerX_,
+    rnoadm.state.playerPrevX_, rnoadm.state.playerLastMoveX_);
   rnoadm.state.playerX_ = x;
   rnoadm.state.playerLastMoveX_ = Date.now();
   rnoadm.gfx.repaint();
@@ -170,7 +171,8 @@ rnoadm.state.playerY_ = 127;
 rnoadm.net.addHandler('PlayerY', function(y) {
   if (rnoadm.state.playerY_ == y)
     return;
-  rnoadm.state.playerPrevY_ = rnoadm.state.playerY_;
+  rnoadm.state.playerPrevY_ = rnoadm.state.lerp(rnoadm.state.playerY_,
+    rnoadm.state.playerPrevY_, rnoadm.state.playerLastMoveY_);
   rnoadm.state.playerY_ = y;
   rnoadm.state.playerLastMoveY_ = Date.now();
   rnoadm.gfx.repaint();
@@ -195,21 +197,11 @@ rnoadm.state.grass_ = new rnoadm.gfx.Sprite('grass', '#268f1e', '',
 
 rnoadm.gfx.paintObjects = function(w, h) {
   /** @type {number} */
-  var playerX = rnoadm.state.playerX_;
+  var playerX = rnoadm.state.lerp(rnoadm.state.playerX_,
+    rnoadm.state.playerPrevX_, rnoadm.state.playerLastMoveX_);
   /** @type {number} */
-  var playerY = rnoadm.state.playerY_;
-
-  /** @type {number} */
-  var time = Date.now() - rnoadm.state.playerLastMoveX_;
-  if (time < 400) {
-    playerX = (time * playerX + (400 - time) * rnoadm.state.playerPrevX_) / 400;
-    rnoadm.gfx.repaint();
-  }
-  time = Date.now() - rnoadm.state.playerLastMoveY_;
-  if (time < 400) {
-    playerY = (time * playerY + (400 - time) * rnoadm.state.playerPrevY_) / 400;
-    rnoadm.gfx.repaint();
-  }
+  var playerY = rnoadm.state.lerp(rnoadm.state.playerY_,
+    rnoadm.state.playerPrevY_, rnoadm.state.playerLastMoveY_);
 
   var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - playerX;
   var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - playerY;

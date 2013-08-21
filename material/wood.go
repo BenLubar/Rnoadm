@@ -111,3 +111,15 @@ func (l *Logs) Sprite() string {
 func (l *Logs) Colors() []string {
 	return []string{l.kind.BarkColor()}
 }
+
+func (l *Logs) Volume() uint64 {
+	return 1 // TODO
+}
+
+func (l *Logs) Weight() uint64 {
+	return 0 // TODO
+}
+
+func (l *Logs) AdminOnly() bool {
+	return false
+}

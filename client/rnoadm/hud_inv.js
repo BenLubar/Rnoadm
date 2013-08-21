@@ -47,10 +47,18 @@ rnoadm.hud.register('inv', function(data) {
     hoverY = Math.floor((h - y) / rnoadm.gfx.TILE_SIZE - 1.1);
     if (hoverY > rows || hoverX < -1) {
       rnoadm.hud.hide('inv');
+    } else {
+      return true;
     }
     rnoadm.gfx.repaint();
   }, function(x, y, w, h) {
-    // TODO: clicked
+    return true;
+  }, function(x, y, w, h) {
+    var rows = Math.ceil(rnoadm.hud.inventory_.length / 8);
+    if (hoverX >= 0 && hoverX < (rnoadm.hud.inventory_.length % 8 || 8) &&
+        hoverY >= 0 && hoverY < rows) {
+      rnoadm.hud.show('menu', rnoadm.hud.inventory_[hoverX + hoverY * 8]);
+    }
   });
 });
 
