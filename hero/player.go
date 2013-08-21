@@ -42,6 +42,16 @@ func (p *Player) SaveSelf() {
 	SavePlayer(p)
 }
 
+func (p *Player) UpdatePosition() {
+	t := p.Position()
+
+	if t != nil {
+		p.tileX, p.tileY = t.Position()
+		z := t.Zone()
+		p.zoneX, p.zoneY = z.X, z.Y
+	}
+}
+
 func (p *Player) Save() (uint, interface{}, []world.ObjectLike) {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
@@ -304,7 +314,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		return
 	}
 
-	log.Printf("[ADMIN:%q] %q %#v", p.login, addr, command)
+	log.Printf("[admin_cmd] %q:%q %#v", addr, p.login, command)
 	p.mtx.Unlock()
 
 	if len(command) == 0 {

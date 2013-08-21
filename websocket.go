@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strings"
 	"time"
 )
 
@@ -133,7 +134,11 @@ func socketHandler(ws *websocket.Conn) {
 		}
 	}()
 
-	websocket.JSON.Send(ws, packetClientHash)
+	err = websocket.JSON.Send(ws, packetClientHash)
+	if err != nil {
+		log.Printf("[err_sock] %s:%#v %v", addr, packetClientHash, err)
+		return
+	}
 
 	var (
 		player      *hero.Player
@@ -274,10 +279,13 @@ func socketHandler(ws *websocket.Conn) {
 					return
 				}
 
-				var err string
-				player, err = hero.Login(addr, packet.Auth)
-				if err != "" {
-					websocket.JSON.Send(ws, packetKick{err})
+				var fail string
+				player, fail = hero.Login(addr, packet.Auth)
+				if fail != "" {
+					err = websocket.JSON.Send(ws, packetKick{fail})
+					if err != nil {
+						log.Printf("[err_sock] %s:%#v %v", addr, packetKick{fail}, err)
+					}
 					return
 				}
 				world.InitObject(player)
@@ -294,6 +302,7 @@ func socketHandler(ws *websocket.Conn) {
 				}
 				defer func() {
 					if t := player.Position(); t != nil {
+						player.UpdatePosition()
 						t.Remove(player)
 					}
 					zone.RemoveListener(listener)
@@ -310,7 +319,11 @@ func socketHandler(ws *websocket.Conn) {
 						}, item),
 					})
 				}
-				websocket.JSON.Send(ws, packetInventory{inventoryObjects})
+				err = websocket.JSON.Send(ws, packetInventory{inventoryObjects})
+				if err != nil {
+					log.Printf("[err_sock] %s:%#v %v", addr, packetInventory{inventoryObjects}, err)
+					return
+				}
 			}
 			if player == nil {
 				continue
@@ -339,7 +352,10 @@ func socketHandler(ws *websocket.Conn) {
 				}
 			}
 			if packet.Chat != nil {
-				player.Chat(*packet.Chat)
+				if strings.TrimSpace(*packet.Chat) != "" {
+					log.Printf("[info_chat] %s:%q", addr, *packet.Chat)
+					player.Chat(*packet.Chat)
+				}
 			}
 			if len(packet.Admin) > 0 {
 				player.AdminCommand(addr, packet.Admin...)
@@ -347,10 +363,18 @@ func socketHandler(ws *websocket.Conn) {
 
 		case message := <-kick:
 			websocket.JSON.Send(ws, packetKick{message})
+			if err != nil {
+				log.Printf("[err_sock] %s:%#v %v", addr, packetKick{message}, err)
+				return
+			}
 			return
 
 		case h := <-hud:
-			websocket.JSON.Send(ws, packetHUD{h})
+			err = websocket.JSON.Send(ws, packetHUD{h})
+			if err != nil {
+				log.Printf("[err_sock] %s:%#v %v", addr, packetHUD{h}, err)
+				return
+			}
 
 		case items := <-inventory:
 			objects := make([]*packetInventoryItem, len(items))
@@ -363,7 +387,11 @@ func socketHandler(ws *websocket.Conn) {
 					}, item),
 				}
 			}
-			websocket.JSON.Send(ws, packetInventory{objects})
+			err = websocket.JSON.Send(ws, packetInventory{objects})
+			if err != nil {
+				log.Printf("[err_sock] %s:%#v %v", addr, packetInventory{objects}, err)
+				return
+			}
 
 		case update := <-updates:
 			updateQueue.Update = append(updateQueue.Update, update...)
@@ -388,12 +416,20 @@ func socketHandler(ws *websocket.Conn) {
 				updateQueue.PlayerX, updateQueue.PlayerY = 127, 127
 			}
 
-			websocket.JSON.Send(ws, updateQueue)
+			err = websocket.JSON.Send(ws, updateQueue)
+			if err != nil {
+				log.Printf("[err_sock] %s:%#v %v", addr, updateQueue, err)
+				return
+			}
 
 			updateQueue.Update = leftover
 
 		case msg := <-messages:
-			websocket.JSON.Send(ws, packetMessage{msg})
+			err = websocket.JSON.Send(ws, packetMessage{msg})
+			if err != nil {
+				log.Printf("[err_sock] %s:%#v %v", addr, packetMessage{msg}, err)
+				return
+			}
 		}
 	}
 }

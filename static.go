@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"github.com/BenLubar/Rnoadm/resource"
 	"hash/crc64"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -107,13 +108,19 @@ input[type="submit"] {
 		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 			w.Header().Set("Content-Length", strconv.Itoa(len(clientGzip)))
 			w.Header().Set("Content-Encoding", "gzip")
-			w.Write(clientGzip)
+			_, err := w.Write(clientGzip)
+			if err != nil {
+				log.Printf("[err_write] %s:%q %v", r.RemoteAddr, r.URL, err)
+			}
 			return
 		}
 	}
 	if b, ok := resource.Resource[r.URL.Path[1:]]; ok {
 		w.Header().Set("Content-Length", strconv.Itoa(len(b)))
-		w.Write(b)
+		_, err := w.Write(b)
+		if err != nil {
+			log.Printf("[err_write] %s:%q %v", r.RemoteAddr, r.URL, err)
+		}
 		return
 	}
 	http.NotFound(w, r)
