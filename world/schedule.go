@@ -87,6 +87,9 @@ func (s *walkSchedule) Act(o Living) (uint, bool) {
 			return 0, false
 		}
 	}
+	if t.Zone().Tile(s.sx, s.sy).Blocked() {
+		return 0, false
+	}
 	t.Move(o, t.Zone().Tile(s.sx, s.sy))
 	return 2, true
 }

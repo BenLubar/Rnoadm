@@ -35,6 +35,8 @@ type Visible interface {
 	Colors() []string
 
 	Attached() []Visible
+
+	Blocking() bool
 }
 
 type VisibleObject struct {
@@ -91,4 +93,8 @@ func (o *VisibleObject) Colors() []string {
 
 func (o *VisibleObject) Attached() []Visible {
 	return nil
+}
+
+func (o *VisibleObject) Blocking() bool {
+	return false
 }

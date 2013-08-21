@@ -86,3 +86,7 @@ func (n *Node) Strength() uint64 {
 func (n *Node) Item() world.Visible {
 	return n.Outer().(world.Visible)
 }
+
+func (n *Node) Blocking() bool {
+	return true
+}

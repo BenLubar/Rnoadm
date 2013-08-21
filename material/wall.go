@@ -72,3 +72,7 @@ func (w *Wall) SpritePos() (uint, uint) {
 func (w *Wall) SpriteSize() (uint, uint) {
 	return 32, 48
 }
+
+func (w *Wall) Blocking() bool {
+	return true
+}

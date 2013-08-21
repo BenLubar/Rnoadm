@@ -89,6 +89,15 @@ func (t *Tile) Zone() *Zone {
 	return t.zone
 }
 
+func (t *Tile) Blocked() bool {
+	for _, o := range t.Objects() {
+		if v, ok := o.(Visible); ok && v.Blocking() {
+			return true
+		}
+	}
+	return false
+}
+
 func (t *Tile) think() {
 	for _, o := range t.Objects() {
 		o.Think()
