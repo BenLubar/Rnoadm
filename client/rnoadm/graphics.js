@@ -171,7 +171,29 @@ rnoadm.gfx.canvas.onmouseout = function() {
 };
 
 
+/**
+ * @type {boolean}
+ * @private
+ */
+rnoadm.gfx.focused_ = true;
+
+
+window.addEventListener('blur', function() {
+  rnoadm.gfx.focused_ = false;
+}, false);
+
+window.addEventListener('focus', function() {
+  setTimeout(function() {
+    rnoadm.gfx.focused_ = true;
+  }, 100);
+}, false);
+
+
 rnoadm.gfx.canvas.onclick = function(e) {
+  if (!rnoadm.gfx.focused_) {
+    rnoadm.gfx.focused_ = true;
+    return;
+  }
   if (rnoadm.gfx.clickHud(e.offsetX, e.offsetY,
                           rnoadm.gfx.width_,
                           rnoadm.gfx.height_))
