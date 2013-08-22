@@ -69,11 +69,7 @@ rnoadm.state.Object.prototype.update = function(net) {
   sprites.length = 0;
 
   net['S'].forEach(function(sprite) {
-    sprites.push(new rnoadm.gfx.Sprite(sprite['S'], sprite['C'],
-        sprite['E']['a'], sprite['E']['x'], sprite['E']['y'],
-        sprite['E']['w'] || rnoadm.gfx.TILE_SIZE,
-        sprite['E']['h'] || rnoadm.gfx.TILE_SIZE,
-        sprite['E']['s'] || 1));
+    sprites.push(rnoadm.gfx.Sprite.fromNetwork(sprite));
   });
 };
 

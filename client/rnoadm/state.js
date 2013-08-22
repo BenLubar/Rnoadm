@@ -257,12 +257,49 @@ rnoadm.gfx.rightClickObject = function(x, y, w, h) {
     return false;
   var objects = [];
   for (var i in rnoadm.state.objects_[x | y << 8]) {
-    objects.unshift(rnoadm.state.objects_[x | y << 8][i]);
+    if (i.charAt(0) != '_')
+      objects.unshift(rnoadm.state.objects_[x | y << 8][i]);
   }
   if (objects.length == 1)
     rnoadm.hud.show('menu', objects[0]);
   else if (objects.length)
     rnoadm.hud.show('menu2', objects);
+  return true;
+};
+
+
+/**
+ * @type {number}
+ * @private
+ */
+rnoadm.state.mouseX_ = -1;
+
+
+/**
+ * @type {number}
+ * @private
+ */
+rnoadm.state.mouseY_ = -1;
+
+
+rnoadm.gfx.mouseMovedObject = function(x, y, w, h) {
+  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerX_;
+  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerY_;
+  x = Math.floor(x / rnoadm.gfx.TILE_SIZE - xOffset);
+  y = Math.ceil(y / rnoadm.gfx.TILE_SIZE - yOffset);
+  if (x != rnoadm.state.mouseX_ || y != rnoadm.state.mouseY_) {
+    if (rnoadm.state.mouseX_ == -1) {
+      rnoadm.state.mouseX_ = x;
+      rnoadm.state.mouseY_ = 255;
+    }
+    rnoadm.net.send({"Mouse": {
+      "Fx": rnoadm.state.mouseX_,
+      "Fy": rnoadm.state.mouseY_,
+      "X": x, "Y": y
+    }});
+    rnoadm.state.mouseX_ = x;
+    rnoadm.state.mouseY_ = y;
+  }
   return true;
 };
 

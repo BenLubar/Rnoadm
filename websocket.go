@@ -23,6 +23,9 @@ type clientPacket struct {
 		Data interface{} `json:"D"`
 	}
 	Chat *string
+	Mouse *struct {
+		X, Y, Fx, Fy uint8
+	}
 }
 
 type packetKick struct {
@@ -355,6 +358,44 @@ func socketHandler(ws *websocket.Conn) {
 				if strings.TrimSpace(*packet.Chat) != "" {
 					log.Printf("[info_chat] %s:%q", addr, *packet.Chat)
 					player.Chat(*packet.Chat)
+				}
+			}
+			if packet.Mouse != nil {
+				color := "#0f0"
+				if player.Position() == nil || player.Position().Zone().Tile(packet.Mouse.X, packet.Mouse.Y).Blocked() {
+					color = "#f00"
+				}
+				update := map[string][]map[string]interface{} {
+					"Update": {
+						{
+							"I": "_crosshair",
+							"X": packet.Mouse.Fx,
+							"Y": packet.Mouse.Fy,
+							"O": map[string][]packetUpdateSprite{
+								"S": {
+									{
+										Sheet: "ui_icons",
+										Color: color,
+										Extra: map[string]interface{}{
+											"x": 1,
+										},
+									},
+								},
+							},
+						},
+						{
+							"I": "_crosshair",
+							"Fx": packet.Mouse.Fx,
+							"Fy": packet.Mouse.Fy,
+							"X": packet.Mouse.X,
+							"Y": packet.Mouse.Y,
+						},
+					},
+				}
+				err = websocket.JSON.Send(ws, update)
+				if err != nil {
+					log.Printf("[err_sock] %s:%#v %v", addr, update, err)
+					return
 				}
 			}
 			if len(packet.Admin) > 0 {
