@@ -207,8 +207,8 @@ rnoadm.gfx.paintObjects = function(w, h) {
   var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - playerY;
   for (var x = 0; x < 256; x += 512 / rnoadm.gfx.TILE_SIZE) {
     for (var y = 0; y < 256; y += 512 / rnoadm.gfx.TILE_SIZE) {
-      rnoadm.state.grass_.paint(xOffset + x + 512 / rnoadm.gfx.TILE_SIZE / 2,
-                                yOffset + y + 512 / rnoadm.gfx.TILE_SIZE / 2);
+      rnoadm.state.grass_.paint(xOffset + x + 512 / rnoadm.gfx.TILE_SIZE / 2 -
+          0.5, yOffset + y + 512 / rnoadm.gfx.TILE_SIZE - 1);
     }
   }
   for (var y = Math.max(0, Math.floor(-h / 2 - yOffset));
