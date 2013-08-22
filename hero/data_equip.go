@@ -1,5 +1,9 @@
 package hero
 
+const metalColor = "__metal__"
+const stoneColor = "__stone__"
+const woodColor = "__wood__"
+
 var equippables = [equipSlotCount][]struct {
 	name   string
 	sprite string
@@ -65,10 +69,82 @@ var equippables = [equipSlotCount][]struct {
 	},
 	SlotFeet: {
 		{
-			name:   "plain shoes",
+			name:   "plain sneakers",
 			sprite: "shoes_basic",
 			colors: []string{"#cec"},
 			height: 48,
+		},
+		{
+			name:   "boots",
+			sprite: "shoes_boots",
+			colors: []string{metalColor},
+			height: 48,
+		},
+	},
+	SlotShoulders: {
+		{
+			name:   "pauldrons",
+			sprite: "pauldrons_basic",
+			colors: []string{metalColor},
+			height: 48,
+		},
+	},
+	SlotChest: {
+		{
+			name:   "chain mail",
+			sprite: "chest_chainmail",
+			colors: []string{metalColor},
+			height: 48,
+		},
+	},
+	SlotArms: {
+		{
+			name:   "vambraces",
+			sprite: "vambraces_basic",
+			colors: []string{metalColor},
+			height: 48,
+		},
+	},
+	SlotHands: {
+		{
+			name:   "gauntlets",
+			sprite: "gauntlets_basic",
+			colors: []string{metalColor},
+			height: 48,
+		},
+	},
+	SlotWaist: {
+		{
+			name:   "tassets",
+			sprite: "tassets_basic",
+			colors: []string{metalColor},
+			height: 48,
+		},
+	},
+	SlotLegs: {
+		{
+			name:   "greaves",
+			sprite: "greaves_basic",
+			colors: []string{metalColor},
+			height: 48,
+		},
+	},
+	SlotMainHand: {},
+	SlotOffHand:  {},
+	SlotPickaxe: {
+		{
+			name:   "pickaxe",
+			sprite: "item_tools",
+			colors: []string{woodColor, metalColor},
+			height: 32,
+		},
+	},
+	SlotHatchet: {
+		{
+			name:   "hatchet",
+			sprite: "item_tools",
+			colors: []string{woodColor, "", metalColor},
+			height: 32,
 		},
 	},
 }

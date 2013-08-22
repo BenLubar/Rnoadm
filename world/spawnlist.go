@@ -9,6 +9,7 @@ func RegisterSpawnFunc(f func(string) Visible) {
 func Spawn(s string) Visible {
 	for _, f := range spawnFuncs {
 		if v := f(s); v != nil {
+			InitObject(v)
 			return v
 		}
 	}

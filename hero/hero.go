@@ -50,7 +50,7 @@ func init() {
 		for i := range raceInfo {
 			r := Race(i)
 			if r.Name() == s {
-				return world.InitObject(GenerateHeroRace(rand.New(rand.NewSource(rand.Int63())), r)).(world.Visible)
+				return GenerateHeroRace(rand.New(rand.NewSource(rand.Int63())), r)
 			}
 		}
 		return nil
@@ -194,8 +194,10 @@ func (h *Hero) Attached() []world.Visible {
 	defer h.mtx.Unlock()
 
 	attached := make([]world.Visible, 0, len(h.equipped))
-	for _, e := range h.equipped {
-		attached = append(attached, e)
+	for _, s := range equipFacing[h.facing / 3] {
+		if e := h.equipped[s]; e != nil {
+			attached = append(attached, e)
+		}
 	}
 	return attached
 }

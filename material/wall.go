@@ -12,7 +12,7 @@ func init() {
 	world.Register("wall", world.Visible((*Wall)(nil)))
 	world.RegisterSpawnFunc(func(s string) world.Visible {
 		if s == "wall" {
-			return world.InitObject(&Wall{}).(world.Visible)
+			return &Wall{}
 		}
 		return nil
 	})

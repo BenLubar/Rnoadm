@@ -10,13 +10,13 @@ func init() {
 		if len(s) > len(" tree") && s[len(s)-len(" tree"):] == " tree" {
 			for i, t := range woodTypes {
 				if len(s) == len(t.name)+len(" tree") && s[:len(t.name)] == t.name {
-					return world.InitObject(&Tree{kind: WoodType(i)}).(world.Visible)
+					return &Tree{kind: WoodType(i)}
 				}
 			}
 		} else if len(s) > len(" logs") && s[len(s)-len(" logs"):] == " logs" {
 			for i, t := range woodTypes {
 				if len(s) == len(t.name)+len(" logs") && s[:len(t.name)] == t.name {
-					return world.InitObject(&Logs{kind: WoodType(i)}).(world.Visible)
+					return &Logs{kind: WoodType(i)}
 				}
 			}
 		}

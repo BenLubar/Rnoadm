@@ -2,6 +2,7 @@ package hero
 
 import (
 	"fmt"
+	"github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
 )
 
@@ -12,9 +13,86 @@ const (
 	SlotShirt
 	SlotPants
 	SlotFeet
+	SlotShoulders
+	SlotChest
+	SlotArms
+	SlotHands
+	SlotWaist
+	SlotLegs
+	SlotMainHand
+	SlotOffHand
+	SlotPickaxe
+	SlotHatchet
 
 	equipSlotCount
 )
+
+var equipFacing = [4][]EquipSlot{
+	{ // stage front
+		SlotHead,
+		SlotShirt,
+		SlotPants,
+		SlotFeet,
+		SlotShoulders,
+		SlotChest,
+		SlotArms,
+		SlotHands,
+		SlotWaist,
+		SlotLegs,
+		SlotMainHand,
+		SlotOffHand,
+		SlotPickaxe,
+		SlotHatchet,
+	},
+	{ // stage back
+		SlotHead,
+		SlotShirt,
+		SlotPants,
+		SlotFeet,
+		SlotShoulders,
+		SlotChest,
+		SlotArms,
+		SlotHands,
+		SlotWaist,
+		SlotLegs,
+		SlotMainHand,
+		SlotOffHand,
+		SlotPickaxe,
+		SlotHatchet,
+	},
+	{ // stage left
+		SlotHead,
+		SlotShirt,
+		SlotPants,
+		SlotFeet,
+		SlotShoulders,
+		SlotChest,
+		SlotArms,
+		SlotHands,
+		SlotWaist,
+		SlotLegs,
+		SlotMainHand,
+		SlotOffHand,
+		SlotPickaxe,
+		SlotHatchet,
+	},
+	{ // stage right
+		SlotHead,
+		SlotShirt,
+		SlotPants,
+		SlotFeet,
+		SlotShoulders,
+		SlotChest,
+		SlotArms,
+		SlotHands,
+		SlotWaist,
+		SlotLegs,
+		SlotMainHand,
+		SlotOffHand,
+		SlotPickaxe,
+		SlotHatchet,
+	},
+}
 
 type Equip struct {
 	world.VisibleObject
@@ -24,6 +102,10 @@ type Equip struct {
 
 	customColors []string
 
+	wood  *material.WoodType
+	stone *material.StoneType
+	metal *material.MetalType
+
 	wearer *Hero // not saved
 }
 
@@ -32,19 +114,45 @@ var _ world.Item = (*Equip)(nil)
 func init() {
 	world.Register("equip", world.Visible((*Equip)(nil)))
 
-	world.RegisterSpawnFunc(func(s string) world.Visible {
+	world.RegisterSpawnFunc(material.WrapSpawnFunc(func(wood *material.WoodType, stone *material.StoneType, metal *material.MetalType, s string) world.Visible {
 		for t := range equippables {
 			for i, e := range equippables[t] {
 				if e.name == s {
-					return world.InitObject(&Equip{
-						slot: EquipSlot(t),
-						kind: uint64(i),
-					}).(world.Visible)
+					haveWood := false
+					haveStone := false
+					haveMetal := false
+					for _, c := range e.colors {
+						if c == woodColor {
+							haveWood = true
+						}
+						if c == stoneColor {
+							haveStone = true
+						}
+						if c == metalColor {
+							haveMetal = true
+						}
+					}
+					if !haveWood && wood != nil {
+						continue
+					}
+					if !haveStone && stone != nil {
+						continue
+					}
+					if !haveMetal && metal != nil {
+						continue
+					}
+					return &Equip{
+						slot:  EquipSlot(t),
+						kind:  uint64(i),
+						wood:  wood,
+						stone: stone,
+						metal: metal,
+					}
 				}
 			}
 		}
 		return nil
-	})
+	}))
 }
 
 func (e *Equip) Save() (uint, interface{}, []world.ObjectLike) {
@@ -52,10 +160,21 @@ func (e *Equip) Save() (uint, interface{}, []world.ObjectLike) {
 	for i, c := range e.customColors {
 		colors[i] = c
 	}
+	materials := make(map[string]interface{})
+	if e.wood != nil {
+		materials["w"] = uint64(*e.wood)
+	}
+	if e.stone != nil {
+		materials["s"] = uint64(*e.stone)
+	}
+	if e.metal != nil {
+		materials["m"] = uint64(*e.metal)
+	}
 	return 0, map[string]interface{}{
 		"s": uint16(e.slot),
 		"k": e.kind,
 		"c": colors,
+		"m": materials,
 	}, nil
 }
 
@@ -72,6 +191,16 @@ func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike
 			for i, c := range colors {
 				e.customColors[i] = c.(string)
 			}
+		}
+		materials, _ := dataMap["m"].(map[string]interface{})
+		if wood, ok := materials["w"].(uint64); ok {
+			e.wood = (*material.WoodType)(&wood)
+		}
+		if stone, ok := materials["s"].(uint64); ok {
+			e.stone = (*material.StoneType)(&stone)
+		}
+		if metal, ok := materials["m"].(uint64); ok {
+			e.metal = (*material.MetalType)(&metal)
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
@@ -90,6 +219,28 @@ func (e *Equip) Colors() []string {
 	defaultColors := equippables[e.slot][e.kind].colors
 	colors := make([]string, len(defaultColors))
 	copy(colors, defaultColors)
+	for i, c := range colors {
+		switch c {
+		case woodColor:
+			if e.wood == nil {
+				colors[i] = ""
+			} else {
+				colors[i] = e.wood.BarkColor()
+			}
+		case stoneColor:
+			if e.stone == nil {
+				colors[i] = ""
+			} else {
+				colors[i] = e.stone.Color()
+			}
+		case metalColor:
+			if e.metal == nil {
+				colors[i] = ""
+			} else {
+				colors[i] = e.metal.Color()
+			}
+		}
+	}
 	for i, c := range e.customColors {
 		if i >= len(colors) {
 			break
