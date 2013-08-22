@@ -45,7 +45,7 @@ var equipFacing = [4][]EquipSlot{
 		SlotHatchet,
 	},
 	{ // stage back
-	SlotShirt,
+		SlotShirt,
 		SlotPants,
 		SlotChest,
 		SlotArms,

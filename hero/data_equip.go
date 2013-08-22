@@ -50,6 +50,12 @@ var equippables = [equipSlotCount][]struct {
 			},
 			adminOnly: true,
 		},
+		{
+			name:   "helmet",
+			sprite: "hat_helmet",
+			colors: []string{metalColor},
+			height: 48,
+		},
 	},
 	SlotShirt: {
 		{

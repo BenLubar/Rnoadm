@@ -194,7 +194,7 @@ func (h *Hero) Attached() []world.Visible {
 	defer h.mtx.Unlock()
 
 	attached := make([]world.Visible, 0, len(h.equipped))
-	for _, s := range equipFacing[h.facing / 3] {
+	for _, s := range equipFacing[h.facing/3] {
 		if e := h.equipped[s]; e != nil {
 			attached = append(attached, e)
 		}
