@@ -297,3 +297,56 @@ func (e *Equip) Actions() []string {
 	}
 	return actions
 }
+
+func (e *Equip) Interact(player world.CombatInventoryMessageAdmin, action string) {
+	p := player.(*Player)
+	switch action {
+	case "equip":
+		if e.Position() != nil || e.wearer != nil {
+			return
+		}
+		p.mtx.Lock()
+		if old, ok := p.equipped[e.slot]; ok {
+			p.mtx.Unlock()
+			old.Interact(player, "unequip")
+			p.mtx.Lock()
+		}
+		if _, ok := p.equipped[e.slot]; ok {
+			p.mtx.Unlock()
+			return
+		}
+		for i, item := range p.items {
+			if e == item {
+				p.items = append(p.items[:i], p.items[i+1:]...)
+				p.equipped[e.slot] = e
+				e.wearer = &p.Hero
+				p.notifyInventoryChanged()
+				p.mtx.Unlock()
+				p.Position().Zone().Update(p.Position(), p)
+				return
+			}
+		}
+		p.mtx.Unlock()
+	case "unequip":
+		if e.Position() != nil || e.wearer == nil {
+			return
+		}
+		p.mtx.Lock()
+		if p.equipped[e.slot] != e {
+			p.mtx.Unlock()
+			return
+		}
+		if !p.canHoldItem(e) {
+			p.mtx.Unlock()
+			return
+		}
+		e.wearer = nil
+		p.giveItem(e)
+		delete(p.equipped, e.slot)
+		p.notifyInventoryChanged()
+		p.mtx.Unlock()
+		p.Position().Zone().Update(p.Position(), p)
+	default:
+		e.VisibleObject.Interact(player, action)
+	}
+}

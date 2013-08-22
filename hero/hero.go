@@ -292,15 +292,21 @@ func (h *Hero) notifyInventoryChanged() {
 
 func (h *Hero) GiveItem(item world.Visible) bool {
 	if i, ok := item.(world.Item); !ok || i.AdminOnly() {
-		return false
+		if a, ok := h.Outer().(world.AdminLike); !ok || !a.IsAdmin() {
+			return false
+		}
 	}
 
 	h.mtx.Lock()
-	if true {
+	if h.canHoldItem(item) {
 		h.giveItem(item)
 	}
 	h.mtx.Unlock()
 
+	return true
+}
+
+func (h *Hero) canHoldItem(item world.Visible) bool {
 	return true
 }
 
