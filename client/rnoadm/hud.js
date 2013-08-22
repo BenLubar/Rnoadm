@@ -97,6 +97,7 @@ rnoadm.hud.register = function(id, f) {
   rnoadm.hud.huds_[id] = f;
 };
 
+
 /**
  * @param {string} id
  * @param {Object=} opt_data
@@ -121,6 +122,7 @@ rnoadm.hud.show = function(id, opt_data) {
   rnoadm.gfx.repaint();
 };
 
+
 /**
  * @param {string} id
  */
@@ -142,11 +144,13 @@ rnoadm.net.addHandler('HUD', function(data) {
   }
 });
 
+
 /**
  * @type {boolean}
  * @private
  */
 rnoadm.hud.hover_inventory_ = false;
+
 
 /**
  * @type {rnoadm.gfx.Sprite}
@@ -155,6 +159,7 @@ rnoadm.hud.hover_inventory_ = false;
  */
 rnoadm.hud.inventoryIcon_ = new rnoadm.gfx.Sprite('ui_icons', '#888', '',
                                                   0, 0, 32, 32);
+
 
 /**
  * @type {rnoadm.gfx.Sprite}

@@ -111,6 +111,7 @@ rnoadm.state.Object.prototype.paint = function(xOffset, yOffset) {
  *             A:Array.<string>}} */
 rnoadm.state.NetworkObject;
 
+
 /**
  * @param {number} current
  * @param {number} prev

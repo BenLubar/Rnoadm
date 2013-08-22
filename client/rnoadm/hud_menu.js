@@ -1,11 +1,11 @@
 goog.provide('rnoadm.hud.menu');
 
 goog.require('goog.asserts');
-goog.require('rnoadm.hud');
 goog.require('rnoadm.gfx');
 goog.require('rnoadm.gfx.Text');
-goog.require('rnoadm.state.Object');
+goog.require('rnoadm.hud');
 goog.require('rnoadm.net');
+goog.require('rnoadm.state.Object');
 
 
 rnoadm.hud.register('menu', function(data) {
@@ -40,7 +40,7 @@ rnoadm.hud.register('menu', function(data) {
   width = (width + 0.2) * rnoadm.gfx.TILE_SIZE;
   /** @type {number} */
   var height = Math.floor(rnoadm.gfx.TILE_SIZE * (object.actions.length / 2 +
-        0.2));
+      0.2));
 
   return new rnoadm.hud.HUD('menu', function(w, h) {
     if (isInitial) {
@@ -52,7 +52,7 @@ rnoadm.hud.register('menu', function(data) {
     }
     rnoadm.gfx.ctx.fillStyle = 'rgba(0,0,0,.7)';
     rnoadm.gfx.ctx.fillRect(initialX || 0, initialY || 0, width, height);
-    if (hover != -1 ) {
+    if (hover != -1) {
       rnoadm.gfx.ctx.fillStyle = '#000';
       rnoadm.gfx.ctx.fillRect(initialX || 0, (initialY || 0) + (hover / 2 +
           0.1) * rnoadm.gfx.TILE_SIZE, width, rnoadm.gfx.TILE_SIZE / 2);
@@ -75,7 +75,7 @@ rnoadm.hud.register('menu', function(data) {
     }
     if (x >= initialX && x < initialX + width && y >= initialY +
         0.1 * rnoadm.gfx.TILE_SIZE && y < initialY + (object.actions.length /
-         2 + 0.1) * rnoadm.gfx.TILE_SIZE) {
+        2 + 0.1) * rnoadm.gfx.TILE_SIZE) {
       hover = Math.floor((y - initialY) * 2 / rnoadm.gfx.TILE_SIZE - 0.1);
     } else {
       hover = -1;

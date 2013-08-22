@@ -1,9 +1,9 @@
 goog.provide('rnoadm.hud.inv');
 
-goog.require('rnoadm.hud');
 goog.require('rnoadm.gfx');
-goog.require('rnoadm.state.Object');
+goog.require('rnoadm.hud');
 goog.require('rnoadm.net');
+goog.require('rnoadm.state.Object');
 
 
 rnoadm.hud.register('inv', function(data) {
@@ -61,6 +61,7 @@ rnoadm.hud.register('inv', function(data) {
     }
   });
 });
+
 
 /**
  * @type {Array.<rnoadm.state.Object>}

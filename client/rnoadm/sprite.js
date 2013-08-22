@@ -217,12 +217,12 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
         break;
       var time = Date.now() / 10000;
       switch (sy) {
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-        y += Math.sin(time * 5 + Math.cos(time * 3) * 7 + sy) / 8;
-        break;
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          y += Math.sin(time * 5 + Math.cos(time * 3) * 7 + sy) / 8;
+          break;
       }
       rnoadm.gfx.repaint(100);
       break;
