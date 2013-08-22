@@ -5,6 +5,7 @@ import (
 	"github.com/BenLubar/Rnoadm/world"
 	"log"
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -401,6 +402,19 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		for _, item := range p.Inventory() {
 			p.RemoveItem(item)
 		}
+	case "tp":
+		if len(command) != 3 {
+			return
+		}
+		x, err := strconv.ParseUint(command[1], 0, 8)
+		if err != nil {
+			return
+		}
+		y, err := strconv.ParseUint(command[2], 0, 8)
+		if err != nil {
+			return
+		}
+		p.Position().Move(p, p.Position().Zone().Tile(uint8(x), uint8(y)))
 	}
 }
 

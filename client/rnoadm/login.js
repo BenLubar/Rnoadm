@@ -72,7 +72,7 @@ rnoadm.net.onConnect.push(function() {
  * @private
  */
 rnoadm.login.admin_ = function(var_args) {
-  rnoadm.net.send({'Admin': [].slice.call(arguments)});
+  rnoadm.net.send({'Admin': [].slice.call(arguments).map(String)});
 };
 
 goog.exportSymbol('admin', rnoadm.login.admin_);
