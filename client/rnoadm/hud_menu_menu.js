@@ -1,4 +1,4 @@
-goog.provide('rnoadm.hud.menu');
+goog.provide('rnoadm.hud.menu2');
 
 goog.require('goog.asserts');
 goog.require('rnoadm.gfx');
@@ -8,10 +8,7 @@ goog.require('rnoadm.net');
 goog.require('rnoadm.state.Object');
 
 
-rnoadm.hud.register('menu', function(data) {
-  /** @type {rnoadm.state.Object} */
-  var object = goog.asserts.assertInstanceof(data, rnoadm.state.Object);
-
+rnoadm.hud.register('menu2', function(data) {
   /** @type {number} */
   var hover = -1;
   /** @type {?number} */
@@ -26,10 +23,10 @@ rnoadm.hud.register('menu', function(data) {
   /** @type {Array.<rnoadm.gfx.Text>} */
   var optionsh = [];
 
-  object.actions.forEach(function(action) {
-    action = action + ' ' + object.name;
-    options.push(new rnoadm.gfx.Text(action, '#aaa', false, true));
-    optionsh.push(new rnoadm.gfx.Text(action, '#fff', false, true));
+  goog.asserts.assertArray(data).forEach(function(object) {
+    var name = goog.asserts.assertInstanceof(object, rnoadm.state.Object).name;
+    options.push(new rnoadm.gfx.Text(name, '#aaa', false, true));
+    optionsh.push(new rnoadm.gfx.Text(name, '#fff', false, true));
   });
 
   /** @type {number} */
@@ -39,10 +36,9 @@ rnoadm.hud.register('menu', function(data) {
   });
   width = (width + 0.2) * rnoadm.gfx.TILE_SIZE;
   /** @type {number} */
-  var height = Math.floor(rnoadm.gfx.TILE_SIZE * (object.actions.length / 2 +
-      0.2));
+  var height = Math.floor(rnoadm.gfx.TILE_SIZE * (data.length / 2 + 0.2));
 
-  return new rnoadm.hud.HUD('menu', function(w, h) {
+  return new rnoadm.hud.HUD('menu2', function(w, h) {
     if (isInitial) {
       isInitial = false;
       if (initialX + width > w)
@@ -59,7 +55,7 @@ rnoadm.hud.register('menu', function(data) {
     }
     var x = initialX / rnoadm.gfx.TILE_SIZE + 0.1;
     var y = initialY / rnoadm.gfx.TILE_SIZE + 0.5;
-    for (var i = 0; i < object.actions.length; i++) {
+    for (var i = 0; i < data.length; i++) {
       if (i == hover) {
         optionsh[i].paint(x, y + i / 2);
       } else {
@@ -74,26 +70,28 @@ rnoadm.hud.register('menu', function(data) {
       rnoadm.gfx.repaint();
     }
     if (x >= initialX && x < initialX + width && y >= Math.floor(initialY +
-        0.1 * rnoadm.gfx.TILE_SIZE) && y < Math.floor(initialY +
-        (object.actions.length / 2 + 0.1) * rnoadm.gfx.TILE_SIZE)) {
+        0.1 * rnoadm.gfx.TILE_SIZE) && y < initialY + Math.floor((data.length /
+        2 + 0.1) * rnoadm.gfx.TILE_SIZE)) {
       hover = Math.floor((y - initialY) * 2 / rnoadm.gfx.TILE_SIZE - 0.1);
-      if (hover >= object.actions.length)
+      if (hover >= data.length)
         hover = -1;
     } else {
       hover = -1;
       if (x < initialX - rnoadm.gfx.TILE_SIZE || x > initialX + width +
-          rnoadm.gfx.TILE_SIZE || y < Math.floor(initialY -
-          rnoadm.gfx.TILE_SIZE) || y > initialY + height +
-          rnoadm.gfx.TILE_SIZE) {
-        rnoadm.hud.hide('menu');
+          rnoadm.gfx.TILE_SIZE || y < initialY - rnoadm.gfx.TILE_SIZE ||
+          y > initialY + height + rnoadm.gfx.TILE_SIZE) {
+        rnoadm.hud.hide('menu2');
       }
     }
     rnoadm.gfx.repaint();
   }, function(x, y, w, h) {
-    // TODO: click
+    if (hover != -1) {
+      rnoadm.hud.show('menu', data[hover]);
+    }
+    rnoadm.hud.hide('menu2');
     return true;
   }, function(x, y, w, h) {
-    rnoadm.hud.hide('menu');
+    rnoadm.hud.hide('menu2');
     return true;
   });
 });

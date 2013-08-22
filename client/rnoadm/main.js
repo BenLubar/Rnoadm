@@ -5,6 +5,7 @@ goog.require('goog.debug.Logger');
 goog.require('rnoadm.hud.cc');
 goog.require('rnoadm.hud.inv');
 goog.require('rnoadm.hud.menu');
+goog.require('rnoadm.hud.menu2');
 goog.require('rnoadm.login');
 goog.require('rnoadm.net');
 goog.require('rnoadm.state');

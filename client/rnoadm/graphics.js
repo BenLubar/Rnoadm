@@ -155,6 +155,10 @@ rnoadm.gfx.clickObject;
 rnoadm.gfx.rightClickHud;
 
 
+/** @type {function(number, number, number, number):boolean} */
+rnoadm.gfx.rightClickObject;
+
+
 rnoadm.gfx.canvas.onmousemove = function(e) {
   if (rnoadm.gfx.mouseMovedHud(e.offsetX, e.offsetY,
                                rnoadm.gfx.width_,
@@ -210,6 +214,10 @@ rnoadm.gfx.canvas.oncontextmenu = function(e) {
   if (rnoadm.gfx.rightClickHud(e.offsetX, e.offsetY,
                                rnoadm.gfx.width_,
                                rnoadm.gfx.height_))
+    return;
+  if (rnoadm.gfx.rightClickObject(e.offsetX, e.offsetY,
+      rnoadm.gfx.width_,
+      rnoadm.gfx.height_))
     return;
 };
 

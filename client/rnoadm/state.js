@@ -248,4 +248,22 @@ rnoadm.gfx.clickObject = function(x, y, w, h) {
   return true;
 };
 
+rnoadm.gfx.rightClickObject = function(x, y, w, h) {
+  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerX_;
+  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerY_;
+  x = Math.floor(x / rnoadm.gfx.TILE_SIZE - xOffset);
+  y = Math.ceil(y / rnoadm.gfx.TILE_SIZE - yOffset);
+  if (x < 0 || x >= 256 || y < 0 || y >= 256)
+    return false;
+  var objects = [];
+  for (var i in rnoadm.state.objects_[x | y << 8]) {
+    objects.unshift(rnoadm.state.objects_[x | y << 8][i]);
+  }
+  if (objects.length == 1)
+    rnoadm.hud.show('menu', objects[0]);
+  else if (objects.length)
+    rnoadm.hud.show('menu2', objects);
+  return true;
+};
+
 // vim: set tabstop=2 shiftwidth=2 expandtab:
