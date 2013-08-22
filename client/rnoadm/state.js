@@ -290,12 +290,12 @@ rnoadm.gfx.mouseMovedObject = function(x, y, w, h) {
   if (x != rnoadm.state.mouseX_ || y != rnoadm.state.mouseY_) {
     if (rnoadm.state.mouseX_ == -1) {
       rnoadm.state.mouseX_ = x;
-      rnoadm.state.mouseY_ = 255;
+      rnoadm.state.mouseY_ = y;
     }
-    rnoadm.net.send({"Mouse": {
-      "Fx": rnoadm.state.mouseX_,
-      "Fy": rnoadm.state.mouseY_,
-      "X": x, "Y": y
+    rnoadm.net.send({'Mouse': {
+      'Fx': rnoadm.state.mouseX_,
+      'Fy': rnoadm.state.mouseY_,
+      'X': x, 'Y': y
     }});
     rnoadm.state.mouseX_ = x;
     rnoadm.state.mouseY_ = y;

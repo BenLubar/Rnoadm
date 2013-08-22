@@ -22,9 +22,14 @@ type clientPacket struct {
 		Name string      `json:"N"`
 		Data interface{} `json:"D"`
 	}
-	Chat *string
+	Chat  *string
 	Mouse *struct {
 		X, Y, Fx, Fy uint8
+	}
+	Interact *struct {
+		ID     uint64 `json:",string"`
+		X, Y   uint8
+		Action string
 	}
 }
 
@@ -365,12 +370,12 @@ func socketHandler(ws *websocket.Conn) {
 				if player.Position() == nil || player.Position().Zone().Tile(packet.Mouse.X, packet.Mouse.Y).Blocked() {
 					color = "#f00"
 				}
-				update := map[string][]map[string]interface{} {
+				update := map[string][]map[string]interface{}{
 					"Update": {
 						{
 							"I": "_crosshair",
-							"X": packet.Mouse.Fx,
-							"Y": packet.Mouse.Fy,
+							"X": packet.Mouse.X,
+							"Y": packet.Mouse.Y,
 							"O": map[string][]packetUpdateSprite{
 								"S": {
 									{
@@ -383,19 +388,41 @@ func socketHandler(ws *websocket.Conn) {
 								},
 							},
 						},
-						{
-							"I": "_crosshair",
-							"Fx": packet.Mouse.Fx,
-							"Fy": packet.Mouse.Fy,
-							"X": packet.Mouse.X,
-							"Y": packet.Mouse.Y,
-						},
 					},
+				}
+				if packet.Mouse.Fx != packet.Mouse.X || packet.Mouse.Fy != packet.Mouse.Y {
+					update["Update"] = append([]map[string]interface{}{{
+						"I": "_crosshair",
+						"R": true,
+						"X": packet.Mouse.Fx,
+						"Y": packet.Mouse.Fy,
+					}}, update["Update"]...)
 				}
 				err = websocket.JSON.Send(ws, update)
 				if err != nil {
 					log.Printf("[err_sock] %s:%#v %v", addr, update, err)
 					return
+				}
+			}
+			if packet.Interact != nil {
+				if packet.Interact.X < 8 {
+					inv := player.Inventory()
+					i := int(packet.Interact.X) + 8*int(packet.Interact.Y)
+					if len(inv) > i {
+						if inv[i].NetworkID() == packet.Interact.ID {
+							inv[i].Interact(player, packet.Interact.Action)
+							continue
+						}
+					}
+				}
+				if player.Position() == nil {
+					continue
+				}
+				for _, obj := range player.Position().Zone().Tile(packet.Interact.X, packet.Interact.Y).Objects() {
+					if v, ok := obj.(world.Visible); ok && v.NetworkID() == packet.Interact.ID {
+						v.Interact(player, packet.Interact.Action)
+						break
+					}
 				}
 			}
 			if len(packet.Admin) > 0 {

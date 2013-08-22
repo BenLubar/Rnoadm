@@ -34,6 +34,7 @@ type Player struct {
 var _ world.NoSaveObject = (*Player)(nil)
 var _ world.AdminLike = (*Player)(nil)
 var _ world.SendMessageLike = (*Player)(nil)
+var _ world.InventoryLike = (*Player)(nil)
 
 func init() {
 	world.Register("player", HeroLike((*Player)(nil)))

@@ -118,3 +118,40 @@ func (s *walkSchedule) Load(version uint, data interface{}, attached []ObjectLik
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
 }
+
+type ScheduleSchedule struct {
+	Object
+
+	Schedules []Schedule
+}
+
+func (s *ScheduleSchedule) Act(o Living) (uint, bool) {
+	if len(s.Schedules) > 0 {
+		delay, keep := s.Schedules[0].Act(o)
+		if !keep {
+			s.Schedules = s.Schedules[1:]
+		}
+		return delay, true
+	}
+	return 0, false
+}
+
+func (s *ScheduleSchedule) ShouldSave() bool {
+	return false
+}
+
+type ActionSchedule struct {
+	Object
+
+	Action string
+	Target Visible
+}
+
+func (s *ActionSchedule) Act(o Living) (uint, bool) {
+	s.Target.Interact(o.(CombatInventoryMessageAdmin), s.Action)
+	return 0, false
+}
+
+func (s *ActionSchedule) ShouldSave() bool {
+	return false
+}

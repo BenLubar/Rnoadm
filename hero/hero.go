@@ -2,7 +2,6 @@ package hero
 
 import (
 	"fmt"
-	"github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
 	"math/rand"
 	"sync"
@@ -16,7 +15,7 @@ type HeroLike interface {
 	Gender() Gender
 	Occupation() Occupation
 
-	material.InventoryLike
+	world.InventoryLike
 	notifyInventoryChanged()
 }
 
@@ -42,6 +41,8 @@ type Hero struct {
 
 	mtx sync.Mutex
 }
+
+var _ world.InventoryLike = (*Hero)(nil)
 
 func init() {
 	world.Register("hero", HeroLike((*Hero)(nil)))

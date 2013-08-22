@@ -39,6 +39,8 @@ type Visible interface {
 	Blocking() bool
 
 	Actions() []string
+
+	Interact(player CombatInventoryMessageAdmin, action string)
 }
 
 type VisibleObject struct {
@@ -111,4 +113,42 @@ func (o *VisibleObject) Actions() []string {
 		}
 	}
 	return actions
+}
+
+func (o *VisibleObject) Interact(player CombatInventoryMessageAdmin, action string) {
+	switch action {
+	case "drop":
+		if _, ok := o.Outer().(Item); ok {
+			if player.RemoveItem(o.Outer().(Visible)) {
+				player.Position().Add(o.Outer())
+			}
+		}
+	case "take":
+		pos := o.Position()
+		if pos == nil {
+			player.SendMessage("somebody else took that!")
+			return
+		}
+		if player.Position() != pos {
+			sx, sy := player.Position().Position()
+			ex, ey := pos.Position()
+			player.SetSchedule(&ScheduleSchedule{
+				Schedules: []Schedule{
+					NewWalkSchedule(sx, sy, ex, ey),
+					&ActionSchedule{
+						Action: "take",
+						Target: o.Outer().(Visible),
+					},
+				},
+			})
+			return
+		}
+		if _, ok := o.Outer().(Item); ok {
+			if pos.Remove(o.Outer()) {
+				if !player.GiveItem(o.Outer().(Visible)) {
+					pos.Add(o.Outer())
+				}
+			}
+		}
+	}
 }

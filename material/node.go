@@ -7,12 +7,6 @@ import (
 	"sync"
 )
 
-type InventoryLike interface {
-	Inventory() []world.Visible
-	GiveItem(world.Visible) bool
-	RemoveItem(world.Visible) bool
-}
-
 type NodeLike interface {
 	world.Visible
 
@@ -51,7 +45,7 @@ func (n *Node) Load(version uint, data interface{}, attached []world.ObjectLike)
 	}
 }
 
-func (n *Node) Gather(i InventoryLike, toolStrength uint64) bool {
+func (n *Node) Gather(i world.InventoryLike, toolStrength uint64) bool {
 	nodeStrength := n.Outer().(NodeLike).Strength()
 
 	n.mtx.Lock()

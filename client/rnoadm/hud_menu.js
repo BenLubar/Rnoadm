@@ -26,7 +26,10 @@ rnoadm.hud.register('menu', function(data) {
   /** @type {Array.<rnoadm.gfx.Text>} */
   var optionsh = [];
 
-  object.actions.forEach(function(action) {
+  /** @type {Array.<string>} */
+  var actions = object.actions;
+
+  actions.forEach(function(action) {
     action = action + ' ' + object.name;
     options.push(new rnoadm.gfx.Text(action, '#aaa', false, true));
     optionsh.push(new rnoadm.gfx.Text(action, '#fff', false, true));
@@ -39,7 +42,7 @@ rnoadm.hud.register('menu', function(data) {
   });
   width = (width + 0.2) * rnoadm.gfx.TILE_SIZE;
   /** @type {number} */
-  var height = Math.floor(rnoadm.gfx.TILE_SIZE * (object.actions.length / 2 +
+  var height = Math.floor(rnoadm.gfx.TILE_SIZE * (actions.length / 2 +
       0.2));
 
   return new rnoadm.hud.HUD('menu', function(w, h) {
@@ -59,7 +62,7 @@ rnoadm.hud.register('menu', function(data) {
     }
     var x = initialX / rnoadm.gfx.TILE_SIZE + 0.1;
     var y = initialY / rnoadm.gfx.TILE_SIZE + 0.5;
-    for (var i = 0; i < object.actions.length; i++) {
+    for (var i = 0; i < actions.length; i++) {
       if (i == hover) {
         optionsh[i].paint(x, y + i / 2);
       } else {
@@ -75,9 +78,9 @@ rnoadm.hud.register('menu', function(data) {
     }
     if (x >= initialX && x < initialX + width && y >= Math.floor(initialY +
         0.1 * rnoadm.gfx.TILE_SIZE) && y < Math.floor(initialY +
-        (object.actions.length / 2 + 0.1) * rnoadm.gfx.TILE_SIZE)) {
+        (actions.length / 2 + 0.1) * rnoadm.gfx.TILE_SIZE)) {
       hover = Math.floor((y - initialY) * 2 / rnoadm.gfx.TILE_SIZE - 0.1);
-      if (hover >= object.actions.length)
+      if (hover >= actions.length)
         hover = -1;
     } else {
       hover = -1;
@@ -90,7 +93,14 @@ rnoadm.hud.register('menu', function(data) {
     }
     rnoadm.gfx.repaint();
   }, function(x, y, w, h) {
-    // TODO: click
+    if (hover != -1)
+      rnoadm.net.send({'Interact': {
+        'ID': object.id,
+        'X': object.x,
+        'Y': object.y,
+        'Action': actions[hover]
+      }});
+    rnoadm.hud.hide('menu');
     return true;
   }, function(x, y, w, h) {
     rnoadm.hud.hide('menu');
