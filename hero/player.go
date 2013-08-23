@@ -479,8 +479,9 @@ func (p *Player) SendMessageColor(message, color string) {
 	}
 }
 
-func (p *Player) Chat(message string) {
+func (p *Player) Chat(addr, message string) {
 	if pos := p.Position(); pos != nil {
+		log.Printf("[info_chat] %s:%q %q %q", addr, p.login, p.Name(), message)
 		pos.Zone().Chat(p, message)
 	}
 }

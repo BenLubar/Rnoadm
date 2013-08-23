@@ -361,8 +361,7 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			if packet.Chat != nil {
 				if strings.TrimSpace(*packet.Chat) != "" {
-					log.Printf("[info_chat] %s:%q", addr, *packet.Chat)
-					player.Chat(*packet.Chat)
+					player.Chat(addr, *packet.Chat)
 				}
 			}
 			if packet.Mouse != nil {

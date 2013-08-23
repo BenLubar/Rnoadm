@@ -293,6 +293,9 @@ func (h *Hero) notifyInventoryChanged() {
 func (h *Hero) GiveItem(item world.Visible) bool {
 	if i, ok := item.(world.Item); !ok || i.AdminOnly() {
 		if a, ok := h.Outer().(world.AdminLike); !ok || !a.IsAdmin() {
+			if m, ok := h.Outer().(world.SendMessageLike); ok {
+				m.SendMessage("the " + item.Name() + " deems you unworthy and decides to stay where it is.")
+			}
 			return false
 		}
 	}
