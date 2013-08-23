@@ -210,7 +210,7 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
 
   if (rnoadm.gfx.Sprite.floorPass) {
     if (this.animation_ == '_fl') {
-      y += 1/4;
+      y += 0.5;
       draw();
     }
     return;

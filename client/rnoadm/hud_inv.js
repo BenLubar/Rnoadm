@@ -28,8 +28,8 @@ rnoadm.hud.register('inv', function(data) {
     rnoadm.hud.inventory_.forEach(function(item) {
       item.paint(xOffset, yOffset);
     });
-    if (hoverX >= 0 && hoverX < (rnoadm.hud.inventory_.length % 8 || 8) &&
-        hoverY >= 0 && hoverY < rows) {
+    if (hoverX >= 0 && hoverX < 8 && hoverY >= 0 && hoverY < rows &&
+        hoverX + hoverY * 8 < rnoadm.hud.inventory_.length) {
       var text = new rnoadm.gfx.Text(rnoadm.hud.inventory_[hoverX +
           hoverY * 8].name, '#fff', false, true);
       var width = (text.width() + 0.2) * rnoadm.gfx.TILE_SIZE;
@@ -44,19 +44,19 @@ rnoadm.hud.register('inv', function(data) {
     mouseX = x;
     mouseY = y;
     hoverX = Math.floor((x - w) / rnoadm.gfx.TILE_SIZE + 8.1);
-    hoverY = Math.floor((h - y) / rnoadm.gfx.TILE_SIZE - 1.1);
+    hoverY = Math.floor((y - h) / rnoadm.gfx.TILE_SIZE + rows + 1.1);
+    rnoadm.gfx.repaint();
     if (hoverY > rows || hoverX < -1) {
       rnoadm.hud.hide('inv');
     } else {
       return true;
     }
-    rnoadm.gfx.repaint();
   }, function(x, y, w, h) {
     return true;
   }, function(x, y, w, h) {
     var rows = Math.ceil(rnoadm.hud.inventory_.length / 8);
-    if (hoverX >= 0 && hoverX < (rnoadm.hud.inventory_.length % 8 || 8) &&
-        hoverY >= 0 && hoverY < rows) {
+    if (hoverX >= 0 && hoverX < 8 && hoverY >= 0 && hoverY < rows &&
+        hoverX + hoverY * 8 < rnoadm.hud.inventory_.length) {
       rnoadm.hud.show('menu', rnoadm.hud.inventory_[hoverX + hoverY * 8]);
     }
   });

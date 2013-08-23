@@ -44,7 +44,7 @@ rnoadm.state.Object = function(x, y, id, net) {
   /** @type {Array.<rnoadm.gfx.Sprite>} */
   this.sprites = sprites;
 
-  net['S'].forEach(function(sprite) {
+  (net['S'] || []).forEach(function(sprite) {
     sprites.push(rnoadm.gfx.Sprite.fromNetwork(sprite));
   });
 
@@ -68,7 +68,7 @@ rnoadm.state.Object.prototype.update = function(net) {
 
   sprites.length = 0;
 
-  net['S'].forEach(function(sprite) {
+  (net['S'] || []).forEach(function(sprite) {
     sprites.push(rnoadm.gfx.Sprite.fromNetwork(sprite));
   });
 };

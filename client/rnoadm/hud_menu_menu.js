@@ -84,6 +84,7 @@ rnoadm.hud.register('menu2', function(data) {
       }
     }
     rnoadm.gfx.repaint();
+    return true;
   }, function(x, y, w, h) {
     if (hover != -1) {
       rnoadm.hud.show('menu', data[hover]);

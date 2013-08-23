@@ -92,6 +92,7 @@ rnoadm.hud.register('menu', function(data) {
       }
     }
     rnoadm.gfx.repaint();
+    return true;
   }, function(x, y, w, h) {
     if (hover != -1)
       rnoadm.net.send({'Interact': {

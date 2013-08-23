@@ -375,6 +375,17 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 				pos.Remove(o)
 			}
 		}
+	case "unequip all":
+		if len(command) != 1 {
+			return
+		}
+		p.mtx.Lock()
+		for _, e := range p.equipped {
+			p.mtx.Unlock()
+			e.Interact(p, "unequip")
+			p.mtx.Lock()
+		}
+		p.mtx.Unlock()
 	case "spawn item":
 		if len(command) != 2 {
 			return
