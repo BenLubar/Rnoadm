@@ -46,7 +46,7 @@ var equippables = [equipSlotCount][]struct {
 			height: 64,
 
 			animationOverrides: map[string]string{
-				"": "_ac",
+				"":   "_ac",
 				"wa": "wa_ac",
 			},
 			adminOnly: true,

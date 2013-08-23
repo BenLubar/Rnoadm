@@ -32,7 +32,7 @@ func (d *Door) Sprite() string {
 }
 
 func (d *Door) Colors() []string {
-	return []string{"#888"}
+	return []string{"#888", "#888"}
 }
 
 func (d *Door) SpritePos() (uint, uint) {
@@ -84,7 +84,7 @@ func (d *Door) Interact(player world.CombatInventoryMessageAdmin, action string)
 		if (px == x && py != y-1 && py != y+1) || (py == y && px != x-1 && px != x+1) || (px != x && py != y) {
 			player.SetSchedule(&world.ScheduleSchedule{
 				Schedules: []world.Schedule{
-					world.NewWalkSchedule(px, py, x, y),
+					world.NewWalkSchedule(x, y, true),
 					&world.ActionSchedule{
 						Action: "open",
 						Target: d.Outer().(world.Visible),
@@ -107,7 +107,7 @@ func (d *Door) Interact(player world.CombatInventoryMessageAdmin, action string)
 		if (px == x && (py < y-1 || py > y+1)) || (py == y && (px < x-1 || px > x+1)) || (px != x && py != y) {
 			player.SetSchedule(&world.ScheduleSchedule{
 				Schedules: []world.Schedule{
-					world.NewWalkSchedule(px, py, x, y),
+					world.NewWalkSchedule(x, y, true),
 					&world.ActionSchedule{
 						Action: "close",
 						Target: d.Outer().(world.Visible),

@@ -130,11 +130,10 @@ func (o *VisibleObject) Interact(player CombatInventoryMessageAdmin, action stri
 			return
 		}
 		if player.Position() != pos {
-			sx, sy := player.Position().Position()
 			ex, ey := pos.Position()
 			player.SetSchedule(&ScheduleSchedule{
 				Schedules: []Schedule{
-					NewWalkSchedule(sx, sy, ex, ey),
+					NewWalkSchedule(ex, ey, false),
 					&ActionSchedule{
 						Action: "take",
 						Target: o.Outer().(Visible),

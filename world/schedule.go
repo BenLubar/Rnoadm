@@ -35,20 +35,20 @@ func (s *cancelSchedule) ShouldSave() bool {
 
 type walkSchedule struct {
 	Object
-	sx, sy uint8
-	ex, ey uint8
+	ex, ey    uint8
+	path      [][2]uint8
+	stopEarly bool
 }
 
 func init() {
 	Register("walksched", Schedule((*walkSchedule)(nil)))
 }
 
-func NewWalkSchedule(sx, sy, ex, ey uint8) Schedule {
+func NewWalkSchedule(ex, ey uint8, stopEarly bool) Schedule {
 	return InitObject(&walkSchedule{
-		sx: sx,
-		sy: sy,
-		ex: ex,
-		ey: ey,
+		ex:        ex,
+		ey:        ey,
+		stopEarly: stopEarly,
 	}).(Schedule)
 }
 
@@ -57,40 +57,22 @@ func (s *walkSchedule) Act(o Living) (uint, bool) {
 	if t == nil {
 		return 0, false
 	}
-	x, y := t.Position()
-	if x != s.sx || y != s.sy {
+	if s.path == nil {
+		s.path = t.Zone().Path(t, t.Zone().Tile(s.ex, s.ey), s.stopEarly)
+	}
+	if len(s.path) <= 1 {
 		return 0, false
 	}
-	dx, dy := int(s.ex)-int(x), int(s.ey)-int(y)
-	if dx > 0 {
-		if dy > dx {
-			s.sy++
-		} else if dy < 0 && -dy > dx {
-			s.sy--
-		} else {
-			s.sx++
-		}
-	} else if dx < 0 {
-		if dy > -dx {
-			s.sy++
-		} else if dy < 0 && dy < dx {
-			s.sy--
-		} else {
-			s.sx--
-		}
-	} else {
-		if dy > 0 {
-			s.sy++
-		} else if dy < 0 {
-			s.sy--
-		} else {
-			return 0, false
-		}
-	}
-	if t.Zone().Tile(s.sx, s.sy).Blocked() {
+	x, y := s.path[0][0], s.path[0][1]
+	s.path = s.path[1:]
+	if tx, ty := t.Position(); tx != x && ty != y {
 		return 0, false
 	}
-	t.Move(o, t.Zone().Tile(s.sx, s.sy))
+	x, y = s.path[0][0], s.path[0][1]
+	if t.Zone().Tile(x, y).Blocked() {
+		return 0, false
+	}
+	t.Move(o, t.Zone().Tile(x, y))
 	return 2, true
 }
 
@@ -100,10 +82,9 @@ func (s *walkSchedule) ShouldSave() bool {
 
 func (s *walkSchedule) Save() (uint, interface{}, []ObjectLike) {
 	return 0, map[string]interface{}{
-		"sx": s.sx,
-		"sy": s.sy,
 		"ex": s.ex,
 		"ey": s.ey,
+		"se": s.stopEarly,
 	}, nil
 }
 
@@ -111,9 +92,9 @@ func (s *walkSchedule) Load(version uint, data interface{}, attached []ObjectLik
 	switch version {
 	case 0:
 		dataMap := data.(map[string]interface{})
-		sx, sy := dataMap["sx"].(uint8), dataMap["sy"].(uint8)
-		ex, ey := dataMap["ex"].(uint8), dataMap["ey"].(uint8)
-		*s = *NewWalkSchedule(sx, sy, ex, ey).(*walkSchedule)
+		s.ex = dataMap["ex"].(uint8)
+		s.ey = dataMap["ey"].(uint8)
+		s.stopEarly, _ = dataMap["se"].(bool)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
