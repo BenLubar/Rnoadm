@@ -362,6 +362,19 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		loginLock.Lock()
 		defer loginLock.Unlock()
 		getPlayerKick(command[1], message)
+	case "nuke tile":
+		if len(command) != 1 {
+			return
+		}
+		pos := p.Position()
+		if pos == nil {
+			return
+		}
+		for _, o := range pos.Objects() {
+			if _, ok := o.(*Player); !ok {
+				pos.Remove(o)
+			}
+		}
 	case "spawn item":
 		if len(command) != 2 {
 			return

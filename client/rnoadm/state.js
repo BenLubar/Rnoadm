@@ -211,26 +211,29 @@ rnoadm.gfx.paintObjects = function(w, h) {
           0.5, yOffset + y + 512 / rnoadm.gfx.TILE_SIZE - 1);
     }
   }
-  for (var y = Math.max(0, Math.floor(-h / 2 - yOffset));
-       y < Math.min(256, Math.floor(h / 2 - yOffset));
-       y++) {
-    for (var x = Math.max(0, Math.floor((-w / 2 - xOffset) / 2));
-         x < Math.min(128, Math.floor((w / 2 - xOffset) / 2));
-         x++) {
-      var objects = rnoadm.state.objects_[x << 1 | y << 8];
-      if (objects) {
-        for (var id in objects) {
-          objects[id].paint(xOffset, yOffset);
+  for (var i = 0; i < 2; i++) {
+    rnoadm.gfx.Sprite.floorPass = !i;
+    for (var y = Math.max(0, Math.floor(-h / 2 - yOffset));
+         y < Math.min(256, Math.floor(h / 2 - yOffset));
+         y++) {
+      for (var x = Math.max(0, Math.floor((-w / 2 - xOffset) / 2));
+           x < Math.min(128, Math.floor((w / 2 - xOffset) / 2));
+           x++) {
+        var objects = rnoadm.state.objects_[x << 1 | y << 8];
+        if (objects) {
+          for (var id in objects) {
+            objects[id].paint(xOffset, yOffset);
+          }
         }
       }
-    }
-    for (var x = Math.max(0, Math.floor((-w / 2 - xOffset) / 2));
-         x < Math.min(128, Math.floor((w / 2 - xOffset) / 2));
-         x++) {
-      var objects = rnoadm.state.objects_[x << 1 | y << 8 | 1];
-      if (objects) {
-        for (var id in objects) {
-          objects[id].paint(xOffset, yOffset);
+      for (var x = Math.max(0, Math.floor((-w / 2 - xOffset) / 2));
+           x < Math.min(128, Math.floor((w / 2 - xOffset) / 2));
+           x++) {
+        var objects = rnoadm.state.objects_[x << 1 | y << 8 | 1];
+        if (objects) {
+          for (var id in objects) {
+            objects[id].paint(xOffset, yOffset);
+          }
         }
       }
     }

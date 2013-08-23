@@ -42,11 +42,12 @@ var equippables = [equipSlotCount][]struct {
 		{
 			name:   "crown of the Origin",
 			sprite: "hat_admin_crown",
-			colors: []string{"#ff0", "#0ff", "#f00", "#f0f", "#0f0", "#00f"},
+			colors: []string{"#ff0", "#0ff", "#888", "#888", "#888", "#888"},
 			height: 64,
 
 			animationOverrides: map[string]string{
 				"": "_ac",
+				"wa": "wa_ac",
 			},
 			adminOnly: true,
 		},

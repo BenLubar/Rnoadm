@@ -1,21 +1,30 @@
 package material
 
 import (
+	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
 )
 
 type Wall struct {
 	world.VisibleObject
+
+	wood *WoodType
+	stone *StoneType
+	metal *MetalType
 }
 
 func init() {
 	world.Register("wall", world.Visible((*Wall)(nil)))
-	world.RegisterSpawnFunc(func(s string) world.Visible {
+	world.RegisterSpawnFunc(WrapSpawnFunc(func(wood *WoodType, stone *StoneType, metal *MetalType, s string) world.Visible {
 		if s == "wall" {
-			return &Wall{}
+			return &Wall{
+				wood:wood,
+				stone:stone,
+				metal:metal,
+			}
 		}
 		return nil
-	})
+	}))
 }
 
 func (w *Wall) Name() string {
@@ -27,7 +36,35 @@ func (w *Wall) Sprite() string {
 }
 
 func (w *Wall) Colors() []string {
-	return []string{"#888"}
+	if w.metal == nil {
+		if w.stone == nil {
+			if w.wood == nil {
+				return []string{"#888"}
+			} else {
+				return []string{"", w.wood.BarkColor()}
+			}
+		} else {
+			if w.wood == nil {
+				return []string{"", "", w.stone.Color()}
+			} else {
+				return []string{"", "", w.stone.Color(), "", w.wood.BarkColor()}
+			}
+		}
+	} else {
+		if w.stone == nil {
+			if w.wood == nil {
+				return []string{"", "", "", w.metal.Color()}
+			} else {
+				return []string{"", "", "", w.metal.Color(), w.wood.BarkColor()}
+			}
+		} else {
+			if w.wood == nil {
+				return []string{"", "", w.stone.Color(), "", "", w.metal.Color()}
+			} else {
+				return []string{"", "", w.stone.Color(), "", w.wood.BarkColor(), w.metal.Color()}
+			}
+		}
+	}
 }
 
 func containsWall(objects []world.ObjectLike) bool {
@@ -70,9 +107,43 @@ func (w *Wall) SpritePos() (uint, uint) {
 }
 
 func (w *Wall) SpriteSize() (uint, uint) {
-	return 32, 48
+	return 32, 64
 }
 
 func (w *Wall) Blocking() bool {
 	return true
+}
+
+func (w *Wall) Save() (uint, interface{}, []world.ObjectLike) {
+	materials := make(map[string]interface{})
+	if w.wood != nil {
+		materials["w"] = uint64(*w.wood)
+	}
+	if w.stone != nil {
+		materials["s"] = uint64(*w.stone)
+	}
+	if w.metal != nil {
+		materials["m"] = uint64(*w.metal)
+	}
+	return 1, materials, nil
+}
+
+func (w *Wall) Load(version uint, data interface{}, attached []world.ObjectLike) {
+	switch version {
+	case 0:
+		// no fields in version 0
+	case 1:
+		materials := data.(map[string]interface{})
+		if wood, ok := materials["w"].(uint64); ok {
+			w.wood = (*WoodType)(&wood)
+		}
+		if stone, ok := materials["s"].(uint64); ok {
+			w.stone = (*StoneType)(&stone)
+		}
+		if metal, ok := materials["m"].(uint64); ok {
+			w.metal = (*MetalType)(&metal)
+		}
+	default:
+		panic(fmt.Sprintf("version %d unknown", version))
+	}
 }

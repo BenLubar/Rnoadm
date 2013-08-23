@@ -46,7 +46,7 @@ func (d *Door) SpritePos() (uint, uint) {
 }
 
 func (d *Door) SpriteSize() (uint, uint) {
-	return 40, 48
+	return 48, 64
 }
 
 func (d *Door) Blocking() bool {
@@ -104,7 +104,7 @@ func (d *Door) Interact(player world.CombatInventoryMessageAdmin, action string)
 		}
 		x, y := pos.Position()
 		px, py := player.Position().Position()
-		if px != x || py != y {
+		if (px == x && (py < y-1 || py > y+1)) || (py == y && (px < x-1 || px > x+1)) || (px != x && py != y) {
 			player.SetSchedule(&world.ScheduleSchedule{
 				Schedules: []world.Schedule{
 					world.NewWalkSchedule(px, py, x, y),

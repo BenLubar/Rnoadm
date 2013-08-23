@@ -193,6 +193,29 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
   /** @type {number} */
   var sy = this.yOffset_;
 
+  var sprite = this;
+
+  function draw() {
+    rnoadm.gfx.ctx.drawImage(sprite.canvas_,
+        Math.floor(sx * sprite.width_ * sprite.scale_),
+        Math.floor(sy * sprite.height_ * sprite.scale_),
+        Math.floor(sprite.width_ * sprite.scale_),
+        Math.floor(sprite.height_ * sprite.scale_),
+        Math.floor(x * rnoadm.gfx.TILE_SIZE -
+        (sprite.width_ * sprite.scale_ - rnoadm.gfx.TILE_SIZE) / 2),
+        Math.floor(y * rnoadm.gfx.TILE_SIZE - sprite.height_ * sprite.scale_),
+        Math.floor(sprite.width_ * sprite.scale_),
+        Math.floor(sprite.height_ * sprite.scale_));
+  }
+
+  if (rnoadm.gfx.Sprite.floorPass) {
+    if (this.animation_ == '_fl') {
+      y += 1/4;
+      draw();
+    }
+    return;
+  }
+
   switch (this.animation_) {
     case '':
       break;
@@ -226,19 +249,32 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
       }
       rnoadm.gfx.repaint(100);
       break;
+    case 'wa_ac': // walk (alternating) special (admin crown)
+      sx += [0, 1, 0, 2][Math.floor(Date.now() / 150) % 4];
+      rnoadm.gfx.repaint(50);
+      if (sy < 2)
+        break;
+      var time = Date.now() / 10000;
+      switch (sy) {
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+          y += Math.sin(time * 5 + Math.cos(time * 3) * 7 + sy) / 8;
+          break;
+      }
+      break;
+    case '_fl': // special (floor)
+      return;
   }
 
-  rnoadm.gfx.ctx.drawImage(this.canvas_,
-      Math.floor(sx * this.width_ * this.scale_),
-      Math.floor(sy * this.height_ * this.scale_),
-      Math.floor(this.width_ * this.scale_),
-      Math.floor(this.height_ * this.scale_),
-      Math.floor(x * rnoadm.gfx.TILE_SIZE -
-      (this.width_ * this.scale_ - rnoadm.gfx.TILE_SIZE) / 2),
-      Math.floor(y * rnoadm.gfx.TILE_SIZE - this.height_ * this.scale_),
-      Math.floor(this.width_ * this.scale_),
-      Math.floor(this.height_ * this.scale_));
+  draw();
 };
+
+
+/**
+ * @type {bool}
+ */
 
 
 /**
