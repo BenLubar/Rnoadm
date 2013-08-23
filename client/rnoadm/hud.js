@@ -172,10 +172,8 @@ rnoadm.hud.inventoryIconh_ = new rnoadm.gfx.Sprite('ui_icons', '#bbb', '',
 
 rnoadm.gfx.paintHuds = function(w, h) {
   if (rnoadm.hud.chat_ == null) {
-    if (rnoadm.hud.activeHuds_.length == 0) {
-      rnoadm.hud.text.push_enter_to_chat.paint(0.1,
-          h / rnoadm.gfx.TILE_SIZE - 0.1);
-    }
+    rnoadm.hud.text.push_enter_to_chat.paint(0.1,
+        h / rnoadm.gfx.TILE_SIZE - 0.1);
   } else {
     new rnoadm.gfx.Text(rnoadm.hud.chat_ + '_', '#fff', false, true).paint(
         0.1, h / rnoadm.gfx.TILE_SIZE - 0.1);
@@ -183,14 +181,12 @@ rnoadm.gfx.paintHuds = function(w, h) {
   rnoadm.hud.messages_.forEach(function(message, i) {
     message.paint(0.1, h / rnoadm.gfx.TILE_SIZE - i / 2 - 0.6);
   });
-  if (!rnoadm.hud.activeHuds_.length) {
-    if (rnoadm.hud.hover_inventory_) {
-      rnoadm.hud.inventoryIconh_.paint(w / rnoadm.gfx.TILE_SIZE - 1,
-                                       h / rnoadm.gfx.TILE_SIZE);
-    } else {
-      rnoadm.hud.inventoryIcon_.paint(w / rnoadm.gfx.TILE_SIZE - 1,
-                                      h / rnoadm.gfx.TILE_SIZE);
-    }
+  if (rnoadm.hud.hover_inventory_) {
+    rnoadm.hud.inventoryIconh_.paint(w / rnoadm.gfx.TILE_SIZE - 1,
+                                     h / rnoadm.gfx.TILE_SIZE);
+  } else {
+    rnoadm.hud.inventoryIcon_.paint(w / rnoadm.gfx.TILE_SIZE - 1,
+                                    h / rnoadm.gfx.TILE_SIZE);
   }
   rnoadm.hud.activeHuds_.forEach(function(hud) {
     hud.paint_(w, h);
