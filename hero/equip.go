@@ -102,9 +102,7 @@ type Equip struct {
 
 	customColors []string
 
-	wood  *material.WoodType
-	stone *material.StoneType
-	metal *material.MetalType
+	material *material.Material
 
 	wearer *Hero // not saved
 }
@@ -114,7 +112,8 @@ var _ world.Item = (*Equip)(nil)
 func init() {
 	world.Register("equip", world.Visible((*Equip)(nil)))
 
-	world.RegisterSpawnFunc(material.WrapSpawnFunc(func(wood *material.WoodType, stone *material.StoneType, metal *material.MetalType, s string) world.Visible {
+	world.RegisterSpawnFunc(material.WrapSpawnFunc(func(material *material.Material, s string) world.Visible {
+		wood, stone, metal := material.Get()
 		for t := range equippables {
 			for i, e := range equippables[t] {
 				if e.name == s {
@@ -142,11 +141,9 @@ func init() {
 						continue
 					}
 					return &Equip{
-						slot:  EquipSlot(t),
-						kind:  uint64(i),
-						wood:  wood,
-						stone: stone,
-						metal: metal,
+						slot:     EquipSlot(t),
+						kind:     uint64(i),
+						material: material,
 					}
 				}
 			}
@@ -160,27 +157,23 @@ func (e *Equip) Save() (uint, interface{}, []world.ObjectLike) {
 	for i, c := range e.customColors {
 		colors[i] = c
 	}
-	materials := make(map[string]interface{})
-	if e.wood != nil {
-		materials["w"] = uint64(*e.wood)
-	}
-	if e.stone != nil {
-		materials["s"] = uint64(*e.stone)
-	}
-	if e.metal != nil {
-		materials["m"] = uint64(*e.metal)
-	}
-	return 0, map[string]interface{}{
+	return 1, map[string]interface{}{
 		"s": uint16(e.slot),
 		"k": e.kind,
 		"c": colors,
-		"m": materials,
-	}, nil
+	}, []world.ObjectLike{e.material}
 }
 
 func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
+		material := &material.Material{}
+		world.InitObject(material)
+		material.Load(0, data.(map[string]interface{})["m"], nil)
+
+		attached = []world.ObjectLike{material}
+		fallthrough
+	case 1:
 		dataMap := data.(map[string]interface{})
 
 		e.slot = EquipSlot(dataMap["s"].(uint16))
@@ -192,16 +185,8 @@ func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike
 				e.customColors[i] = c.(string)
 			}
 		}
-		materials, _ := dataMap["m"].(map[string]interface{})
-		if wood, ok := materials["w"].(uint64); ok {
-			e.wood = (*material.WoodType)(&wood)
-		}
-		if stone, ok := materials["s"].(uint64); ok {
-			e.stone = (*material.StoneType)(&stone)
-		}
-		if metal, ok := materials["m"].(uint64); ok {
-			e.metal = (*material.MetalType)(&metal)
-		}
+
+		e.material = attached[0].(*material.Material)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
@@ -219,25 +204,26 @@ func (e *Equip) Colors() []string {
 	defaultColors := equippables[e.slot][e.kind].colors
 	colors := make([]string, len(defaultColors))
 	copy(colors, defaultColors)
+	wood, stone, metal := e.material.Get()
 	for i, c := range colors {
 		switch c {
 		case woodColor:
-			if e.wood == nil {
+			if wood == nil {
 				colors[i] = ""
 			} else {
-				colors[i] = e.wood.BarkColor()
+				colors[i] = wood.BarkColor()
 			}
 		case stoneColor:
-			if e.stone == nil {
+			if stone == nil {
 				colors[i] = ""
 			} else {
-				colors[i] = e.stone.Color()
+				colors[i] = stone.Color()
 			}
 		case metalColor:
-			if e.metal == nil {
+			if metal == nil {
 				colors[i] = ""
 			} else {
-				colors[i] = e.metal.Color()
+				colors[i] = metal.Color()
 			}
 		}
 	}

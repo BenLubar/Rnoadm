@@ -8,19 +8,15 @@ import (
 type Wall struct {
 	world.VisibleObject
 
-	wood *WoodType
-	stone *StoneType
-	metal *MetalType
+	material *Material
 }
 
 func init() {
 	world.Register("wall", world.Visible((*Wall)(nil)))
-	world.RegisterSpawnFunc(WrapSpawnFunc(func(wood *WoodType, stone *StoneType, metal *MetalType, s string) world.Visible {
+	world.RegisterSpawnFunc(WrapSpawnFunc(func(material *Material, s string) world.Visible {
 		if s == "wall" {
 			return &Wall{
-				wood:wood,
-				stone:stone,
-				metal:metal,
+				material: material,
 			}
 		}
 		return nil
@@ -36,32 +32,33 @@ func (w *Wall) Sprite() string {
 }
 
 func (w *Wall) Colors() []string {
-	if w.metal == nil {
-		if w.stone == nil {
-			if w.wood == nil {
+	wood, stone, metal := w.material.Get()
+	if metal == nil {
+		if stone == nil {
+			if wood == nil {
 				return []string{"#888"}
 			} else {
-				return []string{"", w.wood.BarkColor()}
+				return []string{"", wood.BarkColor()}
 			}
 		} else {
-			if w.wood == nil {
-				return []string{"", "", w.stone.Color()}
+			if wood == nil {
+				return []string{"", "", stone.Color()}
 			} else {
-				return []string{"", "", w.stone.Color(), "", w.wood.BarkColor()}
+				return []string{"", "", stone.Color(), "", wood.BarkColor()}
 			}
 		}
 	} else {
-		if w.stone == nil {
-			if w.wood == nil {
-				return []string{"", "", "", w.metal.Color()}
+		if stone == nil {
+			if wood == nil {
+				return []string{"", "", "", metal.Color()}
 			} else {
-				return []string{"", "", "", w.metal.Color(), w.wood.BarkColor()}
+				return []string{"", "", "", metal.Color(), wood.BarkColor()}
 			}
 		} else {
-			if w.wood == nil {
-				return []string{"", "", w.stone.Color(), "", "", w.metal.Color()}
+			if wood == nil {
+				return []string{"", "", stone.Color(), "", "", metal.Color()}
 			} else {
-				return []string{"", "", w.stone.Color(), "", w.wood.BarkColor(), w.metal.Color()}
+				return []string{"", "", stone.Color(), "", wood.BarkColor(), metal.Color()}
 			}
 		}
 	}
@@ -115,17 +112,7 @@ func (w *Wall) Blocking() bool {
 }
 
 func (w *Wall) Save() (uint, interface{}, []world.ObjectLike) {
-	materials := make(map[string]interface{})
-	if w.wood != nil {
-		materials["w"] = uint64(*w.wood)
-	}
-	if w.stone != nil {
-		materials["s"] = uint64(*w.stone)
-	}
-	if w.metal != nil {
-		materials["m"] = uint64(*w.metal)
-	}
-	return 1, materials, nil
+	return 2, uint(0), []world.ObjectLike{w.material}
 }
 
 func (w *Wall) Load(version uint, data interface{}, attached []world.ObjectLike) {
@@ -133,16 +120,11 @@ func (w *Wall) Load(version uint, data interface{}, attached []world.ObjectLike)
 	case 0:
 		// no fields in version 0
 	case 1:
-		materials := data.(map[string]interface{})
-		if wood, ok := materials["w"].(uint64); ok {
-			w.wood = (*WoodType)(&wood)
-		}
-		if stone, ok := materials["s"].(uint64); ok {
-			w.stone = (*StoneType)(&stone)
-		}
-		if metal, ok := materials["m"].(uint64); ok {
-			w.metal = (*MetalType)(&metal)
-		}
+		w.material = &Material{}
+		world.InitObject(w.material)
+		w.material.Load(0, data.(map[string]interface{}), nil)
+	case 2:
+		w.material = attached[0].(*Material)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}

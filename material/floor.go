@@ -8,19 +8,15 @@ import (
 type Floor struct {
 	world.VisibleObject
 
-	wood *WoodType
-	stone *StoneType
-	metal *MetalType
+	material *Material
 }
 
 func init() {
 	world.Register("floor", world.Visible((*Floor)(nil)))
-	world.RegisterSpawnFunc(WrapSpawnFunc(func(wood *WoodType, stone *StoneType, metal *MetalType, s string) world.Visible {
+	world.RegisterSpawnFunc(WrapSpawnFunc(func(material *Material, s string) world.Visible {
 		if s == "floor" {
 			return &Floor{
-				wood:wood,
-				stone:stone,
-				metal:metal,
+				material: material,
 			}
 		}
 		return nil
@@ -59,17 +55,7 @@ func (f *Floor) Blocking() bool {
 }
 
 func (f *Floor) Save() (uint, interface{}, []world.ObjectLike) {
-	materials := make(map[string]interface{})
-	if f.wood != nil {
-		materials["w"] = uint64(*f.wood)
-	}
-	if f.stone != nil {
-		materials["s"] = uint64(*f.stone)
-	}
-	if f.metal != nil {
-		materials["m"] = uint64(*f.metal)
-	}
-	return 1, materials, nil
+	return 2, uint(0), []world.ObjectLike{f.material}
 }
 
 func (f *Floor) Load(version uint, data interface{}, attached []world.ObjectLike) {
@@ -77,16 +63,11 @@ func (f *Floor) Load(version uint, data interface{}, attached []world.ObjectLike
 	case 0:
 		// no fields in version 0
 	case 1:
-		materials := data.(map[string]interface{})
-		if wood, ok := materials["w"].(uint64); ok {
-			f.wood = (*WoodType)(&wood)
-		}
-		if stone, ok := materials["s"].(uint64); ok {
-			f.stone = (*StoneType)(&stone)
-		}
-		if metal, ok := materials["m"].(uint64); ok {
-			f.metal = (*MetalType)(&metal)
-		}
+		f.material = &Material{}
+		world.InitObject(f.material)
+		f.material.Load(0, data.(map[string]interface{}), nil)
+	case 2:
+		f.material = attached[0].(*Material)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
