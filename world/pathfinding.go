@@ -11,7 +11,7 @@ func (z *Zone) Path(start *Tile, end *Tile, stopEarly bool) [][2]uint8 {
 	for len(queue) != 0 {
 		t := queue[0]
 		queue = queue[1:]
-		if t.Blocked() {
+		if t != start && t.Blocked() {
 			continue
 		}
 		if t == end {
