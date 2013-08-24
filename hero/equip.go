@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
-	"strconv"
 )
 
 type EquipSlot uint16
@@ -201,11 +200,9 @@ func (e *Equip) Name() string {
 }
 
 func (e *Equip) Examine() (string, [][][2]string) {
-	var info [][][2]string
-	info = append(info, [][2]string{
-		{strconv.FormatUint(e.material.Quality(), 10), "#4fc"},
-		{" quality", "#ccc"},
-	})
+	_, info := e.VisibleObject.Examine()
+
+	info = append(info, e.material.Info()...)
 
 	return equippables[e.slot][e.kind].examine, info
 }

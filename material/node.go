@@ -3,8 +3,8 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"github.com/dustin/go-humanize"
 	"math/rand"
-	"strconv"
 	"sync"
 )
 
@@ -50,7 +50,7 @@ func (n *Node) Examine() (string, [][][2]string) {
 	var info [][][2]string
 
 	info = append(info, [][2]string{
-		{strconv.FormatUint(n.Outer().(NodeLike).Strength(), 10), "#4fc"},
+		{humanize.Comma(int64(n.Outer().(NodeLike).Strength())), "#4fc"},
 		{" strength", "#ccc"},
 	})
 
@@ -59,7 +59,7 @@ func (n *Node) Examine() (string, [][][2]string) {
 
 	if n.gathered != 0 {
 		info = append(info, [][2]string{
-			{strconv.FormatUint(uint64(n.gathered), 10), "#fc4"},
+			{humanize.Comma(int64(n.gathered)), "#fc4"},
 			{" gathered", "#ccc"},
 		})
 	}

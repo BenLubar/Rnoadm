@@ -3,6 +3,7 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"github.com/dustin/go-humanize"
 	"strconv"
 )
 
@@ -55,6 +56,17 @@ func (m *Material) Load(version uint, data interface{}, attached []world.ObjectL
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+}
+
+func (m *Material) Info() [][][2]string {
+	var info [][][2]string
+
+	info = append(info, [][2]string{
+		{humanize.Comma(int64(m.quality)), "#4fc"},
+		{" quality", "#ccc"},
+	})
+
+	return info
 }
 
 func (m *Material) Wood() (WoodType, bool) {

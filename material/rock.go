@@ -13,12 +13,12 @@ func init() {
 		}
 		if s == "stone" && stone != nil && metal == nil {
 			return &Stone{
-				kind: *stone,
+				material: material,
 			}
 		}
 		if s == "ore" && stone == nil && metal != nil {
 			return &Ore{
-				kind: *metal,
+				material: material,
 			}
 		}
 		if stone == nil {
@@ -75,7 +75,18 @@ func (r *Rock) Strength() uint64 {
 }
 
 func (r *Rock) Name() string {
+	if r.rich {
+		return r.material.Name() + "deposit"
+	}
 	return r.material.Name() + "rock"
+}
+
+func (r *Rock) Examine() (string, [][][2]string) {
+	_, info := r.Node.Examine()
+
+	info = append(info, r.material.Info()...)
+
+	return "a rock.", info
 }
 
 func (r *Rock) Sprite() string {
@@ -100,7 +111,7 @@ func (r *Rock) Colors() []string {
 type Stone struct {
 	world.VisibleObject
 
-	kind StoneType
+	material *Material
 }
 
 func init() {
@@ -108,20 +119,36 @@ func init() {
 }
 
 func (s *Stone) Save() (uint, interface{}, []world.ObjectLike) {
-	return 0, uint64(s.kind), nil
+	return 1, uint(0), []world.ObjectLike{s.material}
 }
 
 func (s *Stone) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
-		s.kind = StoneType(data.(uint64))
+		material := &Material{}
+		world.InitObject(material)
+		kind := StoneType(data.(uint64))
+		material.stone = &kind
+		material.quality = 1 << 62
+		attached = append(attached, material)
+		fallthrough
+	case 1:
+		s.material = attached[0].(*Material)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
 }
 
 func (s *Stone) Name() string {
-	return s.kind.Name() + " stone"
+	return s.material.Name() + " stone"
+}
+
+func (s *Stone) Examine() (string, [][][2]string) {
+	_, info := s.VisibleObject.Examine()
+
+	info = append(info, s.material.Info()...)
+
+	return "some stones.", info
 }
 
 func (s *Stone) Sprite() string {
@@ -129,7 +156,7 @@ func (s *Stone) Sprite() string {
 }
 
 func (s *Stone) Colors() []string {
-	return []string{s.kind.Color()}
+	return []string{s.material.stone.Color()}
 }
 
 func (s *Stone) Volume() uint64 {
@@ -147,7 +174,7 @@ func (s *Stone) AdminOnly() bool {
 type Ore struct {
 	world.VisibleObject
 
-	kind MetalType
+	material *Material
 }
 
 func init() {
@@ -155,20 +182,36 @@ func init() {
 }
 
 func (o *Ore) Save() (uint, interface{}, []world.ObjectLike) {
-	return 0, uint64(o.kind), nil
+	return 1, uint(0), []world.ObjectLike{o.material}
 }
 
 func (o *Ore) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
-		o.kind = MetalType(data.(uint64))
+		material := &Material{}
+		world.InitObject(material)
+		kind := MetalType(data.(uint64))
+		material.metal = &kind
+		material.quality = 1 << 62
+		attached = append(attached, material)
+		fallthrough
+	case 1:
+		o.material = attached[0].(*Material)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
 }
 
 func (o *Ore) Name() string {
-	return o.kind.Name() + " ore"
+	return o.material.Name() + " ore"
+}
+
+func (o *Ore) Examine() (string, [][][2]string) {
+	_, info := o.VisibleObject.Examine()
+
+	info = append(info, o.material.Info()...)
+
+	return "some unrefined ore.", info
 }
 
 func (o *Ore) Sprite() string {
@@ -176,7 +219,7 @@ func (o *Ore) Sprite() string {
 }
 
 func (o *Ore) Colors() []string {
-	return []string{o.kind.OreColor()}
+	return []string{o.material.metal.OreColor()}
 }
 
 func (o *Ore) Volume() uint64 {
