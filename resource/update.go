@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 func main() {
@@ -33,7 +34,7 @@ func file(fn string) {
 	fmt.Fprintf(out, `package resource
 
 func init() {
-	Resource[%q] = []byte{`, path.Base(fn))
+	Resource[%q] = []byte{`, filepath.Base(fn))
 
 	for i, b := range in {
 		if i == 0 {
