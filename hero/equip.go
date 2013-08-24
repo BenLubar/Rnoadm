@@ -157,6 +157,9 @@ func (e *Equip) Save() (uint, interface{}, []world.ObjectLike) {
 	for i, c := range e.customColors {
 		colors[i] = c
 	}
+	if e.material == nil {
+		e.material = &material.Material{}
+	}
 	return 1, map[string]interface{}{
 		"s": uint16(e.slot),
 		"k": e.kind,
