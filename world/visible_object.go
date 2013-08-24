@@ -1,6 +1,7 @@
 package world
 
 import (
+	"github.com/dustin/go-humanize"
 	"sync/atomic"
 )
 
@@ -74,7 +75,19 @@ func (o *VisibleObject) Name() string {
 }
 
 func (o *VisibleObject) Examine() (string, [][][2]string) {
-	return "what could it be?", nil
+	var info [][][2]string
+
+	if item, ok := o.Outer().(Item); ok {
+		info = append(info, [][2]string{
+			{humanize.Comma(int64(item.Volume())), "#4fc"},
+			{" cubic centimeters", "#ccc"},
+		}, [][2]string{
+			{humanize.Comma(int64(item.Weight())), "#4fc"},
+			{" grams", "#ccc"},
+		})
+	}
+
+	return "what could it be?", info
 }
 
 func (o *VisibleObject) Sprite() string {

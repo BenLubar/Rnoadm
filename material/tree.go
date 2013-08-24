@@ -90,6 +90,14 @@ func (t *Tree) Colors() []string {
 	}
 }
 
+func (t *Tree) Actions() []string {
+	actions := t.Node.Actions()
+
+	actions = append(actions, "chop")
+
+	return actions
+}
+
 type Logs struct {
 	world.VisibleObject
 

@@ -109,6 +109,14 @@ func (r *Rock) Colors() []string {
 	return []string{stone.Color()}
 }
 
+func (r *Rock) Actions() []string {
+	actions := r.Node.Actions()
+
+	actions = append(actions, "mine", "quarry")
+
+	return actions
+}
+
 type Stone struct {
 	world.VisibleObject
 
