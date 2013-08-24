@@ -193,7 +193,7 @@ func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike
 }
 
 func (e *Equip) Name() string {
-	return equippables[e.slot][e.kind].name
+	return e.material.Name() + equippables[e.slot][e.kind].name
 }
 
 func (e *Equip) Sprite() string {

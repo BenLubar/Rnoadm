@@ -4,6 +4,7 @@ type MetalType uint64
 
 func (t MetalType) Name() string     { return metalTypes[t].name }
 func (t MetalType) Color() string    { return metalTypes[t].color }
+func (t MetalType) OreColor() string { return metalTypes[t].color }
 func (t MetalType) Strength() uint64 { return metalTypes[t].strength }
 
 var metalTypes = []struct {

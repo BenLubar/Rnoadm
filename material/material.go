@@ -70,6 +70,32 @@ func (m *Material) Metal() (MetalType, bool) {
 	return *m.metal, true
 }
 
+func (m *Material) Name() string {
+	wood, stone, metal := m.Get()
+	if wood == nil {
+		if stone == nil {
+			if metal == nil {
+				return ""
+			}
+			return metal.Name() + " "
+		}
+		if metal == nil {
+			return stone.Name() + " "
+		}
+		return metal.Name() + " and " + stone.Name() + " "
+	}
+	if stone == nil {
+		if metal == nil {
+			return wood.Name() + " "
+		}
+		return wood.Name() + " and " + metal.Name() + " "
+	}
+	if metal == nil {
+		return wood.Name() + " and " + stone.Name() + " "
+	}
+	return wood.Name() + ", " + metal.Name() + ", and " + stone.Name() + " "
+}
+
 func (m *Material) Get() (*WoodType, *StoneType, *MetalType) {
 	return m.wood, m.stone, m.metal
 }

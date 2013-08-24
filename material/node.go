@@ -10,8 +10,8 @@ import (
 type NodeLike interface {
 	world.Visible
 
+	Gather(world.InventoryLike, uint64, world.Visible) bool
 	Strength() uint64
-	Item() world.Visible
 }
 
 type Node struct {
@@ -45,7 +45,7 @@ func (n *Node) Load(version uint, data interface{}, attached []world.ObjectLike)
 	}
 }
 
-func (n *Node) Gather(i world.InventoryLike, toolStrength uint64) bool {
+func (n *Node) Gather(i world.InventoryLike, toolStrength uint64, item world.Visible) bool {
 	nodeStrength := n.Outer().(NodeLike).Strength()
 
 	n.mtx.Lock()
@@ -69,16 +69,12 @@ func (n *Node) Gather(i world.InventoryLike, toolStrength uint64) bool {
 	if rand.Intn(int(gathered)) != 0 {
 		n.Position().Remove(n.Outer())
 	}
-	i.GiveItem(n.Outer().(NodeLike).Item())
+	i.GiveItem(item)
 	return true
 }
 
 func (n *Node) Strength() uint64 {
 	return 1000
-}
-
-func (n *Node) Item() world.Visible {
-	return n.Outer().(world.Visible)
 }
 
 func (n *Node) Blocking() bool {
