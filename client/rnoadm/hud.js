@@ -202,7 +202,7 @@ rnoadm.hud.lastMouseMove_ = [-Infinity, -Infinity, 1, 1];
 
 rnoadm.gfx.mouseMovedHud = function(x, y, w, h) {
   rnoadm.hud.lastMouseMove_ = [x, y, w, h];
-  if (rnoadm.hud.activeHuds_.length == 0 && x >= w - rnoadm.gfx.TILE_SIZE &&
+  if (x >= w - rnoadm.gfx.TILE_SIZE &&
       x <= w && y >= h - rnoadm.gfx.TILE_SIZE && y <= h) {
     if (!rnoadm.hud.hover_inventory_) {
       rnoadm.hud.hover_inventory_ = true;

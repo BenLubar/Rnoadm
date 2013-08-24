@@ -72,7 +72,7 @@ func (d *Door) Actions() []string {
 	return actions
 }
 
-func (d *Door) Interact(player world.CombatInventoryMessageAdmin, action string) {
+func (d *Door) Interact(player world.CombatInventoryMessageAdminHUD, action string) {
 	switch action {
 	case "open":
 		pos := d.Position()

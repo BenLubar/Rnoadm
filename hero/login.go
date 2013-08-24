@@ -86,6 +86,9 @@ func Login(addr string, packet *LoginPacket) (*Player, string) {
 			lastLogin:         time.Now().UTC(),
 		}
 		world.InitObject(p)
+		for _, e := range p.Hero.equipped {
+			e.wearer = &p.Hero
+		}
 		savePlayer(p)
 		onlinePlayers[login] = p
 		return p, ""

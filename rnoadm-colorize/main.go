@@ -48,7 +48,7 @@ func main() {
 				R: fade(r>>8, ar),
 				G: fade(g>>8, ag),
 				B: fade(b>>8, ab),
-				A: uint8(a>>8),
+				A: uint8(a >> 8),
 			})
 		}
 	}

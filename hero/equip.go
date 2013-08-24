@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
+	"strconv"
 )
 
 type EquipSlot uint16
@@ -199,6 +200,16 @@ func (e *Equip) Name() string {
 	return e.material.Name() + equippables[e.slot][e.kind].name
 }
 
+func (e *Equip) Examine() (string, [][][2]string) {
+	var info [][][2]string
+	info = append(info, [][2]string{
+		{strconv.FormatUint(e.material.Quality(), 10), "#4fc"},
+		{" quality", "#ccc"},
+	})
+
+	return equippables[e.slot][e.kind].examine, info
+}
+
 func (e *Equip) Sprite() string {
 	return equippables[e.slot][e.kind].sprite
 }
@@ -287,7 +298,7 @@ func (e *Equip) Actions() []string {
 	return actions
 }
 
-func (e *Equip) Interact(player world.CombatInventoryMessageAdmin, action string) {
+func (e *Equip) Interact(player world.CombatInventoryMessageAdminHUD, action string) {
 	p := player.(*Player)
 	switch action {
 	case "equip":

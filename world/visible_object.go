@@ -13,6 +13,8 @@ type Visible interface {
 	// important living objects. All other objects are fully lowercase.
 	Name() string
 
+	Examine() (string, [][][2]string)
+
 	// Sprite is sent to the client as the name of the image (minus ".png"
 	// extension) to use as a sprite sheet.
 	Sprite() string
@@ -40,7 +42,7 @@ type Visible interface {
 
 	Actions() []string
 
-	Interact(player CombatInventoryMessageAdmin, action string)
+	Interact(player CombatInventoryMessageAdminHUD, action string)
 }
 
 type VisibleObject struct {
@@ -69,6 +71,10 @@ func (o *VisibleObject) NetworkID() uint64 {
 
 func (o *VisibleObject) Name() string {
 	return "unknown"
+}
+
+func (o *VisibleObject) Examine() (string, [][][2]string) {
+	return "what could it be?", nil
 }
 
 func (o *VisibleObject) Sprite() string {
@@ -112,10 +118,11 @@ func (o *VisibleObject) Actions() []string {
 			actions = append(actions, "take")
 		}
 	}
+	actions = append(actions, "examine")
 	return actions
 }
 
-func (o *VisibleObject) Interact(player CombatInventoryMessageAdmin, action string) {
+func (o *VisibleObject) Interact(player CombatInventoryMessageAdminHUD, action string) {
 	switch action {
 	case "drop":
 		if _, ok := o.Outer().(Item); ok {
@@ -149,5 +156,12 @@ func (o *VisibleObject) Interact(player CombatInventoryMessageAdmin, action stri
 				}
 			}
 		}
+	case "examine":
+		e, i := o.Outer().(Visible).Examine()
+		player.SetHUD("examine", map[string]interface{}{
+			"N": o.Outer().(Visible).Name(),
+			"E": e,
+			"I": i,
+		})
 	}
 }

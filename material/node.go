@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
 	"math/rand"
+	"strconv"
 	"sync"
 )
 
@@ -43,6 +44,27 @@ func (n *Node) Load(version uint, data interface{}, attached []world.ObjectLike)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+}
+
+func (n *Node) Examine() (string, [][][2]string) {
+	var info [][][2]string
+
+	info = append(info, [][2]string{
+		{strconv.FormatUint(n.Outer().(NodeLike).Strength(), 10), "#4fc"},
+		{" strength", "#ccc"},
+	})
+
+	n.mtx.Lock()
+	defer n.mtx.Unlock()
+
+	if n.gathered != 0 {
+		info = append(info, [][2]string{
+			{strconv.FormatUint(uint64(n.gathered), 10), "#fc4"},
+			{" gathered", "#ccc"},
+		})
+	}
+
+	return "a resource node.", info
 }
 
 func (n *Node) Gather(i world.InventoryLike, toolStrength uint64, item world.Visible) bool {

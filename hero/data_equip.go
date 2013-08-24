@@ -5,11 +5,12 @@ const stoneColor = "__stone__"
 const woodColor = "__wood__"
 
 var equippables = [equipSlotCount][]struct {
-	name   string
-	sprite string
-	colors []string
-	height uint // default 32
-	width  uint // default 32
+	name    string
+	examine string
+	sprite  string
+	colors  []string
+	height  uint // default 32
+	width   uint // default 32
 
 	animationOverrides map[string]string
 	adminOnly          bool
