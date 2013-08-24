@@ -45,10 +45,10 @@ func main() {
 		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 			r, g, b, a := base.At(x, y).RGBA()
 			result.Set(x, y, color.RGBA{
-				R: fade(r, ar),
-				G: fade(g, ag),
-				B: fade(b, ab),
-				A: uint8(a),
+				R: fade(r>>8, ar),
+				G: fade(g>>8, ag),
+				B: fade(b>>8, ab),
+				A: uint8(a>>8),
 			})
 		}
 	}
