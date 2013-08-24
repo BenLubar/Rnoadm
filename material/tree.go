@@ -3,6 +3,7 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"github.com/dustin/go-humanize"
 )
 
 func init() {
@@ -128,6 +129,11 @@ func (l *Logs) Examine() (string, [][][2]string) {
 	_, info := l.VisibleObject.Examine()
 
 	info = append(info, l.material.Info()...)
+
+	info = append(info, [][2]string{
+		{humanize.Comma(int64(l.material.wood.Strength())), "#4fc"},
+		{" strength", "#ccc"},
+	})
 
 	return "some logs.", info
 }

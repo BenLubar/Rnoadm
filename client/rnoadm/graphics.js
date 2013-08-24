@@ -22,6 +22,16 @@ rnoadm.gfx.canvas = goog.asserts.assertInstanceof(
 
 
 /**
+ * @private
+ */
+rnoadm.gfx.screenshot_ = function() {
+  window.open(rnoadm.gfx.canvas.toDataURL());
+};
+
+goog.exportSymbol('screenshot', rnoadm.gfx.screenshot_);
+
+
+/**
  * @type {CanvasRenderingContext2D}
  * @const
  */
