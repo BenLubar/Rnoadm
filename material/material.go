@@ -3,14 +3,16 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"strconv"
 )
 
 type Material struct {
 	world.Object
 
-	wood  *WoodType
-	stone *StoneType
-	metal *MetalType
+	wood    *WoodType
+	stone   *StoneType
+	metal   *MetalType
+	quality uint64
 }
 
 func init() {
@@ -28,6 +30,7 @@ func (m *Material) Save() (uint, interface{}, []world.ObjectLike) {
 	if m.metal != nil {
 		materials["m"] = uint64(*m.metal)
 	}
+	materials["q"] = m.quality
 	return 0, materials, nil
 }
 
@@ -43,6 +46,11 @@ func (m *Material) Load(version uint, data interface{}, attached []world.ObjectL
 		}
 		if metal, ok := materials["m"].(uint64); ok {
 			m.metal = (*MetalType)(&metal)
+		}
+		if quality, ok := materials["q"].(uint64); ok {
+			m.quality = quality
+		} else {
+			m.quality = 1 << 62
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
@@ -100,18 +108,38 @@ func (m *Material) Get() (*WoodType, *StoneType, *MetalType) {
 	return m.wood, m.stone, m.metal
 }
 
+func (m *Material) Quality() uint64 {
+	return m.quality
+}
+
 func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.Visible {
 	return func(s string) world.Visible {
 		prefix := func(p string) bool {
 			return len(s) > len(p) && s[:len(p)] == p && s[len(p)] == ' '
 		}
 
+		var lastGood world.Visible
+		var setQuality bool
 		var material Material
 		world.InitObject(&material)
 	find:
 		for {
 			if v := f(&material, s); v != nil {
-				return v
+				lastGood = v
+			}
+			if !setQuality && len(s) > 3 && s[0] == 'q' {
+				var l int
+				for l = 0; l < len(s)-2 && s[l] != ' '; l++ {
+				}
+				if s[l] == ' ' {
+					quality, err := strconv.ParseUint(s[1:l], 0, 64)
+					if err == nil {
+						material.quality = quality
+						setQuality = true
+						s = s[l+1:]
+						continue
+					}
+				}
 			}
 			if material.wood == nil {
 				for i := range woodTypes {
@@ -143,7 +171,7 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 					}
 				}
 			}
-			return nil
+			return lastGood
 		}
 	}
 }
