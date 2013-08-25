@@ -41,10 +41,11 @@ var equippables = [equipSlotCount][]struct {
 			adminOnly: true,
 		},
 		{
-			name:   "crown of the Origin",
-			sprite: "hat_admin_crown",
-			colors: []string{"#ff0", "#0ff", "#888", "#888", "#888", "#888"},
-			height: 64,
+			name:    "crown of the Origin",
+			examine: "legend says this crown can only be touched by the Founders.",
+			sprite:  "hat_admin_crown",
+			colors:  []string{"#ff0", "#0ff", "#888", "#888", "#888", "#888"},
+			height:  64,
 
 			animationOverrides: map[string]string{
 				"":   "_ac",
@@ -53,10 +54,19 @@ var equippables = [equipSlotCount][]struct {
 			adminOnly: true,
 		},
 		{
-			name:   "helmet",
-			sprite: "hat_helmet",
-			colors: []string{metalColor},
-			height: 48,
+			name:    "helmet",
+			examine: "it's like a metal sock for your head!",
+			sprite:  "hat_helmet",
+			colors:  []string{metalColor},
+			height:  48,
+		},
+		{
+			name:   "Steve's suave swoosh",
+			sprite: "hat_steves_suave_swoosh",
+			colors: []string{"#c8421e"},
+			height: 64,
+
+			adminOnly: true,
 		},
 	},
 	SlotShirt: {
