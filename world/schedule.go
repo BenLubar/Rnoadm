@@ -121,6 +121,25 @@ func (s *ScheduleSchedule) ShouldSave() bool {
 	return false
 }
 
+type DelaySchedule struct {
+	Object
+
+	Delay uint
+}
+
+func (s *DelaySchedule) Act(o Living) (uint, bool) {
+	delay := s.Delay
+	if delay == 0 {
+		return 0, false
+	}
+	s.Delay = 0
+	return delay, true
+}
+
+func (s *DelaySchedule) ShouldSave() bool {
+	return false
+}
+
 type ActionSchedule struct {
 	Object
 

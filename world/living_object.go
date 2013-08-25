@@ -83,3 +83,28 @@ func (o *LivingObject) Think() {
 		o.ClearSchedule()
 	}
 }
+
+func (o *LivingObject) Actions() []string {
+	return append(o.VisibleObject.Actions(), "follow")
+}
+
+func (o *LivingObject) Interact(player CombatInventoryMessageAdminHUD, action string) {
+	switch action {
+	default:
+		o.VisibleObject.Interact(player, action)
+
+	case "follow":
+		pos := o.Position()
+		if pos == nil {
+			return
+		}
+		x, y := pos.Position()
+		player.SetSchedule(&ScheduleSchedule{
+			Schedules: []Schedule{
+				NewWalkSchedule(x, y, true),
+				&DelaySchedule{Delay: 1},
+				&ActionSchedule{Target: o.Outer().(Living), Action: action},
+			},
+		})
+	}
+}
