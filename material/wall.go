@@ -27,6 +27,14 @@ func (w *Wall) Name() string {
 	return "wall"
 }
 
+func (w *Wall) Examine() (string, [][][2]string) {
+	_, info := w.VisibleObject.Examine()
+
+	info = append(info, w.material.Info()...)
+
+	return "keeps the inside of the room from going outside.", info
+}
+
 func (w *Wall) Sprite() string {
 	return "wall"
 }

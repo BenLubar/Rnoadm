@@ -157,6 +157,20 @@ func (h *Hero) Name() string {
 	return h.name.Name()
 }
 
+func (h *Hero) Examine() (string, [][][2]string) {
+	_, info := h.CombatObject.Examine()
+
+	info = append(info, [][2]string{
+		{h.Race().Name(), "#4fc"},
+		{" race", "#ccc"},
+	}, [][2]string{
+		{h.Gender().Name(), "#4fc"},
+		{" gender", "#ccc"},
+	})
+
+	return "a hero.", info
+}
+
 func (h *Hero) Race() Race {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()

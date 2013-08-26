@@ -27,6 +27,10 @@ func (f *Floor) Name() string {
 	return "floor"
 }
 
+func (f *Floor) Examine() (string, [][][2]string) {
+	return "I can walk on this.", nil
+}
+
 func (f *Floor) Sprite() string {
 	return "floor"
 }

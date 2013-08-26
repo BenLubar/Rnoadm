@@ -168,6 +168,16 @@ func (a *PlayerAncestry) Load(version uint, data interface{}, attached []world.O
 	}
 }
 
+func (p *Player) Examine() (string, [][][2]string) {
+	examine, info := p.Hero.Examine()
+
+	if p.IsAdmin() {
+		examine = "could this be a Founder?"
+	}
+
+	return examine, info
+}
+
 func (p *Player) SetHUD(name string, data map[string]interface{}) {
 	for {
 		select {
