@@ -118,6 +118,9 @@ func (o *CombatObject) Die() {
 	o.Position().Remove(o.Outer())
 }
 
-/*func (o *CombatObject) Actions() []string {
-	return append(o.LivingObject.Actions(), "assault")
+/*func (o *CombatObject) Actions(player CombatInventoryMessageAdminHUD) []string {
+	if player == o.Outer() {
+		return o.LivingObject.Actions(player)
+	}
+	return append([]string{"assault"}, o.LivingObject.Actions(player)...)
 }*/

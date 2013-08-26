@@ -29,6 +29,8 @@ type Player struct {
 	hud       chan HUD
 	inventory chan []world.Visible
 	messages  chan []Message
+
+	impersonating world.Visible
 }
 
 var _ world.NoSaveObject = (*Player)(nil)
@@ -168,7 +170,18 @@ func (a *PlayerAncestry) Load(version uint, data interface{}, attached []world.O
 	}
 }
 
+func (p *Player) Name() string {
+	if i := p.impersonate(); i != nil {
+		return i.Name()
+	}
+	return p.Hero.Name()
+}
+
 func (p *Player) Examine() (string, [][][2]string) {
+	if i := p.impersonate(); i != nil {
+		return i.Examine()
+	}
+
 	examine, info := p.Hero.Examine()
 
 	if p.IsAdmin() {
@@ -176,6 +189,62 @@ func (p *Player) Examine() (string, [][][2]string) {
 	}
 
 	return examine, info
+}
+
+func (p *Player) Sprite() string {
+	if i := p.impersonate(); i != nil {
+		return i.Sprite()
+	}
+	return p.Hero.Sprite()
+}
+
+func (p *Player) SpriteSize() (uint, uint) {
+	if i := p.impersonate(); i != nil {
+		return i.SpriteSize()
+	}
+	return p.Hero.SpriteSize()
+}
+
+func (p *Player) AnimationType() string {
+	if i := p.impersonate(); i != nil {
+		return i.AnimationType()
+	}
+	return p.Hero.AnimationType()
+}
+
+func (p *Player) SpritePos() (uint, uint) {
+	if i := p.impersonate(); i != nil {
+		return i.SpritePos()
+	}
+	return p.Hero.SpritePos()
+}
+
+func (p *Player) Scale() uint {
+	if i := p.impersonate(); i != nil {
+		return i.Scale()
+	}
+	return p.Hero.Scale()
+}
+
+func (p *Player) Colors() []string {
+	if i := p.impersonate(); i != nil {
+		return i.Colors()
+	}
+	return p.Hero.Colors()
+}
+
+func (p *Player) Attached() []world.Visible {
+	if i := p.impersonate(); i != nil {
+		return i.Attached()
+	}
+	return p.Hero.Attached()
+}
+
+func (p *Player) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+	if i := p.impersonate(); i != nil {
+		return i.Actions(player)
+	}
+	return p.Hero.Actions(player)
 }
 
 func (p *Player) SetHUD(name string, data map[string]interface{}) {
@@ -553,6 +622,41 @@ func (p *Player) IsAdmin() bool {
 	defer p.mtx.Unlock()
 
 	return p.admin
+}
+
+func (p *Player) Impersonate(o world.Visible) {
+	if o == nil || o == p {
+		p.mtx.Lock()
+
+		if p.impersonating != nil {
+			p.impersonating = nil
+			p.mtx.Unlock()
+			if pos := p.Position(); pos != nil {
+				pos.Zone().Update(pos, p)
+			}
+		} else {
+			p.mtx.Unlock()
+		}
+
+		return
+	}
+
+	// copy the object
+	o = world.LoadConvert(world.SaveConvert(o)).(world.Visible)
+
+	p.mtx.Lock()
+	p.impersonating = o
+	p.mtx.Unlock()
+	if pos := p.Position(); pos != nil {
+		pos.Zone().Update(pos, p)
+	}
+}
+
+func (p *Player) impersonate() world.Visible {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	return p.impersonating
 }
 
 type HUD struct {

@@ -41,9 +41,9 @@ type Visible interface {
 
 	Blocking() bool
 
-	Actions() []string
+	Actions(CombatInventoryMessageAdminHUD) []string
 
-	Interact(player CombatInventoryMessageAdminHUD, action string)
+	Interact(CombatInventoryMessageAdminHUD, string)
 }
 
 type VisibleObject struct {
@@ -122,7 +122,7 @@ func (o *VisibleObject) Blocking() bool {
 	return false
 }
 
-func (o *VisibleObject) Actions() []string {
+func (o *VisibleObject) Actions(player CombatInventoryMessageAdminHUD) []string {
 	var actions []string
 	if _, ok := o.Outer().(Item); ok {
 		if o.Position() == nil {
@@ -132,6 +132,9 @@ func (o *VisibleObject) Actions() []string {
 		}
 	}
 	actions = append(actions, "examine")
+	if player.IsAdmin() {
+		actions = append(actions, "impersonate")
+	}
 	return actions
 }
 
@@ -176,5 +179,9 @@ func (o *VisibleObject) Interact(player CombatInventoryMessageAdminHUD, action s
 			"E": e,
 			"I": i,
 		})
+	case "impersonate":
+		if player.IsAdmin() {
+			player.Impersonate(o.Outer().(Visible))
+		}
 	}
 }

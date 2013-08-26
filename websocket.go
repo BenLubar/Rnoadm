@@ -222,7 +222,7 @@ func socketHandler(ws *websocket.Conn) {
 				Y:  y,
 				Object: addSprites(&packetUpdateObject{
 					Name:    o.Name(),
-					Actions: o.Actions(),
+					Actions: o.Actions(player),
 				}, o),
 			})
 			updateWalls(t, obj)
@@ -270,7 +270,7 @@ func socketHandler(ws *websocket.Conn) {
 				Y:  y,
 				Object: addSprites(&packetUpdateObject{
 					Name:    o.Name(),
-					Actions: o.Actions(),
+					Actions: o.Actions(player),
 				}, o),
 			})
 		},
@@ -323,7 +323,7 @@ func socketHandler(ws *websocket.Conn) {
 						ID: item.NetworkID(),
 						Object: addSprites(&packetUpdateObject{
 							Name:    item.Name(),
-							Actions: item.Actions(),
+							Actions: item.Actions(player),
 						}, item),
 					})
 				}
@@ -450,7 +450,7 @@ func socketHandler(ws *websocket.Conn) {
 					ID: item.NetworkID(),
 					Object: addSprites(&packetUpdateObject{
 						Name:    item.Name(),
-						Actions: item.Actions(),
+						Actions: item.Actions(player),
 					}, item),
 				}
 			}

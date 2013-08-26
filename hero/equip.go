@@ -283,8 +283,8 @@ func (e *Equip) AdminOnly() bool {
 	return equippables[e.slot][e.kind].adminOnly
 }
 
-func (e *Equip) Actions() []string {
-	actions := e.VisibleObject.Actions()
+func (e *Equip) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+	actions := e.VisibleObject.Actions(player)
 	if e.Position() == nil {
 		if e.wearer == nil {
 			actions = append(actions, "equip")

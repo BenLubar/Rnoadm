@@ -56,8 +56,8 @@ func (d *Door) Blocking() bool {
 	return !d.open
 }
 
-func (d *Door) Actions() []string {
-	actions := d.VisibleObject.Actions()
+func (d *Door) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+	actions := d.VisibleObject.Actions(player)
 
 	d.mtx.Lock()
 	defer d.mtx.Unlock()

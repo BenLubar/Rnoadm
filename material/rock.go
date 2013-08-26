@@ -109,8 +109,8 @@ func (r *Rock) Colors() []string {
 	return []string{stone.Color()}
 }
 
-func (r *Rock) Actions() []string {
-	actions := r.Node.Actions()
+func (r *Rock) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+	actions := r.Node.Actions(player)
 
 	actions = append([]string{"quarry"}, actions...)
 	if r.material.metal != nil {

@@ -13,6 +13,7 @@ type SendMessageLike interface {
 
 type AdminLike interface {
 	IsAdmin() bool
+	Impersonate(Visible)
 }
 
 type SetHUDLike interface {
