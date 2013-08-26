@@ -270,7 +270,7 @@ rnoadm.gfx.clickObject = function(x, y, w, h) {
       continue;
     objects.unshift(o);
   }
-  if (objects.length == 1) {
+  if (objects.length) {
     rnoadm.net.send({'Interact': {
       'ID': objects[0].id,
       'X': objects[0].x,
