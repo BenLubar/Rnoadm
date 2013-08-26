@@ -174,22 +174,28 @@ rnoadm.gfx.rightClickObject;
 
 
 rnoadm.gfx.canvas.onmousemove = function(e) {
-  if (rnoadm.gfx.mouseMovedHud(e.offsetX, e.offsetY,
-                               rnoadm.gfx.width_,
-                               rnoadm.gfx.height_))
-    return;
-  if (rnoadm.gfx.mouseMovedObject(e.offsetX, e.offsetY,
-                                  rnoadm.gfx.width_,
-                                  rnoadm.gfx.height_))
-    return;
+  var x = e.offsetX;
+  var y = e.offsetY;
+  var w = rnoadm.gfx.width_;
+  var h = rnoadm.gfx.height_;
+  if (rnoadm.gfx.mouseMovedHud(x, y, w, h)) {
+    x = -Infinity;
+    y = -Infinity;
+  }
+  if (rnoadm.gfx.mouseMovedObject(x, y, w, h)) {
+    x = -Infinity;
+    y = -Infinity;
+  }
 };
 
 
 rnoadm.gfx.canvas.onmouseout = function() {
-  if (rnoadm.gfx.mouseMovedHud(-Infinity, -Infinity,
-                               rnoadm.gfx.width_,
-                               rnoadm.gfx.height_))
-    return;
+  var x = -Infinity;
+  var y = -Infinity;
+  var w = rnoadm.gfx.width_;
+  var h = rnoadm.gfx.height_;
+  rnoadm.gfx.mouseMovedHud(x, y, w, h);
+  rnoadm.gfx.mouseMovedObject(x, y, w, h);
 };
 
 
@@ -216,27 +222,32 @@ rnoadm.gfx.canvas.onclick = function(e) {
     rnoadm.gfx.focused_ = true;
     return;
   }
-  if (rnoadm.gfx.clickHud(e.offsetX, e.offsetY,
-                          rnoadm.gfx.width_,
-                          rnoadm.gfx.height_))
+  var x = e.offsetX;
+  var y = e.offsetY;
+  var w = rnoadm.gfx.width_;
+  var h = rnoadm.gfx.height_;
+  if (rnoadm.gfx.clickHud(x, y, w, h)) {
     return;
-  if (rnoadm.gfx.clickObject(e.offsetX, e.offsetY,
-                             rnoadm.gfx.width_,
-                             rnoadm.gfx.height_))
+  }
+  if (rnoadm.gfx.clickObject(x, y, w, h)) {
     return;
+  }
 };
 
 
 rnoadm.gfx.canvas.oncontextmenu = function(e) {
   e.preventDefault();
-  if (rnoadm.gfx.rightClickHud(e.offsetX, e.offsetY,
-                               rnoadm.gfx.width_,
-                               rnoadm.gfx.height_))
+  rnoadm.gfx.focused_ = true;
+  var x = e.offsetX;
+  var y = e.offsetY;
+  var w = rnoadm.gfx.width_;
+  var h = rnoadm.gfx.height_;
+  if (rnoadm.gfx.rightClickHud(x, y, w, h)) {
     return;
-  if (rnoadm.gfx.rightClickObject(e.offsetX, e.offsetY,
-                                  rnoadm.gfx.width_,
-                                  rnoadm.gfx.height_))
+  }
+  if (rnoadm.gfx.rightClickObject(x, y, w, h)) {
     return;
+  }
 };
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

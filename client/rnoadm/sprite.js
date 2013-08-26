@@ -273,8 +273,17 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
 
 
 /**
- * @type {bool}
+ * @type {boolean}
  */
+rnoadm.gfx.Sprite.floorPass = false;
+
+
+/**
+ * @return {boolean}
+ */
+rnoadm.gfx.Sprite.prototype.isFloor = function() {
+  return this.animation_ == '_fl';
+};
 
 
 /**

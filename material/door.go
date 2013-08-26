@@ -64,9 +64,9 @@ func (d *Door) Actions() []string {
 
 	if d.Position() != nil {
 		if d.open {
-			actions = append(actions, "close")
+			actions = append([]string{"close"}, actions...)
 		} else {
-			actions = append(actions, "open")
+			actions = append([]string{"open"}, actions...)
 		}
 	}
 	return actions

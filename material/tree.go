@@ -58,7 +58,7 @@ func (t *Tree) Strength() uint64 {
 }
 
 func (t *Tree) Name() string {
-	return t.material.Name() + " tree"
+	return t.material.Name() + "tree"
 }
 
 func (t *Tree) Examine() (string, [][][2]string) {
@@ -93,7 +93,7 @@ func (t *Tree) Colors() []string {
 func (t *Tree) Actions() []string {
 	actions := t.Node.Actions()
 
-	actions = append(actions, "chop")
+	actions = append([]string{"chop"}, actions...)
 
 	return actions
 }
@@ -130,7 +130,7 @@ func (l *Logs) Load(version uint, data interface{}, attached []world.ObjectLike)
 }
 
 func (l *Logs) Name() string {
-	return l.material.Name() + " logs"
+	return l.material.Name() + "logs"
 }
 
 func (l *Logs) Examine() (string, [][][2]string) {

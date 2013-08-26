@@ -112,7 +112,10 @@ func (r *Rock) Colors() []string {
 func (r *Rock) Actions() []string {
 	actions := r.Node.Actions()
 
-	actions = append(actions, "mine", "quarry")
+	actions = append([]string{"quarry"}, actions...)
+	if r.material.metal != nil {
+		actions = append([]string{"mine"}, actions...)
+	}
 
 	return actions
 }
@@ -149,7 +152,7 @@ func (s *Stone) Load(version uint, data interface{}, attached []world.ObjectLike
 }
 
 func (s *Stone) Name() string {
-	return s.material.Name() + " stone"
+	return s.material.Name() + "stone"
 }
 
 func (s *Stone) Examine() (string, [][][2]string) {
@@ -217,7 +220,7 @@ func (o *Ore) Load(version uint, data interface{}, attached []world.ObjectLike) 
 }
 
 func (o *Ore) Name() string {
-	return o.material.Name() + " ore"
+	return o.material.Name() + "ore"
 }
 
 func (o *Ore) Examine() (string, [][][2]string) {

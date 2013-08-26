@@ -139,12 +139,20 @@ rnoadm.state.playerX_ = 127;
 rnoadm.net.addHandler('PlayerX', function(x) {
   if (rnoadm.state.playerX_ == x)
     return;
-  rnoadm.state.playerPrevX_ = rnoadm.state.lerp(rnoadm.state.playerX_,
-      rnoadm.state.playerPrevX_, rnoadm.state.playerLastMoveX_);
+  rnoadm.state.playerPrevX_ = rnoadm.state.getPlayerX();
   rnoadm.state.playerX_ = x;
   rnoadm.state.playerLastMoveX_ = Date.now();
   rnoadm.gfx.repaint();
 });
+
+
+/**
+ * @return {number}
+ */
+rnoadm.state.getPlayerX = function() {
+  return rnoadm.state.lerp(rnoadm.state.playerX_, rnoadm.state.playerPrevX_,
+      rnoadm.state.playerLastMoveX_);
+};
 
 
 /**
@@ -171,12 +179,20 @@ rnoadm.state.playerY_ = 127;
 rnoadm.net.addHandler('PlayerY', function(y) {
   if (rnoadm.state.playerY_ == y)
     return;
-  rnoadm.state.playerPrevY_ = rnoadm.state.lerp(rnoadm.state.playerY_,
-      rnoadm.state.playerPrevY_, rnoadm.state.playerLastMoveY_);
+  rnoadm.state.playerPrevY_ = rnoadm.state.getPlayerY();
   rnoadm.state.playerY_ = y;
   rnoadm.state.playerLastMoveY_ = Date.now();
   rnoadm.gfx.repaint();
 });
+
+
+/**
+ * @return {number}
+ */
+rnoadm.state.getPlayerY = function() {
+  return rnoadm.state.lerp(rnoadm.state.playerY_, rnoadm.state.playerPrevY_,
+      rnoadm.state.playerLastMoveY_);
+};
 
 
 rnoadm.net.onDisconnect.push(function() {
@@ -197,11 +213,9 @@ rnoadm.state.grass_ = new rnoadm.gfx.Sprite('grass', '#268f1e', '',
 
 rnoadm.gfx.paintObjects = function(w, h) {
   /** @type {number} */
-  var playerX = rnoadm.state.lerp(rnoadm.state.playerX_,
-      rnoadm.state.playerPrevX_, rnoadm.state.playerLastMoveX_);
+  var playerX = rnoadm.state.getPlayerX();
   /** @type {number} */
-  var playerY = rnoadm.state.lerp(rnoadm.state.playerY_,
-      rnoadm.state.playerPrevY_, rnoadm.state.playerLastMoveY_);
+  var playerY = rnoadm.state.getPlayerY();
 
   var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - playerX;
   var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - playerY;
@@ -241,19 +255,37 @@ rnoadm.gfx.paintObjects = function(w, h) {
 };
 
 rnoadm.gfx.clickObject = function(x, y, w, h) {
-  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerX_;
-  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerY_;
+  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.getPlayerX();
+  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.getPlayerY();
   x = Math.floor(x / rnoadm.gfx.TILE_SIZE - xOffset);
   y = Math.ceil(y / rnoadm.gfx.TILE_SIZE - yOffset);
   if (x < 0 || x >= 256 || y < 0 || y >= 256)
     return false;
-  rnoadm.net.send({'Walk': {'X': x, 'Y': y}});
+  var objects = [];
+  for (var i in rnoadm.state.objects_[x | y << 8]) {
+    if (i.charAt(0) == '_')
+      continue;
+    var o = rnoadm.state.objects_[x | y << 8][i];
+    if (o.sprites[0].isFloor() || !o.actions.length)
+      continue;
+    objects.unshift(o);
+  }
+  if (objects.length == 1) {
+    rnoadm.net.send({'Interact': {
+      'ID': objects[0].id,
+      'X': objects[0].x,
+      'Y': objects[0].y,
+      'Action': objects[0].actions[0]
+    }});
+  } else {
+    rnoadm.net.send({'Walk': {'X': x, 'Y': y}});
+  }
   return true;
 };
 
 rnoadm.gfx.rightClickObject = function(x, y, w, h) {
-  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerX_;
-  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerY_;
+  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.getPlayerX();
+  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.getPlayerY();
   x = Math.floor(x / rnoadm.gfx.TILE_SIZE - xOffset);
   y = Math.ceil(y / rnoadm.gfx.TILE_SIZE - yOffset);
   if (x < 0 || x >= 256 || y < 0 || y >= 256)
@@ -286,23 +318,41 @@ rnoadm.state.mouseY_ = -1;
 
 
 rnoadm.gfx.mouseMovedObject = function(x, y, w, h) {
-  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerX_;
-  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.playerY_;
+  var xOffset = w / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.getPlayerX();
+  var yOffset = h / 2 / rnoadm.gfx.TILE_SIZE - rnoadm.state.getPlayerY();
   x = Math.floor(x / rnoadm.gfx.TILE_SIZE - xOffset);
   y = Math.ceil(y / rnoadm.gfx.TILE_SIZE - yOffset);
-  if (x != rnoadm.state.mouseX_ || y != rnoadm.state.mouseY_) {
-    if (rnoadm.state.mouseX_ == -1) {
-      rnoadm.state.mouseX_ = x;
-      rnoadm.state.mouseY_ = y;
+  if (x == rnoadm.state.mouseX_ && y == rnoadm.state.mouseY_) {
+    return true;
+  }
+  rnoadm.gfx.canvas.style.cursor = '';
+  if (x < 0 || x > 255 || y < 0 || y > 255) {
+    return false;
+  }
+  var last = '';
+  for (var i in rnoadm.state.objects_[x | y << 8]) {
+    if (i.charAt(0) == '_') {
+      continue;
     }
-    rnoadm.net.send({'Mouse': {
-      'Fx': rnoadm.state.mouseX_,
-      'Fy': rnoadm.state.mouseY_,
-      'X': x, 'Y': y
-    }});
+    var o = rnoadm.state.objects_[x | y << 8][i];
+    if (!o.sprites[0].isFloor() && o.actions.length) {
+      last = o.actions[0];
+    }
+  }
+  if (last) {
+    rnoadm.gfx.canvas.style.cursor = 'url(cursor_' + last + '.png),auto';
+  }
+  if (rnoadm.state.mouseX_ == -1) {
     rnoadm.state.mouseX_ = x;
     rnoadm.state.mouseY_ = y;
   }
+  rnoadm.net.send({'Mouse': {
+    'Fx': rnoadm.state.mouseX_,
+    'Fy': rnoadm.state.mouseY_,
+    'X': x, 'Y': y
+  }});
+  rnoadm.state.mouseX_ = x;
+  rnoadm.state.mouseY_ = y;
   return true;
 };
 

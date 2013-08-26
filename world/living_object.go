@@ -85,7 +85,7 @@ func (o *LivingObject) Think() {
 }
 
 func (o *LivingObject) Actions() []string {
-	return append(o.VisibleObject.Actions(), "follow")
+	return append([]string{"follow"}, o.VisibleObject.Actions()...)
 }
 
 func (o *LivingObject) Interact(player CombatInventoryMessageAdminHUD, action string) {
