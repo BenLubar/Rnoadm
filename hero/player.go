@@ -626,8 +626,11 @@ func (p *Player) IsAdmin() bool {
 
 func (p *Player) Impersonate(o world.Visible) {
 	if o == nil || o == p {
-		p.mtx.Lock()
+		if pos := p.Position(); pos != nil {
+			pos.Zone().Impersonate(p, nil)
+		}
 
+		p.mtx.Lock()
 		if p.impersonating != nil {
 			p.impersonating = nil
 			p.mtx.Unlock()
@@ -641,8 +644,17 @@ func (p *Player) Impersonate(o world.Visible) {
 		return
 	}
 
+	if other, ok := o.(*Player); ok {
+		h := other.Hero
+		o = &h
+	}
+
 	// copy the object
 	o = world.LoadConvert(world.SaveConvert(o)).(world.Visible)
+
+	if pos := p.Position(); pos != nil {
+		pos.Zone().Impersonate(p, o)
+	}
 
 	p.mtx.Lock()
 	p.impersonating = o
@@ -657,6 +669,37 @@ func (p *Player) impersonate() world.Visible {
 	defer p.mtx.Unlock()
 
 	return p.impersonating
+}
+
+func (p *Player) NotifyPosition(old, new *world.Tile) {
+	if i := p.impersonate(); i != nil {
+		i.NotifyPosition(old, new)
+	}
+
+	p.Hero.NotifyPosition(old, new)
+}
+
+func (p *Player) Think() {
+	p.Hero.Think()
+
+	if i := p.impersonate(); i != nil {
+		if h, ok := i.(*Hero); ok {
+			p.Hero.mtx.Lock()
+			animation := p.Hero.animation
+			p.Hero.mtx.Unlock()
+
+			h.mtx.Lock()
+			needUpdate := h.animation != animation
+			h.animation = animation
+			h.mtx.Unlock()
+
+			if needUpdate {
+				if pos := p.Position(); pos != nil {
+					pos.Zone().Update(pos, p)
+				}
+			}
+		}
+	}
 }
 
 type HUD struct {

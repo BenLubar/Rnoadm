@@ -221,16 +221,18 @@ func (h *Hero) Think() {
 	h.CombatObject.Think()
 
 	h.mtx.Lock()
-	defer h.mtx.Unlock()
 	if h.animationTicks > 0 {
 		h.animationTicks--
 		if h.animationTicks == 0 {
 			h.animation = ""
 			if t := h.Position(); t != nil {
-				go t.Zone().Update(t, h.Outer())
+				h.mtx.Unlock()
+				t.Zone().Update(t, h.Outer())
+				return
 			}
 		}
 	}
+	h.mtx.Unlock()
 }
 
 func (h *Hero) AnimationType() string {

@@ -194,6 +194,9 @@ func savePlayer(p *Player) {
 }
 
 func PlayerDisconnected(p *Player) {
+	if pos := p.Position(); pos != nil {
+		pos.Zone().Impersonate(p, nil)
+	}
 	loginLock.Lock()
 	defer loginLock.Unlock()
 

@@ -54,6 +54,11 @@ func (o *Object) Outer() ObjectLike {
 }
 
 func (o *Object) notifyPosition(t *Tile) *Tile {
+	if p, ok := o.outer.(CombatInventoryMessageAdminHUD); t != nil && ok {
+		if i, ok := t.Zone().impersonation[p]; ok {
+			i.notifyPosition(t)
+		}
+	}
 	for {
 		old := atomic.LoadPointer(&o.tile)
 		if atomic.CompareAndSwapPointer(&o.tile, old, unsafe.Pointer(t)) {

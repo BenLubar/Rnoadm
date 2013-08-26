@@ -31,6 +31,12 @@ func (t *Tile) Add(obj ObjectLike) {
 }
 
 func (t *Tile) add(obj ObjectLike) bool {
+	if visible, ok := obj.(Visible); ok {
+		if _, ok = t.zone.impersonated[visible]; ok {
+			return false
+		}
+	}
+
 	for _, o := range t.objects {
 		if o == obj {
 			return false
