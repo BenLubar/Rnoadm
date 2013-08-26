@@ -305,6 +305,7 @@ rnoadm.hud.messages_ = [];
 rnoadm.net.addHandler('Msg', function(messages) {
   messages.forEach(function(message) {
     rnoadm.hud.messages_.unshift(new rnoadm.gfx.Text(message['T'], message['C'], false, true));
+    window['console']['log'](message['T']);
     window.setTimeout(function() {
       rnoadm.hud.messages_.pop();
     }, 60000);

@@ -439,7 +439,59 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		if err != nil {
 			return
 		}
-		p.Position().Move(p, p.Position().Zone().Tile(uint8(x), uint8(y)))
+		pos := p.Position()
+		if pos == nil {
+			return
+		}
+		if pos.Remove(p) {
+			pos.Zone().Tile(uint8(x), uint8(y)).Add(p)
+		}
+	case "tpt", "tpp":
+		if len(command) != 2 {
+			return
+		}
+		loginLock.Lock()
+		defer loginLock.Unlock()
+		if o := onlinePlayers[command[1]]; o != nil {
+			if pos := o.Position(); pos != nil {
+				if old := p.Position(); old != nil {
+					if old.Remove(p) {
+						pos.Add(p)
+					}
+				}
+			}
+		}
+	case "summon":
+		if len(command) != 2 {
+			return
+		}
+		loginLock.Lock()
+		defer loginLock.Unlock()
+		if o := onlinePlayers[command[1]]; o != nil {
+			if pos := p.Position(); pos != nil {
+				if old := o.Position(); old != nil {
+					if old.Remove(o) {
+						pos.Add(o)
+						o.SendMessage("you have been summoned!")
+					}
+				}
+			}
+		}
+	case "online":
+		if len(command) != 1 {
+			return
+		}
+		loginLock.Lock()
+		defer loginLock.Unlock()
+		for _, o := range onlinePlayers {
+			if pos := o.Position(); pos != nil {
+				x, y := pos.Position()
+				z := pos.Zone()
+				p.SendMessage(fmt.Sprintf("L:%q I:%q N:%q X:%d:%d Y:%d:%d", o.login, o.lastAddr, o.Name(), z.X, x, z.Y, y))
+			} else {
+				p.SendMessage(fmt.Sprintf("L:%q I:%q SPAWNING", o.login, o.lastAddr))
+			}
+		}
 	}
 }
 
