@@ -166,6 +166,7 @@ func (z *Zone) Impersonate(player CombatInventoryMessageAdminHUD, o Visible) {
 
 	z.impersonation[player] = o
 	z.impersonated[o] = player
+	o.notifyPosition(player.Position())
 }
 
 func (z *Zone) think(wg *sync.WaitGroup) {
