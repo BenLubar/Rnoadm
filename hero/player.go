@@ -571,6 +571,39 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 				p.SendMessage(fmt.Sprintf("L:%q I:%q SPAWNING", o.login, o.lastAddr))
 			}
 		}
+	case "butcher":
+		if len(command) != 2 {
+			return
+		}
+		r, err := strconv.Atoi(command[1])
+		if err != nil {
+			return
+		}
+		pos := p.Position()
+		if pos == nil {
+			return
+		}
+		x, y := pos.Position()
+		sx, sy := int(x) - r, int(y) - r
+		ex, ey := int(x) + r, int(y) + r
+		for x := sx; x <= ex; x++ {
+			if x < 0 || x > 255 {
+				continue
+			}
+			for y := sy; y <= ey; y++ {
+				if y < 0 || y > 255 {
+					continue
+				}
+				t := pos.Zone().Tile(uint8(x), uint8(y))
+				for _, o := range t.Objects() {
+					if c, ok := o.(world.Combat); ok {
+						if _, ok = c.(*Player); !ok {
+							c.Hurt(c.MaxHealth(), p)
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
