@@ -84,7 +84,7 @@ func (d *Door) Interact(player world.CombatInventoryMessageAdminHUD, action stri
 		if (px == x && py != y-1 && py != y+1) || (py == y && px != x-1 && px != x+1) || (px != x && py != y) {
 			player.SetSchedule(&world.ScheduleSchedule{
 				Schedules: []world.Schedule{
-					world.NewWalkSchedule(x, y, true),
+					world.NewWalkSchedule(x, y, true, 0),
 					&world.ActionSchedule{
 						Action: "open",
 						Target: d.Outer().(world.Visible),
@@ -107,7 +107,7 @@ func (d *Door) Interact(player world.CombatInventoryMessageAdminHUD, action stri
 		if (px == x && (py < y-1 || py > y+1)) || (py == y && (px < x-1 || px > x+1)) || (px != x && py != y) {
 			player.SetSchedule(&world.ScheduleSchedule{
 				Schedules: []world.Schedule{
-					world.NewWalkSchedule(x, y, true),
+					world.NewWalkSchedule(x, y, true, 0),
 					&world.ActionSchedule{
 						Action: "close",
 						Target: d.Outer().(world.Visible),

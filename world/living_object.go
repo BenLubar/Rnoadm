@@ -112,7 +112,7 @@ func (o *LivingObject) Interact(player CombatInventoryMessageAdminHUD, action st
 		x, y := pos.Position()
 		player.SetSchedule(&ScheduleSchedule{
 			Schedules: []Schedule{
-				NewWalkSchedule(x, y, true),
+				NewWalkSchedule(x, y, true, 0),
 				&DelaySchedule{Delay: 1},
 				&ActionSchedule{Target: o.Outer().(Living), Action: action},
 			},

@@ -156,7 +156,7 @@ func (o *VisibleObject) Interact(player CombatInventoryMessageAdminHUD, action s
 			ex, ey := pos.Position()
 			player.SetSchedule(&ScheduleSchedule{
 				Schedules: []Schedule{
-					NewWalkSchedule(ex, ey, false),
+					NewWalkSchedule(ex, ey, false, 0),
 					&ActionSchedule{
 						Action: "take",
 						Target: o.Outer().(Visible),

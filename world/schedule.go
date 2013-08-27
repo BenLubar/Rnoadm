@@ -38,17 +38,19 @@ type walkSchedule struct {
 	ex, ey    uint8
 	path      [][2]uint8
 	stopEarly bool
+	delay     uint
 }
 
 func init() {
 	Register("walksched", Schedule((*walkSchedule)(nil)))
 }
 
-func NewWalkSchedule(ex, ey uint8, stopEarly bool) Schedule {
+func NewWalkSchedule(ex, ey uint8, stopEarly bool, delay uint) Schedule {
 	return InitObject(&walkSchedule{
 		ex:        ex,
 		ey:        ey,
 		stopEarly: stopEarly,
+		delay:     delay,
 	}).(Schedule)
 }
 
@@ -73,7 +75,7 @@ func (s *walkSchedule) Act(o Living) (uint, bool) {
 		return 0, false
 	}
 	t.Move(o, t.Zone().Tile(x, y))
-	return 2, true
+	return 2 + s.delay, true
 }
 
 func (s *walkSchedule) ShouldSave() bool {
@@ -85,6 +87,7 @@ func (s *walkSchedule) Save() (uint, interface{}, []ObjectLike) {
 		"ex": s.ex,
 		"ey": s.ey,
 		"se": s.stopEarly,
+		"d":  s.delay,
 	}, nil
 }
 
@@ -95,6 +98,7 @@ func (s *walkSchedule) Load(version uint, data interface{}, attached []ObjectLik
 		s.ex = dataMap["ex"].(uint8)
 		s.ey = dataMap["ey"].(uint8)
 		s.stopEarly, _ = dataMap["se"].(bool)
+		s.delay, _ = dataMap["d"].(uint)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}

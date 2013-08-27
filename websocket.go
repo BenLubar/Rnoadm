@@ -342,7 +342,7 @@ func socketHandler(ws *websocket.Conn) {
 					if packet.Walk.X == x && packet.Walk.Y == y {
 						player.ClearSchedule()
 					} else {
-						player.SetSchedule(world.NewWalkSchedule(packet.Walk.X, packet.Walk.Y, false))
+						player.SetSchedule(world.NewWalkSchedule(packet.Walk.X, packet.Walk.Y, false, 0))
 					}
 				}
 			}

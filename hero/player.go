@@ -584,8 +584,8 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 			return
 		}
 		x, y := pos.Position()
-		sx, sy := int(x) - r, int(y) - r
-		ex, ey := int(x) + r, int(y) + r
+		sx, sy := int(x)-r, int(y)-r
+		ex, ey := int(x)+r, int(y)+r
 		for x := sx; x <= ex; x++ {
 			if x < 0 || x > 255 {
 				continue
