@@ -1,4 +1,4 @@
-package hero
+package slime
 
 import (
 	"fmt"
