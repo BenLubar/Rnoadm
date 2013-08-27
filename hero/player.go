@@ -683,22 +683,7 @@ func (p *Player) Think() {
 	p.Hero.Think()
 
 	if i := p.impersonate(); i != nil {
-		if h, ok := i.(*Hero); ok {
-			p.Hero.mtx.Lock()
-			animation := p.Hero.animation
-			p.Hero.mtx.Unlock()
-
-			h.mtx.Lock()
-			needUpdate := h.animation != animation
-			h.animation = animation
-			h.mtx.Unlock()
-
-			if needUpdate {
-				if pos := p.Position(); pos != nil {
-					pos.Zone().Update(pos, p)
-				}
-			}
-		}
+		i.Think()
 	}
 }
 

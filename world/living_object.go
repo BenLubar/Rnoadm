@@ -8,6 +8,7 @@ import (
 type Living interface {
 	Visible
 
+	HasSchedule() bool
 	SetSchedule(Schedule)
 	ClearSchedule()
 }
@@ -45,6 +46,13 @@ func (o *LivingObject) Load(version uint, data interface{}, attached []ObjectLik
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+}
+
+func (o *LivingObject) HasSchedule() bool {
+	o.mtx.Lock()
+	defer o.mtx.Unlock()
+
+	return o.schedule != nil
 }
 
 func (o *LivingObject) SetSchedule(s Schedule) {
