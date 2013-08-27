@@ -21,17 +21,10 @@ type Slime struct {
 }
 
 func init() {
-	world.Register("hero", HeroLike((*Hero)(nil)))
+	world.Register("slime", world.CombatObject((*Slime)(nil)))
 
-	world.RegisterSpawnFunc(func(s string) world.Visible {
-		for i := range raceInfo {
-			r := Race(i)
-			if r.Name() == s {
-				return GenerateHeroRace(rand.New(rand.NewSource(rand.Int63())), r)
-			}
-		}
-		return nil
-	})
+	world.RegisterSpawnFunc(func(s string) world.Visible { if s == "slime" { return &Slime{} } return nil } }
+)
 }
 
 func (s *Slime) Save() (uint, interface{}, []world.ObjectLike) {
@@ -54,7 +47,7 @@ func (s *Slime) Load(version uint, data interface{}, attached []world.ObjectLike
 	case 0:
 		dataMap := data.(map[string]interface{})
 		s.CombatObject = *attached[0].(*world.CombatObject)
-		s.slimupation = Occupation(dataMap["slimupation"].(uint64))
+		s.slimupation = Slimupation(dataMap["slimupation"].(uint64))
 		var ok bool
 		s.gelTone, ok = dataMap["tone"].(string)
 		if !ok {
@@ -78,7 +71,7 @@ func (s *Slime) Examine() string {
 	return "a slime " + s.slimupation.ExamineFlavor()
 }
 
-func (h *Hero) Slimupation() Slimupation {
+func (s *Slime) Slimupation() Slimupation {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
@@ -121,7 +114,7 @@ func (s *Slime) SpritePos() (uint, uint) {
 	return s.facing, 0
 }
 
-func (h *Hero) MaxHealth() uint64 {
+func (s *Slime) MaxHealth() uint64 {
 	return 50
 }
 
