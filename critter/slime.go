@@ -21,10 +21,21 @@ type Slime struct {
 }
 
 func init() {
-	world.Register("slime", world.CombatObject((*Slime)(nil)))
+	world.Register("slime", world.Combat((*Slime)(nil)))
 
-	world.RegisterSpawnFunc(func(s string) world.Visible { if s == "slime" { return &Slime{} } return nil } }
-)
+	world.RegisterSpawnFunc(func(s string) world.Visible {
+		for o := Slimupation(0); o < slimupationCount; o++ {
+			if s == "slime "+o.Name() {
+				const hex = "0123456789abcdef"
+				color := string([]byte{'#', hex[rand.Intn(4)], hex[rand.Intn(4)+11], hex[rand.Intn(4)]})
+				return &Slime{
+					slimupation: o,
+					gelTone:     color,
+				}
+			}
+		}
+		return nil
+	})
 }
 
 func (s *Slime) Save() (uint, interface{}, []world.ObjectLike) {
@@ -34,8 +45,8 @@ func (s *Slime) Save() (uint, interface{}, []world.ObjectLike) {
 	attached := []world.ObjectLike{&s.CombatObject}
 
 	return 0, map[string]interface{}{
-		"slimupation": uint64(s.slimupation),
-		"tone":        s.gelTone,
+		"s": uint64(s.slimupation),
+		"t": s.gelTone,
 	}, attached
 }
 
@@ -47,12 +58,8 @@ func (s *Slime) Load(version uint, data interface{}, attached []world.ObjectLike
 	case 0:
 		dataMap := data.(map[string]interface{})
 		s.CombatObject = *attached[0].(*world.CombatObject)
-		s.slimupation = Slimupation(dataMap["slimupation"].(uint64))
-		var ok bool
-		s.gelTone, ok = dataMap["tone"].(string)
-		if !ok {
-			s.gelTone = "#0f0"
-		}
+		s.slimupation = Slimupation(dataMap["s"].(uint64))
+		s.gelTone = dataMap["t"].(string)
 
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
@@ -61,14 +68,13 @@ func (s *Slime) Load(version uint, data interface{}, attached []world.ObjectLike
 }
 
 func (s *Slime) Name() string {
-	s.mtx.Lock()
-	defer s.mtx.Unlock()
-
-	return "Slime " + s.slimupation.Name()
+	return "slime " + s.Slimupation().Name()
 }
 
-func (s *Slime) Examine() string {
-	return "a slime " + s.slimupation.ExamineFlavor()
+func (s *Slime) Examine() (string, [][][2]string) {
+	_, info := s.CombatObject.Examine()
+
+	return "a slime " + s.Slimupation().Flavor(), info
 }
 
 func (s *Slime) Slimupation() Slimupation {
@@ -82,7 +88,14 @@ func (s *Slime) Sprite() string {
 	return "critter_slime"
 }
 
-func (h *Hero) Think() {
+func (s *Slime) Colors() []string {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+
+	return []string{s.gelTone}
+}
+
+func (s *Slime) Think() {
 	s.CombatObject.Think()
 
 	s.mtx.Lock()

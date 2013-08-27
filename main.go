@@ -2,7 +2,9 @@ package main
 
 import (
 	"code.google.com/p/go.net/websocket"
+	_ "github.com/BenLubar/Rnoadm/critter"
 	"github.com/BenLubar/Rnoadm/hero"
+	_ "github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
 	"log"
 	"math/rand"
