@@ -1,4 +1,4 @@
-package critters
+package critter
 
 type Slimupation uint64
 
