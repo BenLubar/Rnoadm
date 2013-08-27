@@ -14,6 +14,7 @@ const (
 	SlimeMage CritterType = iota
 	SlimeBrute
 	StickySlime
+	Cow
 
 	critterTypeCount
 )
@@ -60,6 +61,21 @@ var critterInfo = [critterTypeCount]struct {
 		name:      "sticky slime",
 		examine:   "a slime that's a little stickier than most.",
 		maxHealth: 50,
+		sprite:    "critter_slime",
+		genColors: func() []string {
+			return []string{string([]byte{
+				'#',
+				hex[rand.Intn(6)],
+				hex[rand.Intn(6)+10],
+				hex[rand.Intn(6)],
+			})}
+		},
+		schedule: followHeroSchedule(15),
+	},
+	Cow: {
+		name:      "cow",
+		examine:   "it's a cow, i guess.",
+		maxHealth: 10,
 		sprite:    "critter_slime",
 		genColors: func() []string {
 			return []string{string([]byte{
