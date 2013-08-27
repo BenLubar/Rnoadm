@@ -18,29 +18,20 @@ var slimupationInfo = [slimupationCount]struct {
 }{
 	SlimupationMage: {
 		title:  "mage",
-		flavor: "with magical properties.",
-	},
-	SlimupationBrute: {
-		title:  "brute",
-		flavor: "that can bench press a whole hero.",
-	},
-	SlimupationSticky: {
-		title:  "citizen",
-		flavor: "that's a little stickier than most.",
-	},
+		flavor: "with some magical abilities.",
 		color:  "#00d",
-		radius: 7},
+		radius: 7,},
 
 	SlimupationBrute: {
 		title:  "brute",
 		flavor: "that can bench press a whole hero.",
 		color:  "#d00",
-		radius: 7},
+		radius: 7,},
 	SlimupationSticky: {
 		title:  "citizen",
 		flavor: "that's a little stickier than most.",
 		color:  "#0d0",
-		radius: 14},
+		radius: 14,},
 }
 
 func (s Slimupation) Name() string   { return slimupationInfo[s].title }
