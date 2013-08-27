@@ -1,4 +1,4 @@
-package slime
+package critters
 
 import (
 	"fmt"
