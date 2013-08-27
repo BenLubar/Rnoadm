@@ -19,7 +19,6 @@ var slimupationInfo = [slimupationCount]struct {
 	SlimupationMage: {
 		title:  "mage",
 		flavor: "with magical properties.",
-<<<<<<< HEAD
 	},
 	SlimupationBrute: {
 		title:  "brute",
@@ -29,7 +28,6 @@ var slimupationInfo = [slimupationCount]struct {
 		title:  "citizen",
 		flavor: "that's a little stickier than most.",
 	},
-=======
 		color:  "#00d",
 		radius: 7},
 
@@ -43,7 +41,6 @@ var slimupationInfo = [slimupationCount]struct {
 		flavor: "that's a little stickier than most.",
 		color:  "#0d0",
 		radius: 14},
->>>>>>> data updated
 }
 
 func (s Slimupation) Name() string   { return slimupationInfo[s].title }
