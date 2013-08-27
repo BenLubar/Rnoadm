@@ -1,4 +1,4 @@
-package critters
+package critter
 
 import (
 	"fmt"
