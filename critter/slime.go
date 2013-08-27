@@ -68,13 +68,13 @@ func (s *Slime) Load(version uint, data interface{}, attached []world.ObjectLike
 }
 
 func (s *Slime) Name() string {
-	return "slime " + s.Slimupation().Name()
+	return s.Slimupation().Name()
 }
 
 func (s *Slime) Examine() (string, [][][2]string) {
 	_, info := s.CombatObject.Examine()
 
-	return "a slime " + s.Slimupation().Flavor(), info
+	return s.Slimupation().Flavor(), info
 }
 
 func (s *Slime) Slimupation() Slimupation {
