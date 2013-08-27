@@ -2,6 +2,7 @@ package critter
 
 import (
 	"fmt"
+	"github.com/BenLubar/Rnoadm/hero"
 	"github.com/BenLubar/Rnoadm/world"
 	"math/rand"
 	"sync"
@@ -25,9 +26,9 @@ func init() {
 
 	world.RegisterSpawnFunc(func(s string) world.Visible {
 		for o := Slimupation(0); o < slimupationCount; o++ {
-			if s == "slime "+o.Name() {
+			if s == o.Name() {
 				const hex = "0123456789abcdef"
-				color := string([]byte{'#', hex[rand.Intn(4)], hex[rand.Intn(4)+11], hex[rand.Intn(4)]})
+				color := string([]byte{'#', hex[rand.Intn(6)], hex[rand.Intn(6)+9], hex[rand.Intn(6)]})
 				return &Slime{
 					slimupation: o,
 					gelTone:     color,
@@ -97,6 +98,42 @@ func (s *Slime) Colors() []string {
 
 func (s *Slime) Think() {
 	s.CombatObject.Think()
+
+	if pos := s.Position(); pos != nil && !s.HasSchedule() {
+		radius := s.Slimupation().Radius()
+		lastX, lastY := pos.Position()
+		for i := 0; i < 1000; i++ {
+			x8, y8 := pos.Position()
+			x, y := int(x8), int(y8)
+			x += rand.Intn(radius*2) - radius
+			y += rand.Intn(radius*2) - radius
+			if x < 0 || x > 255 || y < 0 || y > 255 {
+				continue
+			}
+			x8, y8 = uint8(x), uint8(y)
+			t := pos.Zone().Tile(x8, y8)
+			foundHero := false
+			for _, o := range t.Objects() {
+				if _, ok := o.(hero.HeroLike); ok {
+					foundHero = true
+					break
+				}
+			}
+			if foundHero {
+				s.SetSchedule(world.NewWalkSchedule(x8, y8, true))
+				break
+			}
+			lastX, lastY = x8, y8
+		}
+		if !s.HasSchedule() {
+			s.SetSchedule(&world.ScheduleSchedule{
+				Schedules: []world.Schedule{
+					world.NewWalkSchedule(lastX, lastY, false),
+					&world.DelaySchedule{Delay: 5},
+				},
+			})
+		}
+	}
 
 	s.mtx.Lock()
 	if s.animationTicks > 0 {
