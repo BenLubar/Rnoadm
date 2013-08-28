@@ -170,8 +170,8 @@ rnoadm.gfx.rightClickObject;
 
 
 rnoadm.gfx.canvas.onmousemove = function(e) {
-  var x = e.offsetX;
-  var y = e.offsetY;
+  var x = e.offsetX || e.layerX;
+  var y = e.offsetY || e.layerY;
   var w = rnoadm.gfx.width_;
   var h = rnoadm.gfx.height_;
   if (rnoadm.gfx.mouseMovedHud(x, y, w, h)) {
@@ -218,8 +218,8 @@ rnoadm.gfx.canvas.onclick = function(e) {
     rnoadm.gfx.focused_ = true;
     return;
   }
-  var x = e.offsetX;
-  var y = e.offsetY;
+  var x = e.offsetX || e.layerX;
+  var y = e.offsetY || e.layerY;
   var w = rnoadm.gfx.width_;
   var h = rnoadm.gfx.height_;
   if (rnoadm.gfx.clickHud(x, y, w, h)) {
@@ -234,8 +234,8 @@ rnoadm.gfx.canvas.onclick = function(e) {
 rnoadm.gfx.canvas.oncontextmenu = function(e) {
   e.preventDefault();
   rnoadm.gfx.focused_ = true;
-  var x = e.offsetX;
-  var y = e.offsetY;
+  var x = e.offsetX || e.layerX;
+  var y = e.offsetY || e.layerY;
   var w = rnoadm.gfx.width_;
   var h = rnoadm.gfx.height_;
   if (rnoadm.gfx.rightClickHud(x, y, w, h)) {
