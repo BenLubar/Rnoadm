@@ -22,7 +22,7 @@ func main() {
 	http.HandleFunc("/", staticHandler)
 	go func() {
 		for {
-			err := http.ListenAndServe(":2064", nil)
+			err := http.ListenAndServeTLS(":2064", "rnoadm-cert.pem", "rnoadm-key.pem", nil)
 			if err != nil {
 				log.Print(err)
 				time.Sleep(time.Second)

@@ -46,7 +46,7 @@ rnoadm.net.send = function(message) {
 };
 
 
-rnoadm.net.socket_.open('ws://' + location.host + '/ws');
+rnoadm.net.socket_.open('wss://' + location.host + '/ws');
 goog.events.listen(rnoadm.net.socket_,
     goog.net.WebSocket.EventType.OPENED,
     rnoadm.net.onopen_);

@@ -43,7 +43,7 @@ func staticHandler(w http.ResponseWriter, r *http.Request) {
 <head>
 <meta charset="utf-8">
 <title>Rnoadm</title>
-<link href="http://fonts.googleapis.com/css?family=Jolly+Lodger|Open+Sans+Condensed:300&amp;subset=latin,latin-ext,cyrillic,cyrillic-ext,greek-ext,greek,vietnamese" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Jolly+Lodger|Open+Sans+Condensed:300&amp;subset=latin,latin-ext,cyrillic,cyrillic-ext,greek-ext,greek,vietnamese" rel="stylesheet">
 <style>
 html, body {
 	background: #000;
