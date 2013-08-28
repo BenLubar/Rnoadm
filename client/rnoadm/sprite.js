@@ -161,7 +161,7 @@ rnoadm.gfx.Sprite = function(image, color, animation, xOffset, yOffset,
     rnoadm.gfx.repaint();
   }
 
-  image = image + '.png?' + rnoadm.gfx.GRAPHICS_REVISION;
+  image = image + '.png';
   if (img = rnoadm.gfx.Sprite.cache_[image]) {
     init();
   } else {

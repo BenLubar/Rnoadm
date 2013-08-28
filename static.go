@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"github.com/BenLubar/Rnoadm/resource"
-	"hash/crc64"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,12 +14,7 @@ import (
 var clientGzip []byte
 
 func init() {
-	hash := crc64.New(crc64.MakeTable(crc64.ISO))
-	_, err := hash.Write(resource.Resource["client.js"])
-	if err != nil {
-		panic(err)
-	}
-	packetClientHash.ClientHash = hash.Sum64()
+	packetClientHash.ClientHash = resource.Hash["client.js"]
 
 	var buf bytes.Buffer
 	g, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
@@ -102,12 +96,17 @@ input[type="submit"] {
 </html>`))
 		return
 	}
+	if etag := r.Header.Get("If-None-Match"); resource.Hash[r.URL.Path[1:]] == etag {
+		w.WriteHeader(http.StatusNotModified)
+		return
+	}
 	if r.URL.Path == "/client.js" {
 		w.Header().Set("Vary", "Accept-Encoding")
 		w.Header().Set("Content-Type", "application/javascript")
 		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 			w.Header().Set("Content-Length", strconv.Itoa(len(clientGzip)))
 			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Set("ETag", resource.Hash["client.js"])
 			_, err := w.Write(clientGzip)
 			if err != nil {
 				log.Printf("[err_write] %s:%q %v", r.RemoteAddr, r.URL, err)
@@ -117,6 +116,7 @@ input[type="submit"] {
 	}
 	if b, ok := resource.Resource[r.URL.Path[1:]]; ok {
 		w.Header().Set("Content-Length", strconv.Itoa(len(b)))
+		w.Header().Set("ETag", resource.Hash[r.URL.Path[1:]])
 		_, err := w.Write(b)
 		if err != nil {
 			log.Printf("[err_write] %s:%q %v", r.RemoteAddr, r.URL, err)

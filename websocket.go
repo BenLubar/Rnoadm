@@ -38,7 +38,7 @@ type packetKick struct {
 }
 
 var packetClientHash struct {
-	ClientHash uint64 `json:",string"`
+	ClientHash string
 }
 
 type packetUpdate struct {

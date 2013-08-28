@@ -8,10 +8,6 @@ goog.require('rnoadm.net');
 rnoadm.gfx.TILE_SIZE = 32;
 
 
-/** @define {number} The number of times a sprite sheet has changed. */
-rnoadm.gfx.GRAPHICS_REVISION = 14;
-
-
 /**
  * @type {HTMLCanvasElement}
  * @const

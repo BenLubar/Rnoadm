@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"hash/crc64"
 	"io/ioutil"
 	"os"
 	"path"
@@ -43,5 +44,7 @@ func init() {
 			fmt.Fprintf(out, `, %d`, b)
 		}
 	}
-	fmt.Fprintf(out, "}\n}\n")
+	hash := crc64.New(crc64.MakeTable(crc64.ISO))
+	hash.Write(in)
+	fmt.Fprintf(out, "}\n\tHash[%q] = \"W/\\\"%d\\\"\"\n}\n", filepath.Base(fn), hash.Sum64())
 }

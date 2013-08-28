@@ -38,7 +38,7 @@ func (m *Material) Save() (uint, interface{}, []world.ObjectLike) {
 func (m *Material) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
-		materials := data.(map[string]interface{})
+		materials, _ := data.(map[string]interface{})
 		if wood, ok := materials["w"].(uint64); ok {
 			m.wood = (*WoodType)(&wood)
 		}
