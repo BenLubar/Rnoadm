@@ -104,7 +104,7 @@ type Equip struct {
 
 	material *material.Material
 
-	wearer *Hero // not saved
+	wearer HeroLike // not saved
 }
 
 var _ world.Item = (*Equip)(nil)
@@ -247,6 +247,13 @@ func (e *Equip) Colors() []string {
 		}
 	}
 	return colors
+}
+
+func (e *Equip) Scale() uint {
+	if e.wearer == nil {
+		return 1
+	}
+	return e.wearer.Scale()
 }
 
 func (e *Equip) AnimationType() string {

@@ -126,7 +126,7 @@ func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLik
 		if e.AdminOnly() && !p.admin {
 			delete(p.Hero.equipped, e.slot)
 		} else {
-			e.wearer = &p.Hero
+			e.wearer = p
 		}
 	}
 	if !p.admin {
@@ -609,7 +609,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 				old.wearer = nil
 				p.giveItem(old)
 			}
-			e.wearer = &p.Hero
+			e.wearer = p
 			p.equipped[e.slot] = e
 			p.mtx.Unlock()
 			p.Position().Zone().Update(p.Position(), p)

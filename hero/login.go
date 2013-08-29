@@ -87,7 +87,7 @@ func Login(addr string, packet *LoginPacket) (*Player, string) {
 		}
 		world.InitObject(p)
 		for _, e := range p.Hero.equipped {
-			e.wearer = &p.Hero
+			e.wearer = p
 		}
 		savePlayer(p)
 		onlinePlayers[login] = p

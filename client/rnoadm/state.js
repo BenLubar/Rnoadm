@@ -1,23 +1,12 @@
 goog.provide('rnoadm.state');
 
 goog.require('goog.asserts');
-goog.require('goog.debug.Logger');
 goog.require('rnoadm.gfx');
 goog.require('rnoadm.gfx.NetworkSprite');
 goog.require('rnoadm.gfx.Sprite');
 goog.require('rnoadm.net');
 goog.require('rnoadm.state.NetworkObject');
 goog.require('rnoadm.state.Object');
-
-
-/**
- * Logger for rnoadm.state
- *
- * @type {goog.debug.Logger}
- * @private
- * @const
- */
-rnoadm.state.logger_ = goog.debug.Logger.getLogger('rnoadm.state');
 
 
 /**

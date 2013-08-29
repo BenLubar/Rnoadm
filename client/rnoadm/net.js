@@ -1,19 +1,9 @@
 goog.provide('rnoadm.net');
 
-goog.require('goog.debug.Logger');
+goog.require('goog.asserts');
 goog.require('goog.events');
 goog.require('goog.net.WebSocket');
 goog.require('goog.net.WebSocket.MessageEvent');
-
-
-/**
- * Logger for rnoadm.net
- *
- * @type {goog.debug.Logger}
- * @private
- * @const
- */
-rnoadm.net.logger_ = goog.debug.Logger.getLogger('rnoadm.net');
 
 
 /**
@@ -133,7 +123,7 @@ rnoadm.net.onmessage_ = function(e) {
         rnoadm.net.socket_.close();
       handler(msg[name]);
     } else {
-      rnoadm.net.logger_.info('Unhandled: ' + name);
+      goog.asserts.fail('Unhandled: ' + name);
     }
   }
 };

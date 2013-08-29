@@ -98,6 +98,18 @@ rnoadm.gfx.Sprite = function(image, color, animation, xOffset, yOffset,
     var ctx = goog.asserts.assertInstanceof(canvas.getContext('2d'),
                                             CanvasRenderingContext2D);
 
+    if (!(image in rnoadm.gfx.Sprite.cache2_))
+      rnoadm.gfx.Sprite.cache2_[image] = {};
+    if (!(color in rnoadm.gfx.Sprite.cache2_[image]))
+      rnoadm.gfx.Sprite.cache2_[image][color] = [];
+    if (scale in rnoadm.gfx.Sprite.cache2_[image][color]) {
+      canvas.width *= scale;
+      canvas.height *= scale;
+      ctx.drawImage(rnoadm.gfx.Sprite.cache2_[image][color][scale], 0, 0);
+      return;
+    }
+    rnoadm.gfx.Sprite.cache2_[image][color][scale] = canvas;
+
     var noRecolor = color == 'no';
     if (noRecolor) {
       color = '#000';
@@ -189,6 +201,14 @@ rnoadm.gfx.Sprite = function(image, color, animation, xOffset, yOffset,
  * @const
  */
 rnoadm.gfx.Sprite.cache_ = {};
+
+
+/**
+ * @type {Object.<string, Object.<string, Array.<HTMLCanvasElement>>>}
+ * @private
+ * @const
+ */
+rnoadm.gfx.Sprite.cache2_ = {};
 
 
 /**

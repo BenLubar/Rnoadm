@@ -1,7 +1,7 @@
 goog.provide('rnoadm.main');
 
 goog.require('goog.debug.FancyWindow');
-goog.require('goog.debug.Logger');
+goog.require('goog.log');
 goog.require('rnoadm.hud');
 goog.require('rnoadm.hud.cc');
 goog.require('rnoadm.hud.examine');
@@ -32,7 +32,7 @@ rnoadm.hud.register('menu2', rnoadm.hud.menu2);
  * @private
  * @const
  */
-rnoadm.main.logger_ = goog.debug.Logger.getLogger('rnoadm.main');
+rnoadm.main.logger_ = goog.log.getLogger('rnoadm.main');
 
 
 /**
@@ -45,7 +45,7 @@ rnoadm.main.clientHash_;
 
 
 rnoadm.net.addHandler('ClientHash', function(hash) {
-  rnoadm.main.logger_.info('Client hash: ' + hash);
+  goog.log.info(rnoadm.main.logger_, 'Client hash: ' + hash);
   if (goog.isDef(rnoadm.main.clientHash_)) {
     if (rnoadm.main.clientHash_ != hash) {
       location.reload(true);
