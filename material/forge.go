@@ -41,7 +41,7 @@ func (f *Forge) Scale() uint {
 }
 
 func (f *Forge) Colors() []string {
-	return []string{"#888"}
+	return []string{"no"}
 }
 
 func (f *Forge) Blocking() bool {

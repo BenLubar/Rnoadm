@@ -157,7 +157,7 @@ rnoadm.hud.hover_inventory_ = false;
  * @private
  * @const
  */
-rnoadm.hud.inventoryIcon_ = new rnoadm.gfx.Sprite('ui_icons', '#888', '',
+rnoadm.hud.inventoryIcon_ = new rnoadm.gfx.Sprite('ui_icons', 'no', '',
                                                   0, 0, 32, 32);
 
 

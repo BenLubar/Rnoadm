@@ -98,6 +98,11 @@ rnoadm.gfx.Sprite = function(image, color, animation, xOffset, yOffset,
     var ctx = goog.asserts.assertInstanceof(canvas.getContext('2d'),
                                             CanvasRenderingContext2D);
 
+    var noRecolor = color == 'no';
+    if (noRecolor) {
+      color = '#000';
+    }
+
     // Determine the actual color from the string color.
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, 1, 1);
@@ -127,6 +132,9 @@ rnoadm.gfx.Sprite = function(image, color, animation, xOffset, yOffset,
      * @return {number}
      */
     function fade(x, y) {
+      if (noRecolor) {
+        return x;
+      }
       if (x >= 128) {
         return 255 - (255 - x) * (255 - y) / 127;
       }
