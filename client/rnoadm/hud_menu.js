@@ -53,7 +53,7 @@ rnoadm.hud.register('menu', function(data) {
       if (initialY + height > h)
         initialY = h - height;
     }
-    rnoadm.gfx.ctx.fillStyle = 'rgba(0,0,0,.7)';
+    rnoadm.gfx.ctx.fillStyle = rnoadm.gfx.INTERFACE_FILL;
     rnoadm.gfx.ctx.fillRect(initialX || 0, initialY || 0, width, height);
     if (hover != -1) {
       rnoadm.gfx.ctx.fillStyle = '#000';

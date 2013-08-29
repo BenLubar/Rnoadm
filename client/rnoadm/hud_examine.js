@@ -33,7 +33,7 @@ rnoadm.hud.register('examine', function(data) {
   });
 
   return new rnoadm.hud.HUD('examine', function(w, h) {
-    rnoadm.gfx.ctx.fillStyle = 'rgba(0,0,0,.7)';
+    rnoadm.gfx.ctx.fillStyle = rnoadm.gfx.INTERFACE_FILL;
     rnoadm.gfx.ctx.fillRect(0, 0, w, h);
     var x = w / 2 / rnoadm.gfx.TILE_SIZE - 6;
     var y = h / 2 / rnoadm.gfx.TILE_SIZE - 6;

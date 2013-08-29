@@ -20,7 +20,7 @@ rnoadm.hud.register('inv', function(data) {
     var rows = Math.ceil(rnoadm.hud.inventory_.length / 8);
     var xOffset = w / rnoadm.gfx.TILE_SIZE - 8.1;
     var yOffset = h / rnoadm.gfx.TILE_SIZE - 0.1 - rows;
-    rnoadm.gfx.ctx.fillStyle = 'rgba(0,0,0,.7)';
+    rnoadm.gfx.ctx.fillStyle = rnoadm.gfx.INTERFACE_FILL;
     rnoadm.gfx.ctx.fillRect(w - 8.2 * rnoadm.gfx.TILE_SIZE,
                             h - (rows + 1.2) * rnoadm.gfx.TILE_SIZE,
                             8.2 * rnoadm.gfx.TILE_SIZE,
@@ -34,7 +34,7 @@ rnoadm.hud.register('inv', function(data) {
           hoverY * 8].name, '#fff', false, true);
       var width = (text.width() + 0.2) * rnoadm.gfx.TILE_SIZE;
       var height = (text.height() + 0.2) * rnoadm.gfx.TILE_SIZE;
-      rnoadm.gfx.ctx.fillStyle = 'rgba(0,0,0,.7)';
+      rnoadm.gfx.ctx.fillStyle = rnoadm.gfx.INTERFACE_FILL;
       rnoadm.gfx.ctx.fillRect(mouseX - width, mouseY, width, height);
       text.paint(mouseX / rnoadm.gfx.TILE_SIZE - text.width() - 0.1,
                  mouseY / rnoadm.gfx.TILE_SIZE + text.height() + 0.1);

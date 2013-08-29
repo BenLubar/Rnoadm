@@ -68,7 +68,7 @@ rnoadm.hud.register('cc', function(data) {
   var hover_none = true;
 
   return new rnoadm.hud.HUD('cc', function(w, h) {
-    rnoadm.gfx.ctx.fillStyle = 'rgba(0,0,0,.7)';
+    rnoadm.gfx.ctx.fillStyle = rnoadm.gfx.INTERFACE_FILL;
     rnoadm.gfx.ctx.fillRect(0, 0, w, h);
     w /= rnoadm.gfx.TILE_SIZE * 2;
     h /= rnoadm.gfx.TILE_SIZE * 2;

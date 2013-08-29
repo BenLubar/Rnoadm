@@ -8,6 +8,10 @@ goog.require('rnoadm.net');
 rnoadm.gfx.TILE_SIZE = 32;
 
 
+/** @define {string} The fillStyle for interface backgrounds. */
+rnoadm.gfx.INTERFACE_FILL = 'rgba(0,0,0,.7)';
+
+
 /**
  * @type {HTMLCanvasElement}
  * @const
