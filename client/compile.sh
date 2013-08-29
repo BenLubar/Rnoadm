@@ -20,8 +20,8 @@ python closure-library/closure/bin/build/closurebuilder.py \
 	--namespace="rnoadm.main" \
 	--output_mode=compiled \
 	--compiler_jar=compiler.jar \
-	--compiler_flags="--define=goog.DEBUG" \
-	--compiler_flags="--define=goog.asserts.ENABLE_ASSERTS" \
+	--compiler_flags="--define=goog.DEBUG=false" \
+	--compiler_flags="--define=goog.asserts.ENABLE_ASSERTS=false" \
 	--compiler_flags="--accept_const_keyword" \
 	--compiler_flags="--compilation_level=ADVANCED_OPTIMIZATIONS" \
 	--compiler_flags="--language_in=ECMASCRIPT5_STRICT" \

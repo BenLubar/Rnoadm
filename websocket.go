@@ -144,7 +144,9 @@ func socketHandler(ws *websocket.Conn) {
 
 	err = websocket.JSON.Send(ws, packetClientHash)
 	if err != nil {
-		log.Printf("[err_sock] %s:%#v %v", addr, packetClientHash, err)
+		if err != io.EOF {
+			log.Printf("[err_sock] %s:%#v %v", addr, packetClientHash, err)
+		}
 		return
 	}
 
@@ -291,7 +293,7 @@ func socketHandler(ws *websocket.Conn) {
 				player, fail = hero.Login(addr, packet.Auth)
 				if fail != "" {
 					err = websocket.JSON.Send(ws, packetKick{fail})
-					if err != nil {
+					if err != nil && err != io.EOF {
 						log.Printf("[err_sock] %s:%#v %v", addr, packetKick{fail}, err)
 					}
 					return
@@ -329,7 +331,9 @@ func socketHandler(ws *websocket.Conn) {
 				}
 				err = websocket.JSON.Send(ws, packetInventory{inventoryObjects})
 				if err != nil {
-					log.Printf("[err_sock] %s:%#v %v", addr, packetInventory{inventoryObjects}, err)
+					if err != io.EOF {
+						log.Printf("[err_sock] %s:%#v %v", addr, packetInventory{inventoryObjects}, err)
+					}
 					return
 				}
 			}
@@ -399,7 +403,9 @@ func socketHandler(ws *websocket.Conn) {
 				}
 				err = websocket.JSON.Send(ws, update)
 				if err != nil {
-					log.Printf("[err_sock] %s:%#v %v", addr, update, err)
+					if err != io.EOF {
+						log.Printf("[err_sock] %s:%#v %v", addr, update, err)
+					}
 					return
 				}
 			}
@@ -431,7 +437,9 @@ func socketHandler(ws *websocket.Conn) {
 		case message := <-kick:
 			websocket.JSON.Send(ws, packetKick{message})
 			if err != nil {
-				log.Printf("[err_sock] %s:%#v %v", addr, packetKick{message}, err)
+				if err != io.EOF {
+					log.Printf("[err_sock] %s:%#v %v", addr, packetKick{message}, err)
+				}
 				return
 			}
 			return
@@ -439,7 +447,9 @@ func socketHandler(ws *websocket.Conn) {
 		case h := <-hud:
 			err = websocket.JSON.Send(ws, packetHUD{h})
 			if err != nil {
-				log.Printf("[err_sock] %s:%#v %v", addr, packetHUD{h}, err)
+				if err != io.EOF {
+					log.Printf("[err_sock] %s:%#v %v", addr, packetHUD{h}, err)
+				}
 				return
 			}
 
@@ -456,7 +466,9 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			err = websocket.JSON.Send(ws, packetInventory{objects})
 			if err != nil {
-				log.Printf("[err_sock] %s:%#v %v", addr, packetInventory{objects}, err)
+				if err != io.EOF {
+					log.Printf("[err_sock] %s:%#v %v", addr, packetInventory{objects}, err)
+				}
 				return
 			}
 
@@ -485,7 +497,9 @@ func socketHandler(ws *websocket.Conn) {
 
 			err = websocket.JSON.Send(ws, updateQueue)
 			if err != nil {
-				log.Printf("[err_sock] %s:%#v %v", addr, updateQueue, err)
+				if err != io.EOF {
+					log.Printf("[err_sock] %s:%#v %v", addr, updateQueue, err)
+				}
 				return
 			}
 
@@ -494,7 +508,9 @@ func socketHandler(ws *websocket.Conn) {
 		case msg := <-messages:
 			err = websocket.JSON.Send(ws, packetMessage{msg})
 			if err != nil {
-				log.Printf("[err_sock] %s:%#v %v", addr, packetMessage{msg}, err)
+				if err != io.EOF {
+					log.Printf("[err_sock] %s:%#v %v", addr, packetMessage{msg}, err)
+				}
 				return
 			}
 		}
