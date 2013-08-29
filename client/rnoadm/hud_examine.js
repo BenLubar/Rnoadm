@@ -4,7 +4,7 @@ goog.require('rnoadm.gfx');
 goog.require('rnoadm.gfx.Text');
 goog.require('rnoadm.hud');
 
-rnoadm.hud.register('examine', function(data) {
+rnoadm.hud.examine = function(data) {
   /**
    * @type {rnoadm.gfx.Text}
    * @const
@@ -58,6 +58,6 @@ rnoadm.hud.register('examine', function(data) {
     rnoadm.hud.hide('examine');
     return true;
   });
-});
+};
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

@@ -3,6 +3,7 @@ package world
 import (
 	"encoding/gob"
 	"reflect"
+	"time"
 )
 
 var registeredIdentifierObject = make(map[string]reflect.Type)
@@ -54,4 +55,5 @@ func getObjectByIdentifier(identifier string) ObjectLike {
 func init() {
 	gob.Register(map[string]interface{}{})
 	gob.Register([]interface{}{})
+	gob.Register(time.Time{})
 }

@@ -8,7 +8,7 @@ goog.require('rnoadm.net');
 goog.require('rnoadm.state.Object');
 
 
-rnoadm.hud.register('menu2', function(data) {
+rnoadm.hud.menu2 = function(data) {
   /** @type {number} */
   var hover = -1;
   /** @type {?number} */
@@ -95,6 +95,6 @@ rnoadm.hud.register('menu2', function(data) {
     rnoadm.hud.hide('menu2');
     return true;
   });
-});
+};
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

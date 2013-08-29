@@ -2,8 +2,10 @@ goog.provide('rnoadm.main');
 
 goog.require('goog.debug.FancyWindow');
 goog.require('goog.debug.Logger');
+goog.require('rnoadm.hud');
 goog.require('rnoadm.hud.cc');
 goog.require('rnoadm.hud.examine');
+goog.require('rnoadm.hud.forge');
 goog.require('rnoadm.hud.inv');
 goog.require('rnoadm.hud.menu');
 goog.require('rnoadm.hud.menu2');
@@ -16,6 +18,12 @@ if (goog.DEBUG) {
   new goog.debug.FancyWindow();
 }
 
+rnoadm.hud.register('cc', rnoadm.hud.cc);
+rnoadm.hud.register('examine', rnoadm.hud.examine);
+rnoadm.hud.register('forge', rnoadm.hud.forge);
+rnoadm.hud.register('inv', rnoadm.hud.inv);
+rnoadm.hud.register('menu', rnoadm.hud.menu);
+rnoadm.hud.register('menu2', rnoadm.hud.menu2);
 
 /**
  * Logger for rnoadm.main

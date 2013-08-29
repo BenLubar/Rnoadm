@@ -9,7 +9,7 @@ goog.require('rnoadm.net');
 
 
 
-rnoadm.hud.register('cc', function(data) {
+rnoadm.hud.cc = function(data) {
   /**
    * @type {Array.<rnoadm.gfx.Sprite>}
    * @const
@@ -228,6 +228,6 @@ rnoadm.hud.register('cc', function(data) {
     // No interaction with anything other than this hud while it's up.
     return true;
   });
-});
+};
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

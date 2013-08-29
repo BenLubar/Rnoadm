@@ -8,7 +8,7 @@ goog.require('rnoadm.net');
 goog.require('rnoadm.state.Object');
 
 
-rnoadm.hud.register('menu', function(data) {
+rnoadm.hud.menu = function(data) {
   /** @type {rnoadm.state.Object} */
   var object = goog.asserts.assertInstanceof(data, rnoadm.state.Object);
 
@@ -107,6 +107,6 @@ rnoadm.hud.register('menu', function(data) {
     rnoadm.hud.hide('menu');
     return true;
   });
-});
+};
 
 // vim: set tabstop=2 shiftwidth=2 expandtab:

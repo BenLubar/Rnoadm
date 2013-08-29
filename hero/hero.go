@@ -70,14 +70,14 @@ func (h *Hero) Save() (uint, interface{}, []world.ObjectLike) {
 		attached = append(attached, i)
 	}
 
-	return 0, map[string]interface{}{
+	return 1, map[string]interface{}{
 		"name":       h.name.serialize(),
 		"race":       uint64(h.race),
 		"gender":     uint64(h.gender),
 		"occupation": uint64(h.occupation),
 		"skin":       h.skinTone,
-		"birth":      h.birth.Format(time.RFC3339Nano),
-		"death":      h.death.Format(time.RFC3339Nano),
+		"birth":      h.birth,
+		"death":      h.death,
 		"equipped":   uint(len(h.equipped)),
 		"items":      uint(len(h.items)),
 	}, attached
@@ -90,39 +90,12 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 	switch version {
 	case 0:
 		dataMap := data.(map[string]interface{})
-		h.CombatObject = *attached[0].(*world.CombatObject)
-		h.name.unserialize(dataMap["name"].(map[string]interface{}))
-		h.race = Race(dataMap["race"].(uint64))
-		h.gender = Gender(dataMap["gender"].(uint64))
-		h.occupation = Occupation(dataMap["occupation"].(uint64))
-		var ok bool
-		h.skinTone, ok = dataMap["skin"].(uint)
-		if !ok {
-			h.skinTone = uint(rand.Intn(len(h.race.SkinTones())))
-		}
-		var err error
-		h.birth, err = time.Parse(time.RFC3339Nano, dataMap["birth"].(string))
-		if err != nil {
-			panic(err)
-		}
-		h.death, err = time.Parse(time.RFC3339Nano, dataMap["death"].(string))
-		if err != nil {
-			panic(err)
+
+		if dataMap["skin"] == nil {
+			dataMap["skin"] = uint(rand.Intn(len(Race(dataMap["race"].(uint64)).SkinTones())))
 		}
 
-		equipCount, ok := dataMap["equipped"].(uint)
-		if ok {
-			h.equipped = make(map[EquipSlot]*Equip, equipCount)
-			for _, o := range attached[1 : equipCount+1] {
-				e := o.(*Equip)
-				h.equipped[e.slot] = e
-			}
-			itemCount := dataMap["items"].(uint)
-			h.items = make([]world.Visible, itemCount)
-			for i, o := range attached[equipCount+1 : itemCount+equipCount+1] {
-				h.items[i] = o.(world.Visible)
-			}
-		} else {
+		if dataMap["equipped"] == nil {
 			r := rand.New(rand.NewSource(rand.Int63()))
 			h.equipped = map[EquipSlot]*Equip{
 				SlotShirt: {
@@ -139,6 +112,39 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 					slot: SlotFeet,
 					kind: 0,
 				},
+			}
+		}
+
+		var err error
+		dataMap["birth"], err = time.Parse(time.RFC3339Nano, dataMap["birth"].(string))
+		if err != nil {
+			panic(err)
+		}
+		dataMap["death"], err = time.Parse(time.RFC3339Nano, dataMap["death"].(string))
+		if err != nil {
+			panic(err)
+		}
+		fallthrough
+
+	case 1:
+		dataMap := data.(map[string]interface{})
+		h.CombatObject = *attached[0].(*world.CombatObject)
+		h.name.unserialize(dataMap["name"].(map[string]interface{}))
+		h.race = Race(dataMap["race"].(uint64))
+		h.gender = Gender(dataMap["gender"].(uint64))
+		h.occupation = Occupation(dataMap["occupation"].(uint64))
+		h.skinTone = dataMap["skin"].(uint)
+		if h.equipped == nil {
+			equipCount := dataMap["equipped"].(uint)
+			h.equipped = make(map[EquipSlot]*Equip, equipCount)
+			for _, o := range attached[1 : equipCount+1] {
+				e := o.(*Equip)
+				h.equipped[e.slot] = e
+			}
+			itemCount := dataMap["items"].(uint)
+			h.items = make([]world.Visible, itemCount)
+			for i, o := range attached[equipCount+1 : itemCount+equipCount+1] {
+				h.items[i] = o.(world.Visible)
 			}
 		}
 	default:

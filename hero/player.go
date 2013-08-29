@@ -16,6 +16,7 @@ type Player struct {
 	ancestry          PlayerAncestry
 	zoneX, zoneY      int64
 	tileX, tileY      uint8
+	instances         PlayerInstances
 
 	login      string
 	password   []byte
@@ -70,7 +71,7 @@ func (p *Player) Save() (uint, interface{}, []world.ObjectLike) {
 		zx, zy = z.X, z.Y
 	}
 
-	return 0, map[string]interface{}{
+	return 1, map[string]interface{}{
 		"creation": p.characterCreation,
 		"tx":       tx,
 		"ty":       ty,
@@ -81,36 +82,43 @@ func (p *Player) Save() (uint, interface{}, []world.ObjectLike) {
 		"admin":    p.admin,
 		"rega":     p.firstAddr,
 		"lasta":    p.lastAddr,
-		"regt":     p.registered.Format(time.RFC3339Nano),
-		"lastt":    p.lastLogin.Format(time.RFC3339Nano),
-	}, []world.ObjectLike{&p.Hero, &p.ancestry}
+		"regt":     p.registered,
+		"lastt":    p.lastLogin,
+	}, []world.ObjectLike{&p.Hero, &p.ancestry, &p.instances}
 }
 
 func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
 		dataMap := data.(map[string]interface{})
+		attached = append(attached, world.InitObject(&PlayerInstances{}))
+		var err error
+		dataMap["regt"], err = time.Parse(time.RFC3339Nano, dataMap["regt"].(string))
+		if err != nil {
+			panic(err)
+		}
+		dataMap["lastt"], err = time.Parse(time.RFC3339Nano, dataMap["lastt"].(string))
+		if err != nil {
+			panic(err)
+		}
+		fallthrough
+	case 1:
+		dataMap := data.(map[string]interface{})
 		p.Hero = *attached[0].(*Hero)
 		p.mtx.Lock()
 		defer p.mtx.Unlock()
 		p.ancestry = *attached[1].(*PlayerAncestry)
+		p.instances = *attached[2].(*PlayerInstances)
 		p.characterCreation = dataMap["creation"].(bool)
 		p.zoneX, p.zoneY = dataMap["zx"].(int64), dataMap["zy"].(int64)
 		p.tileX, p.tileY = dataMap["tx"].(uint8), dataMap["ty"].(uint8)
 		p.login = dataMap["u"].(string)
 		p.password = dataMap["p"].([]byte)
 		p.admin, _ = dataMap["admin"].(bool)
+		p.registered = dataMap["regt"].(time.Time)
 		p.firstAddr = dataMap["rega"].(string)
+		p.lastLogin = dataMap["lastt"].(time.Time)
 		p.lastAddr = dataMap["lasta"].(string)
-		var err error
-		p.registered, err = time.Parse(time.RFC3339Nano, dataMap["regt"].(string))
-		if err != nil {
-			panic(err)
-		}
-		p.lastLogin, err = time.Parse(time.RFC3339Nano, dataMap["lastt"].(string))
-		if err != nil {
-			panic(err)
-		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
@@ -164,6 +172,113 @@ func (a *PlayerAncestry) Load(version uint, data interface{}, attached []world.O
 		a.ancestors = make([]*Hero, len(attached))
 		for i, h := range attached {
 			a.ancestors[i] = h.(*Hero)
+		}
+	default:
+		panic(fmt.Sprintf("version %d unknown", version))
+	}
+}
+
+type PlayerInstances struct {
+	world.Object
+	instances map[instanceLocation]*PlayerInstance
+	mtx       sync.Mutex
+}
+
+func init() {
+	world.Register("playerinsts", world.ObjectLike((*PlayerInstances)(nil)))
+}
+
+func (pi *PlayerInstances) Save() (uint, interface{}, []world.ObjectLike) {
+	pi.mtx.Lock()
+	defer pi.mtx.Unlock()
+
+	locations := []interface{}{}
+	objects := []world.ObjectLike{}
+	for l, o := range pi.instances {
+		locations = append(locations, l.Save())
+		objects = append(objects, o)
+	}
+
+	return 0, locations, objects
+}
+
+func (pi *PlayerInstances) Load(version uint, data interface{}, attached []world.ObjectLike) {
+	pi.mtx.Lock()
+	defer pi.mtx.Unlock()
+
+	switch version {
+	case 0:
+		pi.instances = make(map[instanceLocation]*PlayerInstance, len(attached))
+		var loc instanceLocation
+		for i, l := range data.([]interface{}) {
+			loc.Load(l.(map[string]interface{}))
+			pi.instances[loc] = attached[i].(*PlayerInstance)
+		}
+	default:
+		panic(fmt.Sprintf("version %d unknown", version))
+	}
+}
+
+type instanceLocation struct {
+	ZoneX, ZoneY int64
+	TileX, TileY uint8
+}
+
+func (i *instanceLocation) Save() map[string]interface{} {
+	return map[string]interface{}{
+		"zx": i.ZoneX,
+		"zy": i.ZoneY,
+		"tx": i.TileX,
+		"ty": i.TileY,
+	}
+}
+
+func (i *instanceLocation) Load(data map[string]interface{}) {
+	i.ZoneX = data["zx"].(int64)
+	i.ZoneY = data["zy"].(int64)
+	i.TileX = data["tx"].(uint8)
+	i.TileY = data["ty"].(uint8)
+}
+
+type PlayerInstance struct {
+	world.Object
+
+	items []world.Visible
+	last  time.Time
+
+	mtx sync.Mutex
+}
+
+func init() {
+	world.Register("playerinst", world.ObjectLike((*PlayerInstance)(nil)))
+}
+
+func (pi *PlayerInstance) Save() (uint, interface{}, []world.ObjectLike) {
+	pi.mtx.Lock()
+	defer pi.mtx.Unlock()
+
+	attached := make([]world.ObjectLike, len(pi.items))
+	for i, o := range pi.items {
+		attached[i] = o
+	}
+
+	return 0, map[string]interface{}{
+		"last":  pi.last,
+		"items": uint(len(pi.items)),
+	}, attached
+}
+
+func (pi *PlayerInstance) Load(version uint, data interface{}, attached []world.ObjectLike) {
+	pi.mtx.Lock()
+	defer pi.mtx.Unlock()
+
+	switch version {
+	case 0:
+		dataMap := data.(map[string]interface{})
+		pi.last = dataMap["last"].(time.Time)
+		pi.items = make([]world.Visible, dataMap["items"].(uint))
+		for i := range pi.items {
+			pi.items[i] = attached[i].(world.Visible)
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
@@ -604,6 +719,100 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 				}
 			}
 		}
+	case "first name":
+		if len(command) != 2 {
+			return
+		}
+		p.mtx.Lock()
+		origT := p.name.FirstT
+		orig := p.name.First
+		for p.name.FirstT = 0; p.name.FirstT < nameSubtypeCount; p.name.FirstT++ {
+			for p.name.First = 0; p.Hero.name.First < uint64(len(names[p.name.FirstT])); p.name.First++ {
+				if names[p.name.FirstT][p.name.First] == command[1] {
+					p.mtx.Unlock()
+					if pos := p.Position(); pos != nil {
+						pos.Zone().Update(pos, p)
+					}
+					return
+				}
+			}
+		}
+		p.name.FirstT = origT
+		p.name.First = orig
+		p.mtx.Unlock()
+	case "nickname":
+		if len(command) != 2 {
+			return
+		}
+		p.mtx.Lock()
+		p.name.Nickname = command[1]
+		p.mtx.Unlock()
+		if pos := p.Position(); pos != nil {
+			pos.Zone().Update(pos, p)
+		}
+	case "last name 1":
+		if len(command) != 2 {
+			return
+		}
+		p.mtx.Lock()
+		origT := p.name.Last1T
+		orig := p.name.Last1
+		for p.name.Last1T = 0; p.name.Last1T < nameSubtypeCount; p.name.Last1T++ {
+			for p.name.Last1 = 0; p.Hero.name.Last1 < uint64(len(names[p.name.Last1T])); p.name.Last1++ {
+				if names[p.name.Last1T][p.name.Last1] == command[1] {
+					p.mtx.Unlock()
+					if pos := p.Position(); pos != nil {
+						pos.Zone().Update(pos, p)
+					}
+					return
+				}
+			}
+		}
+		p.name.Last1T = origT
+		p.name.Last1 = orig
+		p.mtx.Unlock()
+	case "last name 2":
+		if len(command) != 2 {
+			return
+		}
+		p.mtx.Lock()
+		origT := p.name.Last2T
+		orig := p.name.Last2
+		for p.name.Last2T = 0; p.name.Last2T < nameSubtypeCount; p.name.Last2T++ {
+			for p.name.Last2 = 0; p.Hero.name.Last2 < uint64(len(names[p.name.Last2T])); p.name.Last2++ {
+				if names[p.name.Last2T][p.name.Last2] == command[1] {
+					p.mtx.Unlock()
+					if pos := p.Position(); pos != nil {
+						pos.Zone().Update(pos, p)
+					}
+					return
+				}
+			}
+		}
+		p.name.Last2T = origT
+		p.name.Last2 = orig
+		p.mtx.Unlock()
+	case "last name 3":
+		if len(command) != 2 {
+			return
+		}
+		p.mtx.Lock()
+		origT := p.name.Last3T
+		orig := p.name.Last3
+		for p.name.Last3T = 0; p.name.Last3T < nameSubtypeCount; p.name.Last3T++ {
+			for p.name.Last3 = 0; p.Hero.name.Last3 < uint64(len(names[p.name.Last3T])); p.name.Last3++ {
+				if names[p.name.Last3T][p.name.Last3] == command[1] {
+					p.mtx.Unlock()
+					if pos := p.Position(); pos != nil {
+						pos.Zone().Update(pos, p)
+					}
+					return
+				}
+			}
+		}
+		p.name.Last3T = origT
+		p.name.Last3 = orig
+		p.mtx.Unlock()
 	}
 }
 

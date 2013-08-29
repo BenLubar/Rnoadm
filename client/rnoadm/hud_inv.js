@@ -6,7 +6,7 @@ goog.require('rnoadm.net');
 goog.require('rnoadm.state.Object');
 
 
-rnoadm.hud.register('inv', function(data) {
+rnoadm.hud.inv = function(data) {
   /** @type {number} */
   var hoverX = -1;
   /** @type {number} */
@@ -60,7 +60,7 @@ rnoadm.hud.register('inv', function(data) {
       rnoadm.hud.show('menu', rnoadm.hud.inventory_[hoverX + hoverY * 8]);
     }
   });
-});
+};
 
 
 /**
