@@ -48,6 +48,10 @@ func (f *Forge) Blocking() bool {
 	return true
 }
 
+func (f *Forge) ExtraBlock() [][2]int8 {
+	return [][2]int8{{-1, 0}, {1, 0}}
+}
+
 func (f *Forge) Actions(player world.CombatInventoryMessageAdminHUD) []string {
 	return append([]string{"smelt"}, f.VisibleObject.Actions(player)...)
 }

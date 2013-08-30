@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+const MAX_BLOCK_RADIUS int8 = 2
+
 type Tile struct {
 	objects []ObjectLike
 
@@ -99,6 +101,26 @@ func (t *Tile) Blocked() bool {
 	for _, o := range t.Objects() {
 		if v, ok := o.(Visible); ok && v.Blocking() {
 			return true
+		}
+	}
+	for x := -MAX_BLOCK_RADIUS; x <= MAX_BLOCK_RADIUS; x++ {
+		if uint(t.x)+uint(uint8(x)) > 255 {
+			continue
+		}
+		for y := -MAX_BLOCK_RADIUS; y <= MAX_BLOCK_RADIUS; y++ {
+			if uint(t.y)+uint(uint8(y)) > 255 {
+				continue
+			}
+			tile := t.zone.Tile(t.x+uint8(x), t.y+uint8(y))
+			for _, o := range tile.Objects() {
+				if v, ok := o.(Visible); ok && v.Blocking() {
+					for _, c := range v.ExtraBlock() {
+						if c[0] == -x && c[1] == -y {
+							return true
+						}
+					}
+				}
+			}
 		}
 	}
 	return false

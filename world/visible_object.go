@@ -41,6 +41,8 @@ type Visible interface {
 
 	Blocking() bool
 
+	ExtraBlock() [][2]int8
+
 	Actions(CombatInventoryMessageAdminHUD) []string
 
 	Interact(CombatInventoryMessageAdminHUD, string)
@@ -120,6 +122,10 @@ func (o *VisibleObject) Attached() []Visible {
 
 func (o *VisibleObject) Blocking() bool {
 	return false
+}
+
+func (o *VisibleObject) ExtraBlock() [][2]int8 {
+	return nil
 }
 
 func (o *VisibleObject) Actions(player CombatInventoryMessageAdminHUD) []string {
