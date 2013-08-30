@@ -104,11 +104,11 @@ func (t *Tile) Blocked() bool {
 		}
 	}
 	for x := -MAX_BLOCK_RADIUS; x <= MAX_BLOCK_RADIUS; x++ {
-		if uint(t.x)+uint(uint8(x)) > 255 {
+		if tx := int(t.x) + int(x); tx < 0 || tx > 255 {
 			continue
 		}
 		for y := -MAX_BLOCK_RADIUS; y <= MAX_BLOCK_RADIUS; y++ {
-			if uint(t.y)+uint(uint8(y)) > 255 {
+			if ty := int(t.y) + int(y); ty < 0 || ty > 255 {
 				continue
 			}
 			tile := t.zone.Tile(t.x+uint8(x), t.y+uint8(y))
