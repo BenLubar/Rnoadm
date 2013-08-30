@@ -76,6 +76,14 @@ var equippables = [equipSlotCount][]struct {
 			colors: []string{"#986"},
 			height: 48,
 		},
+		{
+			name:   "steve shirt",
+			sprite: "shirt_steve",
+			colors: []string{"no"},
+			height: 48,
+			
+			adminOnly: true,
+		},
 	},
 	SlotPants: {
 		{
@@ -83,6 +91,14 @@ var equippables = [equipSlotCount][]struct {
 			sprite: "pants_basic",
 			colors: []string{"#754"},
 			height: 48,
+		},
+		{
+			name:   "steve pants",
+			sprite: "pants_steve",
+			colors: []string{"no"},
+			height: 48,
+			
+			adminOnly: true,
 		},
 	},
 	SlotFeet: {
@@ -97,6 +113,14 @@ var equippables = [equipSlotCount][]struct {
 			sprite: "shoes_boots",
 			colors: []string{metalColor},
 			height: 48,
+		},
+		{
+			name:   "steve shoes",
+			sprite: "shoes_steve",
+			colors: []string{"no"},
+			height: 48,
+			
+			adminOnly: true,
 		},
 	},
 	SlotShoulders: {
@@ -113,6 +137,14 @@ var equippables = [equipSlotCount][]struct {
 			sprite: "chest_chainmail",
 			colors: []string{metalColor},
 			height: 48,
+		},
+		{
+			name:   "steve coat",
+			sprite: "chest_steve",
+			colors: []string{"no"},
+			height: 48,
+			
+			adminOnly: true,
 		},
 	},
 	SlotArms: {
