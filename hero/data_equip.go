@@ -81,7 +81,7 @@ var equippables = [equipSlotCount][]struct {
 			sprite: "shirt_steve",
 			colors: []string{"no"},
 			height: 48,
-			
+
 			adminOnly: true,
 		},
 	},
@@ -97,7 +97,7 @@ var equippables = [equipSlotCount][]struct {
 			sprite: "pants_steve",
 			colors: []string{"no"},
 			height: 48,
-			
+
 			adminOnly: true,
 		},
 	},
@@ -119,7 +119,7 @@ var equippables = [equipSlotCount][]struct {
 			sprite: "shoes_steve",
 			colors: []string{"no"},
 			height: 48,
-			
+
 			adminOnly: true,
 		},
 	},
@@ -143,7 +143,7 @@ var equippables = [equipSlotCount][]struct {
 			sprite: "chest_steve",
 			colors: []string{"no"},
 			height: 48,
-			
+
 			adminOnly: true,
 		},
 	},
