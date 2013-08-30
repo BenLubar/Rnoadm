@@ -1,4 +1,5 @@
 goog.provide('rnoadm.hud.inv');
+goog.provide('rnoadm.state.inventory');
 
 goog.require('rnoadm.gfx');
 goog.require('rnoadm.hud');
@@ -17,7 +18,7 @@ rnoadm.hud.inv = function(data) {
   var mouseY = -Infinity;
 
   return new rnoadm.hud.HUD('inv', function(w, h) {
-    var rows = Math.ceil(rnoadm.hud.inventory_.length / 8);
+    var rows = Math.ceil(rnoadm.state.inventory.length / 8);
     var xOffset = w / rnoadm.gfx.TILE_SIZE - 8.1;
     var yOffset = h / rnoadm.gfx.TILE_SIZE - 0.1 - rows;
     rnoadm.gfx.ctx.fillStyle = rnoadm.gfx.INTERFACE_FILL;
@@ -25,12 +26,12 @@ rnoadm.hud.inv = function(data) {
                             h - (rows + 1.2) * rnoadm.gfx.TILE_SIZE,
                             8.2 * rnoadm.gfx.TILE_SIZE,
                             (rows + 0.2) * rnoadm.gfx.TILE_SIZE);
-    rnoadm.hud.inventory_.forEach(function(item) {
+    rnoadm.state.inventory.forEach(function(item) {
       item.paint(xOffset, yOffset);
     });
     if (hoverX >= 0 && hoverX < 8 && hoverY >= 0 && hoverY < rows &&
-        hoverX + hoverY * 8 < rnoadm.hud.inventory_.length) {
-      var text = new rnoadm.gfx.Text(rnoadm.hud.inventory_[hoverX +
+        hoverX + hoverY * 8 < rnoadm.state.inventory.length) {
+      var text = new rnoadm.gfx.Text(rnoadm.state.inventory[hoverX +
           hoverY * 8].name, '#fff', false, true);
       var width = (text.width() + 0.2) * rnoadm.gfx.TILE_SIZE;
       var height = (text.height() + 0.2) * rnoadm.gfx.TILE_SIZE;
@@ -40,7 +41,7 @@ rnoadm.hud.inv = function(data) {
                  mouseY / rnoadm.gfx.TILE_SIZE + text.height() + 0.1);
     }
   }, function(x, y, w, h) {
-    var rows = Math.ceil(rnoadm.hud.inventory_.length / 8);
+    var rows = Math.ceil(rnoadm.state.inventory.length / 8);
     mouseX = x;
     mouseY = y;
     hoverX = Math.floor((x - w) / rnoadm.gfx.TILE_SIZE + 8.1);
@@ -54,10 +55,10 @@ rnoadm.hud.inv = function(data) {
   }, function(x, y, w, h) {
     return true;
   }, function(x, y, w, h) {
-    var rows = Math.ceil(rnoadm.hud.inventory_.length / 8);
+    var rows = Math.ceil(rnoadm.state.inventory.length / 8);
     if (hoverX >= 0 && hoverX < 8 && hoverY >= 0 && hoverY < rows &&
-        hoverX + hoverY * 8 < rnoadm.hud.inventory_.length) {
-      rnoadm.hud.show('menu', rnoadm.hud.inventory_[hoverX + hoverY * 8]);
+        hoverX + hoverY * 8 < rnoadm.state.inventory.length) {
+      rnoadm.hud.show('menu', rnoadm.state.inventory[hoverX + hoverY * 8]);
     }
   });
 };
@@ -65,19 +66,18 @@ rnoadm.hud.inv = function(data) {
 
 /**
  * @type {Array.<rnoadm.state.Object>}
- * @private
  * @const
  */
-rnoadm.hud.inventory_ = [];
+rnoadm.state.inventory = [];
 
 rnoadm.net.addHandler('Inventory', function(inventory) {
   /** @type {Object.<string, rnoadm.state.Object>} */
   var old = {};
-  rnoadm.hud.inventory_.forEach(function(item) {
+  rnoadm.state.inventory.forEach(function(item) {
     old[item.id] = item;
   });
 
-  rnoadm.hud.inventory_.length = 0;
+  rnoadm.state.inventory.length = 0;
   inventory.forEach(function(item, i) {
     /** @type {rnoadm.state.Object} */
     var obj = old[item['I']];
@@ -88,7 +88,7 @@ rnoadm.net.addHandler('Inventory', function(inventory) {
       obj = new rnoadm.state.Object(i % 8, Math.floor(i / 8),
                                     item['I'], item['O']);
     }
-    rnoadm.hud.inventory_.push(obj);
+    rnoadm.state.inventory.push(obj);
   });
 
   rnoadm.gfx.repaint();

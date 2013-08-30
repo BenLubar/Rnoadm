@@ -284,6 +284,7 @@ window.addEventListener('keypress', function(e) {
 
 
 rnoadm.net.onConnect.push(function() {
+  rnoadm.hud.activeHuds_.length = 0;
   rnoadm.hud.chat_ = null;
 });
 

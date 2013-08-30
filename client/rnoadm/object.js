@@ -54,6 +54,20 @@ rnoadm.state.Object = function(x, y, id, net) {
 
 
 /**
+ * @return {rnoadm.state.Object}
+ */
+rnoadm.state.Object.prototype.clone = function() {
+  var copy = new rnoadm.state.Object(this.x, this.y, this.id, {
+    'N': this.name,
+    'A': this.actions,
+    'S': null
+  });
+  copy.sprites = this.sprites;
+  return copy;
+};
+
+
+/**
  * @param {!rnoadm.state.NetworkObject} net The object recieved by rnoadm.net.
  */
 rnoadm.state.Object.prototype.update = function(net) {

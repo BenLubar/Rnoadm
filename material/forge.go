@@ -79,6 +79,19 @@ func (f *Forge) Interact(player world.CombatInventoryMessageAdminHUD, action str
 			})
 			return
 		}
-		player.SetHUD("forge", nil)
+		ores := []interface{}{}
+		for _, v := range player.Inventory() {
+			if _, ok := v.(*Ore); ok {
+				ores = append(ores, v.NetworkID())
+			}
+		}
+		for _, v := range player.Inventory() {
+			if _, ok := v.(*Stone); ok {
+				ores = append(ores, v.NetworkID())
+			}
+		}
+		player.SetHUD("forge", map[string]interface{}{
+			"O": ores,
+		})
 	}
 }
