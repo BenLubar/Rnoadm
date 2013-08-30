@@ -16,11 +16,17 @@ type HeroName struct {
 	Last2  uint64
 	Last3T NameSubtype
 	Last3  uint64
+
+	PrefixT NameSubtype
+	Prefix  uint64
+
+	SuffixT NameSubtype
+	Suffix  uint64
 }
 
 func (n *HeroName) serialize() map[string]interface{} {
 	return map[string]interface{}{
-		"v":   uint(0),
+		"v":   uint(1),
 		"ft":  uint64(n.FirstT),
 		"f":   n.First,
 		"n":   n.Nickname,
@@ -30,6 +36,10 @@ func (n *HeroName) serialize() map[string]interface{} {
 		"l2":  n.Last2,
 		"l3t": uint64(n.Last3T),
 		"l3":  n.Last3,
+		"pt":  uint64(n.PrefixT),
+		"p":   n.Prefix,
+		"st":  uint64(n.SuffixT),
+		"s":   n.Suffix,
 	}
 }
 
@@ -37,6 +47,12 @@ func (n *HeroName) unserialize(data map[string]interface{}) {
 	version := data["v"].(uint)
 
 	switch version {
+	case 1:
+		n.Prefix = data["p"].(uint64)
+		n.PrefixT = NameSubtype(data["pt"].(uint64))
+		n.Suffix = data["s"].(uint64)
+		n.SuffixT = NameSubtype(data["st"].(uint64))
+		fallthrough
 	case 0:
 		n.First = data["f"].(uint64)
 		n.FirstT = NameSubtype(data["ft"].(uint64))
@@ -64,7 +80,7 @@ func (n *HeroName) Name() string {
 	}
 
 	if n.Nickname != "" {
-		buf = append(append(append(buf, ' ', '"'), n.Nickname...), '"')
+		buf = append(append(append(buf, " “"...), n.Nickname...), "”"...)
 	}
 
 	if name := names[n.Last1T][n.Last1]; name != "" {
@@ -74,7 +90,7 @@ func (n *HeroName) Name() string {
 	if len(buf) <= 1 {
 		return "unknown"
 	}
-	return string(buf[1:])
+	return names[n.PrefixT][n.Prefix] + string(buf[1:]) + names[n.SuffixT][n.Suffix]
 }
 
 // GenerateHumanName randomly generates a name suitable for a human. The first
