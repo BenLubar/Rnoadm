@@ -153,12 +153,12 @@ func (a *PlayerAncestry) Save() (uint, interface{}, []world.ObjectLike) {
 	a.mtx.Lock()
 	defer a.mtx.Unlock()
 
-	objects := []world.ObjectLike{&a.Object}
+	objects := []world.ObjectLike{}
 	for _, h := range a.ancestors {
 		objects = append(objects, h)
 	}
 
-	return 0, uint(0), objects
+	return 1, uint(0), objects
 }
 
 func (a *PlayerAncestry) Load(version uint, data interface{}, attached []world.ObjectLike) {
@@ -167,8 +167,9 @@ func (a *PlayerAncestry) Load(version uint, data interface{}, attached []world.O
 
 	switch version {
 	case 0:
-		a.Object = *attached[0].(*world.Object)
 		attached = attached[1:]
+		fallthrough
+	case 1:
 		a.ancestors = make([]*Hero, len(attached))
 		for i, h := range attached {
 			a.ancestors[i] = h.(*Hero)
