@@ -12,6 +12,7 @@ type StationaryModule struct {
 
 func init() {
 	Register("modstay", Module((*StationaryModule)(nil)))
+	moduleByName["stationary"] = func() Module { return &StationaryModule{} }
 }
 
 func (m *StationaryModule) ChooseSchedule() Schedule {
@@ -25,6 +26,7 @@ type WandererModule struct {
 
 func init() {
 	Register("modwander", Module((*WandererModule)(nil)))
+	moduleByName["wanderer"] = func() Module { return &WandererModule{} }
 }
 
 func (m *WandererModule) ChooseSchedule() Schedule {
@@ -55,6 +57,7 @@ type GuardDogModule struct {
 
 func init() {
 	Register("modguarddog", Module((*GuardDogModule)(nil)))
+	moduleByName["guard dog"] = func() Module { return &GuardDogModule{} }
 }
 
 func (m *GuardDogModule) ChooseSchedule() Schedule {
@@ -64,7 +67,7 @@ func (m *GuardDogModule) ChooseSchedule() Schedule {
 		m.y = &y
 	}
 	if x == *m.x && y == *m.y {
-		return &DelaySchedule{Delay: 5}
+		return nil
 	}
 	return NewWalkSchedule(*m.x, *m.y, false, 0)
 }

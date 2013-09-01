@@ -4,6 +4,24 @@ import (
 	"sync"
 )
 
+func SpawnModules(s string) (LivingObject, string) {
+	var o LivingObject
+
+spawnModules:
+	for {
+		for name, f := range moduleByName {
+			if len(s) > len(name) && s[:len(name)] == name && s[len(name)] == ' ' {
+				o.modules = append(o.modules, f())
+				s = s[len(name) + 1:]
+				continue spawnModules
+			}
+		}
+		return o, s
+	}
+}
+
+var moduleByName = make(map[string]func() Module)
+
 type Module interface {
 	ObjectLike
 
@@ -33,6 +51,10 @@ func (m *BaseModule) ChooseSchedule() Schedule {
 
 func (m *BaseModule) notifyOwner(owner Living) {
 	m.mtx.Lock()
+	if m.owner == owner {
+		m.mtx.Unlock()
+		return
+	}
 	m.owner = owner
 	m.mtx.Unlock()
 

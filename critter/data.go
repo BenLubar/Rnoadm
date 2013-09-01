@@ -1,7 +1,6 @@
 package critter
 
 import (
-	"github.com/BenLubar/Rnoadm/world"
 	"math/rand"
 )
 
@@ -24,7 +23,6 @@ var critterInfo = [critterTypeCount]struct {
 	maxHealth uint64
 	sprite    string
 	genColors func() []string
-	schedule  func(*Critter, *world.Tile) world.Schedule
 }{
 	SlimeMage: {
 		name:      "slime mage",
@@ -39,7 +37,6 @@ var critterInfo = [critterTypeCount]struct {
 				hex[rand.Intn(6)+10],
 			})}
 		},
-		schedule: followHeroSchedule(7),
 	},
 	SlimeBrute: {
 		name:      "slime brute",
@@ -54,7 +51,6 @@ var critterInfo = [critterTypeCount]struct {
 				hex[rand.Intn(6)],
 			})}
 		},
-		schedule: followHeroSchedule(7),
 	},
 	StickySlime: {
 		name:      "sticky slime",
@@ -69,7 +65,6 @@ var critterInfo = [critterTypeCount]struct {
 				hex[rand.Intn(6)],
 			})}
 		},
-		schedule: followHeroSchedule(15),
 	},
 	Cow: {
 		name:      "cow",
@@ -84,7 +79,6 @@ var critterInfo = [critterTypeCount]struct {
 				hex[rand.Intn(6)],
 			})}
 		},
-		schedule: wanderSchedule(4),
 	},
 }
 
@@ -93,6 +87,3 @@ func (t CritterType) Examine() string          { return critterInfo[t].examine }
 func (t CritterType) MaxHealth() uint64        { return critterInfo[t].maxHealth }
 func (t CritterType) Sprite() string           { return critterInfo[t].sprite }
 func (t CritterType) GenerateColors() []string { return critterInfo[t].genColors() }
-func (t CritterType) Schedule(c *Critter, pos *world.Tile) world.Schedule {
-	return critterInfo[t].schedule(c, pos)
-}

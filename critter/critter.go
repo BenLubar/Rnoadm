@@ -9,6 +9,8 @@ import (
 type Critter struct {
 	world.CombatObject
 
+	modules []world.Module
+
 	kind   CritterType
 	colors []string
 
@@ -23,9 +25,14 @@ func init() {
 	world.Register("critter", world.Combat((*Critter)(nil)))
 
 	world.RegisterSpawnFunc(func(s string) world.Visible {
+		living, s := world.SpawnModules(s)
+
 		for t := CritterType(0); t < critterTypeCount; t++ {
 			if s == t.Name() {
 				return &Critter{
+					CombatObject: world.CombatObject{
+						LivingObject: living,
+					},
 					kind:   t,
 					colors: t.GenerateColors(),
 				}
@@ -94,10 +101,6 @@ func (c *Critter) Colors() []string {
 
 func (c *Critter) Think() {
 	c.CombatObject.Think()
-
-	if pos := c.Position(); pos != nil && !c.HasSchedule() {
-		c.SetSchedule(c.Type().Schedule(c, pos))
-	}
 
 	c.mtx.Lock()
 	if c.animationTicks > 0 {

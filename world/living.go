@@ -15,6 +15,7 @@ type Living interface {
 
 type LivingObject struct {
 	VisibleObject
+	modules []Module
 
 	delay    uint
 	schedule Schedule
@@ -27,22 +28,37 @@ func init() {
 }
 
 func (o *LivingObject) Save() (uint, interface{}, []ObjectLike) {
-	schedule := o.schedule
-	if schedule == nil || !schedule.ShouldSave() {
-		schedule = &cancelSchedule{}
+	o.mtx.Lock()
+	defer o.mtx.Unlock()
+
+	attached := []ObjectLike{o.schedule}
+	if o.schedule == nil || !o.schedule.ShouldSave() {
+		attached[0] = &cancelSchedule{}
 	}
-	return 0, map[string]interface{}{
+
+	for _, m := range o.modules {
+		attached = append(attached, m)
+	}
+
+	return 1, map[string]interface{}{
 		"d": o.delay,
-	}, []ObjectLike{&o.VisibleObject, schedule}
+		"m": uint(len(o.modules)),
+	}, attached
 }
 
 func (o *LivingObject) Load(version uint, data interface{}, attached []ObjectLike) {
 	switch version {
 	case 0:
+		data.(map[string]interface{})["m"] = uint(0)
+		attached = attached[1:]
+	case 1:
 		dataMap := data.(map[string]interface{})
-		o.VisibleObject = *attached[0].(*VisibleObject)
 		o.delay = dataMap["d"].(uint)
-		o.schedule = attached[1].(Schedule)
+		o.schedule = attached[0].(Schedule)
+		o.modules = make([]Module, dataMap["m"].(uint))
+		for i := range o.modules {
+			o.modules[i] = attached[i+1].(Module)
+		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
@@ -82,6 +98,17 @@ func (o *LivingObject) Think() {
 	o.mtx.Unlock()
 
 	if sched == nil {
+		o.mtx.Lock()
+		defer o.mtx.Unlock()
+
+		for _, m := range o.modules {
+			m.notifyOwner(o.Outer().(Living))
+			if s := m.ChooseSchedule(); s != nil {
+				o.schedule = s
+				return
+			}
+		}
+		o.schedule = nil
 		return
 	}
 
