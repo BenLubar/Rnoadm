@@ -396,7 +396,7 @@ func (p *Player) Attached() []world.Visible {
 	return p.Hero.Attached()
 }
 
-func (p *Player) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+func (p *Player) Actions(player world.PlayerLike) []string {
 	if i := p.impersonate(); i != nil {
 		return i.Actions(player)
 	}
@@ -968,6 +968,75 @@ func (p *Player) Think() {
 	if i := p.impersonate(); i != nil {
 		i.Think()
 	}
+}
+
+func (p *Player) Weight() uint64 {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	return p.weight()
+}
+
+func (p *Player) weight() uint64 {
+	var weight uint64
+	for _, i := range p.items {
+		if item, ok := i.(world.Item); ok {
+			weight += item.Weight()
+		}
+	}
+	// equipped items count as half their weight.
+	for _, e := range p.equipped {
+		weight += e.Weight() / 2
+	}
+	return weight
+}
+
+func (p *Player) WeightMax() uint64 {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	return p.weightMax()
+}
+
+func (p *Player) weightMax() uint64 {
+	return 50 * 1000 // 50 kilograms or 50000 grams
+}
+
+func (p *Player) Volume() uint64 {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	return p.volume()
+}
+
+func (p *Player) volume() uint64 {
+	var volume uint64
+	for _, i := range p.items {
+		if item, ok := i.(world.Item); ok {
+			volume += item.Volume()
+		}
+	}
+	// equipped items do not count towards volume.
+	return volume
+}
+
+func (p *Player) canHoldItem(o world.Visible) bool {
+	volume := p.volume()
+	if item, ok := o.(world.Item); ok {
+		volume += item.Volume()
+	}
+	return p.volumeMax() >= volume
+}
+
+func (p *Player) VolumeMax() uint64 {
+	p.mtx.Lock()
+	defer p.mtx.Unlock()
+
+	return p.volumeMax()
+}
+
+func (p *Player) volumeMax() uint64 {
+	return 100 * 100 * 100 // 1 cubic meter, or 1000000 cubic centimeters
 }
 
 type HUD struct {

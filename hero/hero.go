@@ -16,6 +16,7 @@ type HeroLike interface {
 	Occupation() Occupation
 
 	world.InventoryLike
+	canHoldItem(item world.Visible) bool
 	notifyInventoryChanged()
 }
 
@@ -323,7 +324,7 @@ func (h *Hero) GiveItem(item world.Visible) bool {
 	}
 
 	h.mtx.Lock()
-	if h.canHoldItem(item) {
+	if h.Outer().(HeroLike).canHoldItem(item) {
 		h.giveItem(item)
 	}
 	h.mtx.Unlock()

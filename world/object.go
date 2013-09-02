@@ -54,7 +54,7 @@ func (o *Object) Outer() ObjectLike {
 }
 
 func (o *Object) notifyPosition(t *Tile) *Tile {
-	if p, ok := o.outer.(CombatInventoryMessageAdminHUD); t != nil && ok {
+	if p, ok := o.outer.(PlayerLike); t != nil && ok {
 		if i, ok := t.Zone().impersonation[p]; ok {
 			i.notifyPosition(t)
 		}

@@ -24,13 +24,17 @@ type SetHUDLike interface {
 	SetHUD(string, map[string]interface{})
 }
 
-type CombatInventoryMessageAdminHUD interface {
+type PlayerLike interface {
 	Combat
 	InventoryLike
 	SendMessageLike
 	AdminLike
 	SetHUDLike
 	Instance(*Tile) Instance
+	Weight() uint64
+	WeightMax() uint64
+	Volume() uint64
+	VolumeMax() uint64
 }
 
 type Instance interface {

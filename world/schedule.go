@@ -152,7 +152,7 @@ type ActionSchedule struct {
 }
 
 func (s *ActionSchedule) Act(o Living) (uint, bool) {
-	s.Target.Interact(o.(CombatInventoryMessageAdminHUD), s.Action)
+	s.Target.Interact(o.(PlayerLike), s.Action)
 	return 0, false
 }
 

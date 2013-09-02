@@ -54,11 +54,11 @@ func (f *Forge) ExtraBlock() [][2]int8 {
 	return [][2]int8{{-1, 0}, {1, 0}}
 }
 
-func (f *Forge) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+func (f *Forge) Actions(player world.PlayerLike) []string {
 	return append([]string{"smelt"}, f.VisibleObject.Actions(player)...)
 }
 
-func (f *Forge) Interact(player world.CombatInventoryMessageAdminHUD, action string) {
+func (f *Forge) Interact(player world.PlayerLike, action string) {
 	switch action {
 	default:
 		f.VisibleObject.Interact(player, action)
@@ -72,7 +72,7 @@ func (f *Forge) Interact(player world.CombatInventoryMessageAdminHUD, action str
 		if px, py := ppos.Position(); px != x || py != y+1 {
 			player.SetSchedule(&world.ScheduleSchedule{
 				Schedules: []world.Schedule{
-					world.NewWalkSchedule(x, y, false, 0),
+					world.NewWalkSchedule(x, y, false, uint(player.Weight()/player.WeightMax())),
 					&world.ActionSchedule{
 						Target: f,
 						Action: action,
@@ -131,7 +131,7 @@ func (f *Forge) Interact(player world.CombatInventoryMessageAdminHUD, action str
 	}
 }
 
-func (f *Forge) Command(player world.CombatInventoryMessageAdminHUD, data map[string]interface{}) {
+func (f *Forge) Command(player world.PlayerLike, data map[string]interface{}) {
 	defer func() {
 		recover() // ignore errors caused by malformed packets.
 	}()

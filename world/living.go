@@ -119,14 +119,14 @@ func (o *LivingObject) Think() {
 	}
 }
 
-func (o *LivingObject) Actions(player CombatInventoryMessageAdminHUD) []string {
+func (o *LivingObject) Actions(player PlayerLike) []string {
 	if player == o.Outer() {
 		return o.VisibleObject.Actions(player)
 	}
 	return append([]string{"follow"}, o.VisibleObject.Actions(player)...)
 }
 
-func (o *LivingObject) Interact(player CombatInventoryMessageAdminHUD, action string) {
+func (o *LivingObject) Interact(player PlayerLike, action string) {
 	switch action {
 	default:
 		o.VisibleObject.Interact(player, action)
@@ -139,7 +139,7 @@ func (o *LivingObject) Interact(player CombatInventoryMessageAdminHUD, action st
 		x, y := pos.Position()
 		player.SetSchedule(&ScheduleSchedule{
 			Schedules: []Schedule{
-				NewWalkSchedule(x, y, true, 0),
+				NewWalkSchedule(x, y, true, uint(player.Weight()/player.WeightMax())),
 				&DelaySchedule{Delay: 1},
 				&ActionSchedule{Target: o.Outer().(Living), Action: action},
 			},

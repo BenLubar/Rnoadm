@@ -290,7 +290,7 @@ func (e *Equip) AdminOnly() bool {
 	return equippables[e.slot][e.kind].adminOnly
 }
 
-func (e *Equip) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+func (e *Equip) Actions(player world.PlayerLike) []string {
 	actions := e.VisibleObject.Actions(player)
 	if e.Position() == nil {
 		if e.wearer == nil {
@@ -302,7 +302,7 @@ func (e *Equip) Actions(player world.CombatInventoryMessageAdminHUD) []string {
 	return actions
 }
 
-func (e *Equip) Interact(player world.CombatInventoryMessageAdminHUD, action string) {
+func (e *Equip) Interact(player world.PlayerLike, action string) {
 	p := player.(*Player)
 	switch action {
 	case "equip":

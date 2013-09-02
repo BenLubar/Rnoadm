@@ -90,7 +90,7 @@ func (t *Tree) Colors() []string {
 	}
 }
 
-func (t *Tree) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+func (t *Tree) Actions(player world.PlayerLike) []string {
 	actions := t.Node.Actions(player)
 
 	actions = append([]string{"chop"}, actions...)

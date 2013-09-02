@@ -118,7 +118,7 @@ func (o *CombatObject) Die() {
 	o.Position().Remove(o.Outer())
 }
 
-/*func (o *CombatObject) Actions(player CombatInventoryMessageAdminHUD) []string {
+/*func (o *CombatObject) Actions(player PlayerLike) []string {
 	if player == o.Outer() {
 		return o.LivingObject.Actions(player)
 	}

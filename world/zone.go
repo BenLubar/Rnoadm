@@ -10,8 +10,8 @@ type Zone struct {
 	tiles     [256 * 256]Tile
 	listeners map[*ZoneListener]bool
 
-	impersonation map[CombatInventoryMessageAdminHUD]Visible
-	impersonated  map[Visible]CombatInventoryMessageAdminHUD
+	impersonation map[PlayerLike]Visible
+	impersonated  map[Visible]PlayerLike
 
 	mtx sync.Mutex
 }
@@ -148,13 +148,13 @@ func (z *Zone) Update(t *Tile, obj ObjectLike) {
 	}
 }
 
-func (z *Zone) Impersonate(player CombatInventoryMessageAdminHUD, o Visible) {
+func (z *Zone) Impersonate(player PlayerLike, o Visible) {
 	z.lock()
 	defer z.unlock()
 
 	if z.impersonation == nil {
-		z.impersonation = make(map[CombatInventoryMessageAdminHUD]Visible)
-		z.impersonated = make(map[Visible]CombatInventoryMessageAdminHUD)
+		z.impersonation = make(map[PlayerLike]Visible)
+		z.impersonated = make(map[Visible]PlayerLike)
 	}
 
 	if old, ok := z.impersonation[player]; ok {

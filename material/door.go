@@ -56,7 +56,7 @@ func (d *Door) Blocking() bool {
 	return !d.open
 }
 
-func (d *Door) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+func (d *Door) Actions(player world.PlayerLike) []string {
 	actions := d.VisibleObject.Actions(player)
 
 	d.mtx.Lock()
@@ -72,7 +72,7 @@ func (d *Door) Actions(player world.CombatInventoryMessageAdminHUD) []string {
 	return actions
 }
 
-func (d *Door) Interact(player world.CombatInventoryMessageAdminHUD, action string) {
+func (d *Door) Interact(player world.PlayerLike, action string) {
 	switch action {
 	case "open":
 		pos := d.Position()
@@ -84,7 +84,7 @@ func (d *Door) Interact(player world.CombatInventoryMessageAdminHUD, action stri
 		if (px == x && py != y-1 && py != y+1) || (py == y && px != x-1 && px != x+1) || (px != x && py != y) {
 			player.SetSchedule(&world.ScheduleSchedule{
 				Schedules: []world.Schedule{
-					world.NewWalkSchedule(x, y, true, 0),
+					world.NewWalkSchedule(x, y, true, uint(player.Weight()/player.WeightMax())),
 					&world.ActionSchedule{
 						Action: "open",
 						Target: d.Outer().(world.Visible),
@@ -107,7 +107,7 @@ func (d *Door) Interact(player world.CombatInventoryMessageAdminHUD, action stri
 		if (px == x && (py < y-1 || py > y+1)) || (py == y && (px < x-1 || px > x+1)) || (px != x && py != y) {
 			player.SetSchedule(&world.ScheduleSchedule{
 				Schedules: []world.Schedule{
-					world.NewWalkSchedule(x, y, true, 0),
+					world.NewWalkSchedule(x, y, true, uint(player.Weight()/player.WeightMax())),
 					&world.ActionSchedule{
 						Action: "close",
 						Target: d.Outer().(world.Visible),

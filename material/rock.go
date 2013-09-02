@@ -109,7 +109,7 @@ func (r *Rock) Colors() []string {
 	return []string{stone.Color()}
 }
 
-func (r *Rock) Actions(player world.CombatInventoryMessageAdminHUD) []string {
+func (r *Rock) Actions(player world.PlayerLike) []string {
 	actions := r.Node.Actions(player)
 
 	actions = append([]string{"quarry"}, actions...)

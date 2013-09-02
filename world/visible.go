@@ -43,9 +43,9 @@ type Visible interface {
 
 	ExtraBlock() [][2]int8
 
-	Actions(CombatInventoryMessageAdminHUD) []string
+	Actions(PlayerLike) []string
 
-	Interact(CombatInventoryMessageAdminHUD, string)
+	Interact(PlayerLike, string)
 }
 
 type VisibleObject struct {
@@ -128,7 +128,7 @@ func (o *VisibleObject) ExtraBlock() [][2]int8 {
 	return nil
 }
 
-func (o *VisibleObject) Actions(player CombatInventoryMessageAdminHUD) []string {
+func (o *VisibleObject) Actions(player PlayerLike) []string {
 	var actions []string
 	if _, ok := o.Outer().(Item); ok {
 		if o.Position() == nil {
@@ -144,7 +144,7 @@ func (o *VisibleObject) Actions(player CombatInventoryMessageAdminHUD) []string 
 	return actions
 }
 
-func (o *VisibleObject) Interact(player CombatInventoryMessageAdminHUD, action string) {
+func (o *VisibleObject) Interact(player PlayerLike, action string) {
 	switch action {
 	case "drop":
 		if _, ok := o.Outer().(Item); ok {
@@ -162,7 +162,7 @@ func (o *VisibleObject) Interact(player CombatInventoryMessageAdminHUD, action s
 			ex, ey := pos.Position()
 			player.SetSchedule(&ScheduleSchedule{
 				Schedules: []Schedule{
-					NewWalkSchedule(ex, ey, false, 0),
+					NewWalkSchedule(ex, ey, false, uint(player.Weight()/player.WeightMax())),
 					&ActionSchedule{
 						Action: "take",
 						Target: o.Outer().(Visible),
