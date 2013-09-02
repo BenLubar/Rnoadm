@@ -278,6 +278,7 @@ func socketHandler(ws *websocket.Conn) {
 		},
 	}
 
+next:
 	for {
 		select {
 		case packet, ok := <-packets:
@@ -361,6 +362,29 @@ func socketHandler(ws *websocket.Conn) {
 					} else {
 						return
 					}
+
+				case "forge":
+					data, ok := packet.HUD.Data.(map[string]interface{})
+					if !ok {
+						return
+					}
+					pos := player.Position()
+					if pos == nil {
+						return
+					}
+					x, y := pos.Position()
+					if y == 0 {
+						return
+					}
+					y--
+					t := pos.Zone().Tile(x, y)
+					for _, o := range t.Objects() {
+						if forge, ok := o.(*material.Forge); ok {
+							forge.Command(player, data)
+							continue next
+						}
+					}
+					return
 				}
 			}
 			if packet.Chat != nil {

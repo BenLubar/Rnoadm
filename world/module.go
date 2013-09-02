@@ -12,7 +12,7 @@ spawnModules:
 		for name, f := range moduleByName {
 			if len(s) > len(name) && s[:len(name)] == name && s[len(name)] == ' ' {
 				o.modules = append(o.modules, f())
-				s = s[len(name) + 1:]
+				s = s[len(name)+1:]
 				continue spawnModules
 			}
 		}

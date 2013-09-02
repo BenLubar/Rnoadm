@@ -151,6 +151,10 @@ func (s *Stone) Load(version uint, data interface{}, attached []world.ObjectLike
 	}
 }
 
+func (s *Stone) Material() *Material {
+	return s.material
+}
+
 func (s *Stone) Name() string {
 	return s.material.Name() + "stone"
 }
@@ -217,6 +221,10 @@ func (o *Ore) Load(version uint, data interface{}, attached []world.ObjectLike) 
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+}
+
+func (o *Ore) Material() *Material {
+	return o.material
 }
 
 func (o *Ore) Name() string {

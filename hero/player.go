@@ -220,6 +220,32 @@ func (pi *PlayerInstances) Load(version uint, data interface{}, attached []world
 	}
 }
 
+func (p *Player) Instance(pos *world.Tile) world.Instance {
+	p.mtx.Lock()
+	pi := p.instances
+	p.mtx.Unlock()
+
+	return pi.Get(pos)
+}
+
+func (pi *PlayerInstances) Get(pos *world.Tile) world.Instance {
+	pi.mtx.Lock()
+	defer pi.mtx.Unlock()
+
+	if pi.instances == nil {
+		pi.instances = make(map[instanceLocation]*PlayerInstance)
+	}
+	z := pos.Zone()
+	tx, ty := pos.Position()
+	loc := instanceLocation{ZoneX: z.X, ZoneY: z.Y, TileX: tx, TileY: ty}
+	if i, ok := pi.instances[loc]; ok {
+		return i
+	}
+	i := &PlayerInstance{}
+	pi.instances[loc] = i
+	return i
+}
+
 type instanceLocation struct {
 	ZoneX, ZoneY int64
 	TileX, TileY uint8
@@ -284,6 +310,20 @@ func (pi *PlayerInstance) Load(version uint, data interface{}, attached []world.
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+}
+
+func (pi *PlayerInstance) Items(f func([]world.Visible) []world.Visible) {
+	pi.mtx.Lock()
+	defer pi.mtx.Unlock()
+
+	pi.items = f(pi.items)
+}
+
+func (pi *PlayerInstance) Last(f func(time.Time) time.Time) {
+	pi.mtx.Lock()
+	defer pi.mtx.Unlock()
+
+	pi.last = f(pi.last)
 }
 
 func (p *Player) Name() string {

@@ -2,6 +2,8 @@ package material
 
 import (
 	"github.com/BenLubar/Rnoadm/world"
+	"strconv"
+	"time"
 )
 
 type Forge struct {
@@ -81,17 +83,73 @@ func (f *Forge) Interact(player world.CombatInventoryMessageAdminHUD, action str
 		}
 		ores := []interface{}{}
 		for _, v := range player.Inventory() {
-			if _, ok := v.(*Ore); ok {
-				ores = append(ores, v.NetworkID())
+			if o, ok := v.(*Ore); ok {
+				ores = append(ores, map[string]interface{}{
+					"i": o.NetworkID(),
+					"q": o.Material().Quality(),
+				})
 			}
 		}
 		for _, v := range player.Inventory() {
-			if _, ok := v.(*Stone); ok {
-				ores = append(ores, v.NetworkID())
+			if s, ok := v.(*Stone); ok {
+				ores = append(ores, map[string]interface{}{
+					"i": s.NetworkID(),
+					"q": s.Material().Quality(),
+				})
 			}
 		}
+		instance := player.Instance(f.Position())
+		var done time.Time
+		instance.Last(func(last time.Time) time.Time {
+			done = last
+			return last
+		})
+		contents := []interface{}{}
+		instance.Items(func(items []world.Visible) []world.Visible {
+			for _, i := range items {
+				var sprites []map[string]interface{}
+				for j, c := range i.Colors() {
+					sprites = append(sprites, map[string]interface{}{
+						"S": i.Sprite(),
+						"C": c,
+						"E": map[string]interface{}{
+							"y": j,
+						},
+					})
+				}
+				contents = append(contents, sprites)
+				// 4 minutes per 5kg of ore
+				done = done.Add(time.Minute * 4 * time.Duration(i.(world.Item).Weight()) / 5000)
+			}
+			return items
+		})
 		player.SetHUD("forge", map[string]interface{}{
 			"O": ores,
+			"C": contents,
+			"T": done,
 		})
+	}
+}
+
+func (f *Forge) Command(player world.CombatInventoryMessageAdminHUD, data map[string]interface{}) {
+	instance := player.Instance(f.Position())
+	switch data["A"].(string) {
+	case "a":
+		id, err := strconv.ParseUint(data["I"].(string), 10, 64)
+		if err != nil {
+			return
+		}
+		for _, item := range player.Inventory() {
+			if item.NetworkID() == id && player.RemoveItem(item) {
+				instance.Items(func(items []world.Visible) []world.Visible {
+					return append(items, item)
+				})
+				instance.Last(func(t time.Time) time.Time {
+					return time.Now().UTC()
+				})
+				f.Interact(player, "smelt")
+				break
+			}
+		}
 	}
 }

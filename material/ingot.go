@@ -9,8 +9,7 @@ import (
 type Ingot struct {
 	world.VisibleObject
 
-	material *Material
-	alloy    *Material
+	materials []*Material
 }
 
 func init() {
@@ -23,8 +22,7 @@ func init() {
 		}
 		if s == "ingot" {
 			return &Ingot{
-				material: material,
-				alloy:    &Material{},
+				materials: []*Material{material},
 			}
 		}
 		return nil
@@ -32,32 +30,63 @@ func init() {
 }
 
 func (i *Ingot) Save() (uint, interface{}, []world.ObjectLike) {
-	return 0, uint(0), []world.ObjectLike{i.material, i.alloy}
+	attached := []world.ObjectLike{}
+
+	for _, m := range i.materials {
+		attached = append(attached, m)
+	}
+
+	return 1, map[string]interface{}{
+		"m": uint(len(i.materials)),
+	}, attached
 }
 
 func (i *Ingot) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
-		i.material = attached[0].(*Material)
-		i.alloy = attached[1].(*Material)
+		if attached[1].(*Material).Name() == "" {
+			attached = attached[:1]
+		}
+		data = map[string]interface{}{
+			"m": uint(len(attached)),
+		}
+		fallthrough
+	case 1:
+		dataMap := data.(map[string]interface{})
+		i.materials = make([]*Material, dataMap["m"].(uint))
+		for j := range i.materials {
+			i.materials[j] = attached[j].(*Material)
+		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
 }
 
 func (i *Ingot) Name() string {
-	return i.material.Name() + i.alloy.Name() + "ingot"
+	materials := ""
+	for _, m := range i.materials {
+		if name := m.Name(); name != "" {
+			if materials == "" {
+				materials = name
+			} else {
+				materials = materials[:len(materials)-1] + "-" + name
+			}
+		}
+	}
+	return materials + "ingot"
 }
 
 func (i *Ingot) Examine() (string, [][][2]string) {
 	_, info := i.VisibleObject.Examine()
 
-	info = append(info, i.material.Info()...)
+	for _, m := range i.materials {
+		info = append(info, m.Info()...)
 
-	info = append(info, [][2]string{
-		{humanize.Comma(int64(i.material.metal.Strength())), "#4fc"},
-		{" strength", "#ccc"},
-	})
+		info = append(info, [][2]string{
+			{humanize.Comma(int64(m.metal.Strength())), "#4fc"},
+			{" strength", "#ccc"},
+		})
+	}
 
 	return "a bar of metal.", info
 }
@@ -67,7 +96,7 @@ func (i *Ingot) Sprite() string {
 }
 
 func (i *Ingot) Colors() []string {
-	return []string{i.material.metal.Color()}
+	return []string{i.materials[0].metal.Color()}
 }
 
 func (i *Ingot) Volume() uint64 {

@@ -25,6 +25,7 @@ rnoadm.hud.register('inv', rnoadm.hud.inv);
 rnoadm.hud.register('menu', rnoadm.hud.menu);
 rnoadm.hud.register('menu2', rnoadm.hud.menu2);
 
+
 /**
  * Logger for rnoadm.main
  *

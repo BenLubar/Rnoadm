@@ -1,5 +1,9 @@
 package world
 
+import (
+	"time"
+)
+
 type InventoryLike interface {
 	Inventory() []Visible
 	GiveItem(Visible) bool
@@ -26,6 +30,12 @@ type CombatInventoryMessageAdminHUD interface {
 	SendMessageLike
 	AdminLike
 	SetHUDLike
+	Instance(*Tile) Instance
+}
+
+type Instance interface {
+	Items(func([]Visible) []Visible)
+	Last(func(time.Time) time.Time)
 }
 
 type Item interface {

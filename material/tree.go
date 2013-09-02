@@ -129,6 +129,10 @@ func (l *Logs) Load(version uint, data interface{}, attached []world.ObjectLike)
 	}
 }
 
+func (l *Logs) Material() *Material {
+	return l.material
+}
+
 func (l *Logs) Name() string {
 	return l.material.Name() + "logs"
 }
