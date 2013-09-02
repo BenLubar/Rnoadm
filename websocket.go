@@ -127,8 +127,7 @@ func socketHandler(ws *websocket.Conn) {
 		defer close(packets)
 		for {
 			var packet clientPacket
-			err = websocket.JSON.Receive(ws, &packet)
-			if err != nil {
+			if err := websocket.JSON.Receive(ws, &packet); err != nil {
 				if err == io.EOF {
 					return
 				}

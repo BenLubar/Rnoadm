@@ -132,6 +132,9 @@ func (f *Forge) Interact(player world.CombatInventoryMessageAdminHUD, action str
 }
 
 func (f *Forge) Command(player world.CombatInventoryMessageAdminHUD, data map[string]interface{}) {
+	defer func() {
+		recover() // ignore errors caused by malformed packets.
+	}()
 	instance := player.Instance(f.Position())
 	switch data["A"].(string) {
 	case "a":

@@ -73,7 +73,9 @@ func (z *Zone) Tile(x, y uint8) *Tile {
 
 func (z *Zone) tile(x, y uint8) *Tile {
 	t := &z.tiles[uint(x)|uint(y)<<8]
-	t.x, t.y, t.zone = x, y, z
+	if t.zone == nil {
+		t.x, t.y, t.zone = x, y, z
+	}
 
 	return t
 }
