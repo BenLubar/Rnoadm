@@ -984,9 +984,9 @@ func (p *Player) weight() uint64 {
 			weight += item.Weight()
 		}
 	}
-	// equipped items count as half their weight.
+	// equipped items count as a quarter of their weight.
 	for _, e := range p.equipped {
-		weight += e.Weight() / 2
+		weight += e.Weight() / 4
 	}
 	return weight
 }

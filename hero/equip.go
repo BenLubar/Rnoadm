@@ -279,11 +279,11 @@ func (e *Equip) SpriteSize() (uint, uint) {
 }
 
 func (e *Equip) Volume() uint64 {
-	return 1 // TODO
+	return e.material.Volume()
 }
 
 func (e *Equip) Weight() uint64 {
-	return 0 // TODO
+	return e.material.Weight()
 }
 
 func (e *Equip) AdminOnly() bool {

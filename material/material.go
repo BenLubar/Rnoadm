@@ -14,6 +14,10 @@ type Material struct {
 	stone   *StoneType
 	metal   *MetalType
 	quality uint64
+
+	woodVolume  uint64
+	stoneVolume uint64
+	metalVolume uint64
 }
 
 func init() {
@@ -21,7 +25,12 @@ func init() {
 }
 
 func (m *Material) Save() (uint, interface{}, []world.ObjectLike) {
-	materials := make(map[string]interface{})
+	materials := map[string]interface{}{
+		"q":  m.quality,
+		"vw": m.woodVolume,
+		"vs": m.stoneVolume,
+		"vm": m.metalVolume,
+	}
 	if m.wood != nil {
 		materials["w"] = uint64(*m.wood)
 	}
@@ -31,7 +40,6 @@ func (m *Material) Save() (uint, interface{}, []world.ObjectLike) {
 	if m.metal != nil {
 		materials["m"] = uint64(*m.metal)
 	}
-	materials["q"] = m.quality
 	return 0, materials, nil
 }
 
@@ -52,6 +60,21 @@ func (m *Material) Load(version uint, data interface{}, attached []world.ObjectL
 			m.quality = quality
 		} else {
 			m.quality = 1 << 62
+		}
+		if _, ok := materials["vw"]; ok {
+			m.woodVolume = materials["vw"].(uint64)
+			m.stoneVolume = materials["vs"].(uint64)
+			m.metalVolume = materials["vm"].(uint64)
+		} else {
+			if m.wood != nil {
+				m.woodVolume = 100
+			}
+			if m.stone != nil {
+				m.stoneVolume = 100
+			}
+			if m.metal != nil {
+				m.metalVolume = 100
+			}
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
@@ -90,6 +113,24 @@ func (m *Material) Metal() (MetalType, bool) {
 	return *m.metal, true
 }
 
+func (m *Material) Weight() uint64 {
+	var weight uint64
+	if m.wood != nil {
+		weight += m.woodVolume * m.wood.Density() / 100
+	}
+	if m.stone != nil {
+		weight += m.stoneVolume * m.stone.Density() / 100
+	}
+	if m.metal != nil {
+		weight += m.metalVolume * m.metal.Density() / 100
+	}
+	return weight
+}
+
+func (m *Material) Volume() uint64 {
+	return m.woodVolume + m.stoneVolume + m.metalVolume
+}
+
 func (m *Material) Name() string {
 	wood, stone, metal := m.Get()
 	if wood == nil {
@@ -126,8 +167,26 @@ func (m *Material) Quality() uint64 {
 
 func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.Visible {
 	return func(s string) world.Visible {
-		prefix := func(p string) bool {
-			return len(s) > len(p) && s[:len(p)] == p && s[len(p)] == ' '
+		prefix := func(p string) (bool, uint64) {
+			if len(s) > len(p) && s[:len(p)] == p {
+				if s[len(p)] == ' ' {
+					s = s[len(p)+1:]
+					return true, 100
+				}
+				if s[len(p)] == ':' {
+					l := len(p) + 1
+					for ; l < len(s)-2 && s[l] != ' '; l++ {
+					}
+					if s[l] == ' ' {
+						volume, err := strconv.ParseUint(s[len(p)+1:l], 0, 64)
+						if err == nil {
+							s = s[l+1:]
+							return true, volume
+						}
+					}
+				}
+			}
+			return false, 0
 		}
 
 		var lastGood world.Visible
@@ -156,9 +215,9 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 			if material.wood == nil {
 				for i := range woodTypes {
 					t := WoodType(i)
-					if prefix(t.Name()) {
+					if ok, volume := prefix(t.Name()); ok {
 						material.wood = &t
-						s = s[len(t.Name())+1:]
+						material.woodVolume = volume
 						continue find
 					}
 				}
@@ -166,9 +225,9 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 			if material.stone == nil {
 				for i := range stoneTypes {
 					t := StoneType(i)
-					if prefix(t.Name()) {
+					if ok, volume := prefix(t.Name()); ok {
 						material.stone = &t
-						s = s[len(t.Name())+1:]
+						material.stoneVolume = volume
 						continue find
 					}
 				}
@@ -176,9 +235,9 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 			if material.metal == nil {
 				for i := range metalTypes {
 					t := MetalType(i)
-					if prefix(t.Name()) {
+					if ok, volume := prefix(t.Name()); ok {
 						material.metal = &t
-						s = s[len(t.Name())+1:]
+						material.metalVolume = volume
 						continue find
 					}
 				}
