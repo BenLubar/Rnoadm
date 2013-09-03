@@ -181,11 +181,11 @@ func (s *Stone) Colors() []string {
 }
 
 func (s *Stone) Volume() uint64 {
-	return 1 // TODO
+	return s.material.Volume()
 }
 
 func (s *Stone) Weight() uint64 {
-	return 0 // TODO
+	return s.material.Weight()
 }
 
 func (s *Stone) AdminOnly() bool {
@@ -253,11 +253,11 @@ func (o *Ore) Colors() []string {
 }
 
 func (o *Ore) Volume() uint64 {
-	return 1 // TODO
+	return o.material.Volume()
 }
 
 func (o *Ore) Weight() uint64 {
-	return 0 // TODO
+	return o.material.Weight()
 }
 
 func (o *Ore) AdminOnly() bool {

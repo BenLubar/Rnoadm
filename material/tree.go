@@ -159,11 +159,11 @@ func (l *Logs) Colors() []string {
 }
 
 func (l *Logs) Volume() uint64 {
-	return 1 // TODO
+	return l.material.Volume()
 }
 
 func (l *Logs) Weight() uint64 {
-	return 0 // TODO
+	return l.material.Weight()
 }
 
 func (l *Logs) AdminOnly() bool {

@@ -100,11 +100,19 @@ func (i *Ingot) Colors() []string {
 }
 
 func (i *Ingot) Volume() uint64 {
-	return 1 // TODO
+	var volume uint64
+	for _, m := range i.materials {
+		volume += m.Volume()
+	}
+	return volume
 }
 
 func (i *Ingot) Weight() uint64 {
-	return 0 // TODO
+	var weight uint64
+	for _, m := range i.materials {
+		weight += m.Weight()
+	}
+	return weight
 }
 
 func (i *Ingot) AdminOnly() bool {
