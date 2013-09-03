@@ -662,6 +662,13 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		for _, item := range p.Inventory() {
 			p.RemoveItem(item)
 		}
+	case "clear instances":
+		if len(command) != 1 {
+			return
+		}
+		p.instances.mtx.Lock()
+		defer p.instances.mtx.Unlock()
+		p.instances.instances = nil
 	case "tp":
 		if len(command) != 3 {
 			return
@@ -739,6 +746,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		if pos == nil {
 			return
 		}
+		count := 0
 		x, y := pos.Position()
 		sx, sy := int(x)-r, int(y)-r
 		ex, ey := int(x)+r, int(y)+r
@@ -755,11 +763,13 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 					if c, ok := o.(world.Combat); ok {
 						if _, ok = c.(*Player); !ok {
 							c.Hurt(c.MaxHealth(), p)
+							count++
 						}
 					}
 				}
 			}
 		}
+		p.SendMessage(fmt.Sprintf("ADMIN: killed %d npcs", count))
 	case "first name":
 		if len(command) != 2 {
 			return
@@ -774,6 +784,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 					if pos := p.Position(); pos != nil {
 						pos.Zone().Update(pos, p)
 					}
+					p.SendMessage(fmt.Sprintf("ADMIN: changed name to %q", p.Name()))
 					return
 				}
 			}
@@ -791,6 +802,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		if pos := p.Position(); pos != nil {
 			pos.Zone().Update(pos, p)
 		}
+		p.SendMessage(fmt.Sprintf("ADMIN: changed name to %q", p.Name()))
 	case "last name 1":
 		if len(command) != 2 {
 			return
@@ -805,6 +817,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 					if pos := p.Position(); pos != nil {
 						pos.Zone().Update(pos, p)
 					}
+					p.SendMessage(fmt.Sprintf("ADMIN: changed name to %q", p.Name()))
 					return
 				}
 			}
@@ -826,6 +839,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 					if pos := p.Position(); pos != nil {
 						pos.Zone().Update(pos, p)
 					}
+					p.SendMessage(fmt.Sprintf("ADMIN: changed name to %q", p.Name()))
 					return
 				}
 			}
@@ -847,12 +861,57 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 					if pos := p.Position(); pos != nil {
 						pos.Zone().Update(pos, p)
 					}
+					p.SendMessage(fmt.Sprintf("ADMIN: changed name to %q", p.Name()))
 					return
 				}
 			}
 		}
 		p.name.Last3T = origT
 		p.name.Last3 = orig
+		p.mtx.Unlock()
+	case "title prefix":
+		if len(command) != 2 {
+			return
+		}
+		p.mtx.Lock()
+		origT := p.name.PrefixT
+		orig := p.name.Prefix
+		for p.name.PrefixT = 0; p.name.PrefixT < nameSubtypeCount; p.name.PrefixT++ {
+			for p.name.Prefix = 0; p.Hero.name.Prefix < uint64(len(names[p.name.PrefixT])); p.name.Prefix++ {
+				if names[p.name.PrefixT][p.name.Prefix] == command[1] {
+					p.mtx.Unlock()
+					if pos := p.Position(); pos != nil {
+						pos.Zone().Update(pos, p)
+					}
+					p.SendMessage(fmt.Sprintf("ADMIN: changed name to %q", p.Name()))
+					return
+				}
+			}
+		}
+		p.name.PrefixT = origT
+		p.name.Prefix = orig
+		p.mtx.Unlock()
+	case "title suffix":
+		if len(command) != 2 {
+			return
+		}
+		p.mtx.Lock()
+		origT := p.name.SuffixT
+		orig := p.name.Suffix
+		for p.name.SuffixT = 0; p.name.SuffixT < nameSubtypeCount; p.name.SuffixT++ {
+			for p.name.Suffix = 0; p.Hero.name.Suffix < uint64(len(names[p.name.SuffixT])); p.name.Suffix++ {
+				if names[p.name.SuffixT][p.name.Suffix] == command[1] {
+					p.mtx.Unlock()
+					if pos := p.Position(); pos != nil {
+						pos.Zone().Update(pos, p)
+					}
+					p.SendMessage(fmt.Sprintf("ADMIN: changed name to %q", p.Name()))
+					return
+				}
+			}
+		}
+		p.name.SuffixT = origT
+		p.name.Suffix = orig
 		p.mtx.Unlock()
 	}
 }
