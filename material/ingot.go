@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
 	"github.com/dustin/go-humanize"
+	"sort"
 )
 
 type Ingot struct {
@@ -60,6 +61,7 @@ func (i *Ingot) Load(version uint, data interface{}, attached []world.ObjectLike
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+	i.sortAlloy()
 }
 
 func (i *Ingot) Name() string {
@@ -79,14 +81,13 @@ func (i *Ingot) Name() string {
 func (i *Ingot) Examine() (string, [][][2]string) {
 	_, info := i.VisibleObject.Examine()
 
-	for _, m := range i.materials {
-		info = append(info, m.Info()...)
-
-		info = append(info, [][2]string{
-			{humanize.Comma(int64(m.metal.Strength())), "#4fc"},
-			{" strength", "#ccc"},
-		})
-	}
+	info = append(info, [][2]string{
+		{humanize.Comma(int64(i.Quality())), "#4fc"},
+		{" quality", "#ccc"},
+	}, [][2]string{
+		{humanize.Comma(int64(i.Strength())), "#4fc"},
+		{" strength", "#ccc"},
+	})
 
 	return "a bar of metal.", info
 }
@@ -97,6 +98,22 @@ func (i *Ingot) Sprite() string {
 
 func (i *Ingot) Colors() []string {
 	return []string{i.materials[0].metal.Color()}
+}
+
+func (i *Ingot) Strength() uint64 {
+	var strength uint64
+	for _, m := range i.materials {
+		strength += m.metal.Strength()
+	}
+	return strength
+}
+
+func (i *Ingot) Quality() uint64 {
+	var quality uint64
+	for _, m := range i.materials {
+		quality += m.Quality()
+	}
+	return quality
 }
 
 func (i *Ingot) Volume() uint64 {
@@ -117,4 +134,22 @@ func (i *Ingot) Weight() uint64 {
 
 func (i *Ingot) AdminOnly() bool {
 	return false
+}
+
+func (i *Ingot) sortAlloy() {
+	sort.Sort(sortMetals(i.materials))
+}
+
+type sortMetals []*Material
+
+func (s sortMetals) Len() int {
+	return len(s)
+}
+
+func (s sortMetals) Less(i, j int) bool {
+	return *s[i].metal < *s[j].metal
+}
+
+func (s sortMetals) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
 }

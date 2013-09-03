@@ -100,10 +100,12 @@ rnoadm.hud.forge = function(data) {
         inventoryX + inventoryY * 8 < ores.length) {
       var ore = ores[inventoryX + inventoryY * 8];
       if (ore != hoverItem) {
+        var dat = data['O'][inventoryX + inventoryY * 8];
         hoverItem = ore;
         itemHoverText = new rnoadm.gfx.Text(ore.name, '#ccc', false, true);
-        itemHoverText2 = new rnoadm.gfx.Text('quality ' +
-            data['O'][inventoryX + inventoryY * 8]['q'], '#aaa', false, true);
+        itemHoverText2 = new rnoadm.gfx.Text('quality ' + dat['q'] +
+            '  weight ' + (Math.round(dat['w'] / 100) / 10) + 'kg' +
+            '  volume ' + dat['v'] + 'cc', '#aaa', false, true);
         rnoadm.gfx.repaint();
       }
     } else {

@@ -87,6 +87,8 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 				ores = append(ores, map[string]interface{}{
 					"i": o.NetworkID(),
 					"q": o.Material().Quality(),
+					"v": o.Volume(),
+					"w": o.Weight(),
 				})
 			}
 		}
@@ -95,6 +97,8 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 				ores = append(ores, map[string]interface{}{
 					"i": s.NetworkID(),
 					"q": s.Material().Quality(),
+					"v": s.Volume(),
+					"w": s.Weight(),
 				})
 			}
 		}
@@ -120,6 +124,52 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 				contents = append(contents, sprites)
 				// 4 minutes per 5kg of ore
 				done = done.Add(time.Minute * 4 * time.Duration(i.(world.Item).Weight()) / 5000)
+			}
+			if done.Before(time.Now()) && len(items) > 0 {
+				materials := make(map[MetalType]*Material)
+				var totalVolume uint64
+				for _, i := range items {
+					if o, ok := i.(*Ore); ok {
+						mat := materials[*o.material.metal]
+						if mat == nil {
+							mat = &Material{metal: o.material.metal}
+							materials[*o.material.metal] = mat
+						}
+						totalVolume += o.material.metalVolume
+						mat.metalVolume += o.material.metalVolume
+						mat.quality += o.material.quality * o.material.metalVolume
+					}
+				}
+				makeIngot := func(volume uint64) {
+					ingot := &Ingot{}
+					world.InitObject(ingot)
+					ingot.materials = make([]*Material, 0, len((materials)))
+					remaining := totalVolume
+					for _, m := range materials {
+						v := m.metalVolume * volume / remaining
+						remaining -= m.metalVolume
+						volume -= v
+						ingot.materials = append(ingot.materials, &Material{
+							metal:       m.metal,
+							metalVolume: v,
+							quality:     m.quality / m.metalVolume,
+						})
+					}
+					ingot.sortAlloy()
+					if !player.GiveItem(ingot) {
+						player.Position().Add(ingot)
+					}
+				}
+				for totalVolume != 0 {
+					if totalVolume <= 1000 {
+						makeIngot(totalVolume)
+						break
+					}
+					makeIngot(1000)
+					totalVolume -= 1000
+				}
+				items = items[:0]
+				contents = contents[:0]
 			}
 			return items
 		})
