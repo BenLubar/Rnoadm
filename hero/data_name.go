@@ -11,6 +11,8 @@ const (
 	NameFrontSyllableConsonant
 	NameEndConsonant
 	NameEndVowel
+	NameTitlePrefix
+	NameTitleSuffix
 
 	nameSubtypeCount
 )
@@ -3571,5 +3573,11 @@ var names = [nameSubtypeCount][]string{
 		"yne",
 		"yng",
 		"yns",
+	},
+	NameTitlePrefix: {},
+	NameTitleSuffix: {
+		" the Adequately Skilled",
+		", who is a bear",
+		" the Gamerist",
 	},
 }

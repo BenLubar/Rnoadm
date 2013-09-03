@@ -130,6 +130,9 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 				var totalVolume uint64
 				for _, i := range items {
 					if o, ok := i.(*Ore); ok {
+						if o.material.metalVolume == 0 {
+							continue
+						}
 						mat := materials[*o.material.metal]
 						if mat == nil {
 							mat = &Material{metal: o.material.metal}
@@ -140,11 +143,12 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 						mat.quality += o.material.quality * o.material.metalVolume
 					}
 				}
+				originalVolume := totalVolume
 				makeIngot := func(volume uint64) {
 					ingot := &Ingot{}
 					world.InitObject(ingot)
 					ingot.materials = make([]*Material, 0, len((materials)))
-					remaining := totalVolume
+					remaining := originalVolume
 					for _, m := range materials {
 						v := m.metalVolume * volume / remaining
 						remaining -= m.metalVolume
