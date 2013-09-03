@@ -6,9 +6,11 @@ import (
 	_ "github.com/BenLubar/Rnoadm/critter"
 	"github.com/BenLubar/Rnoadm/hero"
 	_ "github.com/BenLubar/Rnoadm/material"
+	"github.com/BenLubar/Rnoadm/maybetls"
 	"github.com/BenLubar/Rnoadm/world"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -25,6 +27,8 @@ func main() {
 	srv := &http.Server{
 		Addr: ":2064",
 		TLSConfig: &tls.Config{
+			NextProtos: []string{"http/1.1"},
+
 			// BUG: https://code.google.com/p/go/issues/detail?id=6121
 			CipherSuites: []uint16{
 				tls.TLS_RSA_WITH_RC4_128_SHA,
@@ -34,11 +38,24 @@ func main() {
 			},
 		},
 	}
+	cert, err := tls.LoadX509KeyPair("rnoadm-cert.pem", "rnoadm-key.pem")
+	if err != nil {
+		panic(err)
+	}
+	srv.TLSConfig.Certificates = []tls.Certificate{cert}
 
 	go func() {
 		for {
-			err := srv.ListenAndServeTLS("rnoadm-cert.pem", "rnoadm-key.pem")
+			ln, err := net.Listen("tcp", ":2064")
 			if err != nil {
+				log.Print(err)
+				time.Sleep(time.Second)
+				continue
+			}
+			ln = maybetls.Listener(ln, srv.TLSConfig)
+			err = srv.Serve(ln)
+			if err != nil {
+				ln.Close()
 				log.Print(err)
 				time.Sleep(time.Second)
 			}
