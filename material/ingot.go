@@ -147,7 +147,7 @@ func (s sortMetals) Len() int {
 }
 
 func (s sortMetals) Less(i, j int) bool {
-	return *s[i].metal < *s[j].metal
+	return *s[i].metal > *s[j].metal
 }
 
 func (s sortMetals) Swap(i, j int) {
