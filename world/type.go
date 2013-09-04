@@ -2,6 +2,7 @@ package world
 
 import (
 	"encoding/gob"
+	"math/big"
 	"reflect"
 	"time"
 )
@@ -56,4 +57,5 @@ func init() {
 	gob.Register(map[string]interface{}{})
 	gob.Register([]interface{}{})
 	gob.Register(time.Time{})
+	gob.Register(&big.Int{})
 }

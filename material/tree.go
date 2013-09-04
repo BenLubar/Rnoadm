@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
 	"github.com/dustin/go-humanize"
+	"math/big"
 )
 
 func init() {
@@ -42,7 +43,7 @@ func (t *Tree) Load(version uint, data interface{}, attached []world.ObjectLike)
 		world.InitObject(material)
 		kind := WoodType(data.(uint64))
 		material.wood = &kind
-		material.quality = 1 << 62
+		material.quality = *big.NewInt(1 << 62)
 		attached = append(attached, material)
 		fallthrough
 	case 1:
@@ -119,7 +120,7 @@ func (l *Logs) Load(version uint, data interface{}, attached []world.ObjectLike)
 		world.InitObject(material)
 		kind := WoodType(data.(uint64))
 		material.wood = &kind
-		material.quality = 1 << 62
+		material.quality = *big.NewInt(1 << 62)
 		attached = append(attached, material)
 		fallthrough
 	case 1:

@@ -2,6 +2,7 @@ package material
 
 import (
 	"github.com/BenLubar/Rnoadm/world"
+	"math/big"
 	"strconv"
 	"time"
 )
@@ -128,6 +129,7 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 			if done.Before(time.Now()) && len(items) > 0 {
 				materials := make(map[MetalType]*Material)
 				var totalVolume uint64
+				var tmp big.Int
 				for _, i := range items {
 					if o, ok := i.(*Ore); ok {
 						if o.material.metalVolume == 0 {
@@ -140,7 +142,8 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 						}
 						totalVolume += o.material.metalVolume
 						mat.metalVolume += o.material.metalVolume
-						mat.quality += o.material.quality * o.material.metalVolume
+						tmp.SetUint64(o.material.metalVolume)
+						mat.quality.Add(&mat.quality, tmp.Mul(&o.material.quality, &tmp))
 					}
 				}
 				originalVolume := totalVolume
@@ -153,10 +156,12 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 						v := m.metalVolume * volume / remaining
 						remaining -= m.metalVolume
 						volume -= v
+						var quality big.Int
+						quality.SetUint64(m.metalVolume)
 						ingot.materials = append(ingot.materials, &Material{
 							metal:       m.metal,
 							metalVolume: v,
-							quality:     m.quality / m.metalVolume,
+							quality:     *quality.Div(&m.quality, &quality),
 						})
 					}
 					ingot.sortAlloy()

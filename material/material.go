@@ -3,7 +3,7 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
-	"github.com/dustin/go-humanize"
+	"math/big"
 	"strconv"
 )
 
@@ -13,7 +13,7 @@ type Material struct {
 	wood    *WoodType
 	stone   *StoneType
 	metal   *MetalType
-	quality uint64
+	quality big.Int
 
 	woodVolume  uint64
 	stoneVolume uint64
@@ -26,7 +26,7 @@ func init() {
 
 func (m *Material) Save() (uint, interface{}, []world.ObjectLike) {
 	materials := map[string]interface{}{
-		"q":  m.quality,
+		"q":  &m.quality,
 		"vw": m.woodVolume,
 		"vs": m.stoneVolume,
 		"vm": m.metalVolume,
@@ -56,10 +56,12 @@ func (m *Material) Load(version uint, data interface{}, attached []world.ObjectL
 		if metal, ok := materials["m"].(uint64); ok {
 			m.metal = (*MetalType)(&metal)
 		}
-		if quality, ok := materials["q"].(uint64); ok {
-			m.quality = quality
+		if quality, ok := materials["q"].(*big.Int); ok {
+			m.quality = *quality
+		} else if quality, ok := materials["q"].(uint64); ok {
+			m.quality = *big.NewInt(int64(quality))
 		} else {
-			m.quality = 1 << 62
+			m.quality = *big.NewInt(1 << 62)
 		}
 		if _, ok := materials["vw"]; ok {
 			m.woodVolume = materials["vw"].(uint64)
@@ -85,7 +87,7 @@ func (m *Material) Info() [][][2]string {
 	var info [][][2]string
 
 	info = append(info, [][2]string{
-		{humanize.Comma(int64(m.quality)), "#4fc"},
+		{Comma(&m.quality), "#4fc"},
 		{" quality", "#ccc"},
 	})
 
@@ -161,8 +163,8 @@ func (m *Material) Get() (*WoodType, *StoneType, *MetalType) {
 	return m.wood, m.stone, m.metal
 }
 
-func (m *Material) Quality() uint64 {
-	return m.quality
+func (m *Material) Quality() *big.Int {
+	return &m.quality
 }
 
 func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.Visible {
@@ -203,8 +205,9 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 				for l = 0; l < len(s)-2 && s[l] != ' '; l++ {
 				}
 				if s[l] == ' ' {
-					quality, err := strconv.ParseUint(s[1:l], 0, 64)
-					if err == nil {
+					var quality big.Int
+					_, ok := quality.SetString(s[1:l], 10)
+					if ok {
 						material.quality = quality
 						setQuality = true
 						s = s[l+1:]

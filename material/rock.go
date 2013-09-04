@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
 	"github.com/dustin/go-humanize"
+	"math/big"
 )
 
 func init() {
@@ -141,7 +142,7 @@ func (s *Stone) Load(version uint, data interface{}, attached []world.ObjectLike
 		world.InitObject(material)
 		kind := StoneType(data.(uint64))
 		material.stone = &kind
-		material.quality = 1 << 62
+		material.quality = *big.NewInt(1 << 62)
 		attached = append(attached, material)
 		fallthrough
 	case 1:
@@ -213,7 +214,7 @@ func (o *Ore) Load(version uint, data interface{}, attached []world.ObjectLike) 
 		world.InitObject(material)
 		kind := MetalType(data.(uint64))
 		material.metal = &kind
-		material.quality = 1 << 62
+		material.quality = *big.NewInt(1 << 62)
 		attached = append(attached, material)
 		fallthrough
 	case 1:

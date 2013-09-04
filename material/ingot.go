@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
 	"github.com/dustin/go-humanize"
+	"math/big"
 	"sort"
 )
 
@@ -82,7 +83,7 @@ func (i *Ingot) Examine() (string, [][][2]string) {
 	_, info := i.VisibleObject.Examine()
 
 	info = append(info, [][2]string{
-		{humanize.Comma(int64(i.Quality())), "#4fc"},
+		{Comma(i.Quality()), "#4fc"},
 		{" quality", "#ccc"},
 	}, [][2]string{
 		{humanize.Comma(int64(i.Strength())), "#4fc"},
@@ -108,12 +109,12 @@ func (i *Ingot) Strength() uint64 {
 	return strength
 }
 
-func (i *Ingot) Quality() uint64 {
-	var quality uint64
+func (i *Ingot) Quality() *big.Int {
+	var quality big.Int
 	for _, m := range i.materials {
-		quality += m.Quality()
+		quality.Add(&quality, m.Quality())
 	}
-	return quality
+	return &quality
 }
 
 func (i *Ingot) Volume() uint64 {
