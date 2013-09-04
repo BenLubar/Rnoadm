@@ -255,7 +255,7 @@ rnoadm.gfx.clickObject = function(x, y, w, h) {
     if (i.charAt(0) == '_')
       continue;
     var o = rnoadm.state.objects_[x | y << 8][i];
-    if (o.sprites[0].isFloor() || !o.actions.length)
+    if (!o.sprites.length || o.sprites[0].isFloor() || !o.actions.length)
       continue;
     objects.unshift(o);
   }
@@ -281,8 +281,12 @@ rnoadm.gfx.rightClickObject = function(x, y, w, h) {
     return false;
   var objects = [];
   for (var i in rnoadm.state.objects_[x | y << 8]) {
-    if (i.charAt(0) != '_')
-      objects.unshift(rnoadm.state.objects_[x | y << 8][i]);
+    if (i.charAt(0) == '_')
+      continue;
+    var o = rnoadm.state.objects_[x | y << 8][i];
+    if (!o.sprites.length || o.sprites[0].isFloor() || !o.actions.length)
+      continue;
+    objects.unshift(o);
   }
   if (objects.length == 1)
     rnoadm.hud.show('menu', objects[0]);
