@@ -3,8 +3,8 @@ package material
 type MetalType uint64
 
 func (t MetalType) Name() string             { return metalTypes[t].name }
-func (t MetalType) Color0() string           { return metalTypes[t].color0 }
-func (t MetalType) Color1() string           { return metalTypes[t].color1 }
+func (t MetalType) Color() string            { return metalTypes[t].color0 }
+func (t MetalType) OreColor() string         { return metalTypes[t].color1 }
 func (t MetalType) Strength() uint64         { return metalTypes[t].strength } //TODO: Remove
 func (t MetalType) Density() uint64          { return metalTypes[t].density }
 func (t MetalType) Durability() uint64       { return metalTypes[t].durability }
