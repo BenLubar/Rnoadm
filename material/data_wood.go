@@ -3,8 +3,9 @@ package material
 type WoodType uint64
 
 func (t WoodType) Name() string             { return woodTypes[t].name }
-func (t WoodType) BarkColor() string            { return woodTypes[t].color0 }
-func (t WoodType) LeafColor() string         { return woodTypes[t].color1 }
+func (t WoodType) BarkColor() string        { return woodTypes[t].color0 }
+func (t WoodType) LeafColor() string        { return woodTypes[t].color1 }
+func (t WoodType) LeafType() uint8          { return woodTypes[t].leaf }
 func (t WoodType) Strength() uint64         { return woodTypes[t].strength } //TODO: Remove
 func (t WoodType) Density() uint64          { return woodTypes[t].density }
 func (t WoodType) Durability() uint64       { return woodTypes[t].durability }
@@ -27,6 +28,7 @@ var woodTypes = []struct {
 	name       string
 	color0     string
 	color1     string
+	leaf       uint8
 	strength   uint64 //TODO: Remove
 	density    uint64
 	durability uint64
@@ -436,6 +438,7 @@ var woodTypes = []struct {
 		strength:   5 << 0,
 		color0:     "#d2b48c",
 		color1:     "#4b5a3f",
+		leaf:       1,
 		density:    300,
 		durability: 0,
 		power:      1,
@@ -460,6 +463,7 @@ var woodTypes = []struct {
 		strength:   5 << 0,
 		color0:     "#b5aa8b",
 		color1:     "#cf5123",
+		leaf:       2,
 		density:    310,
 		durability: 1,
 		power:      2,
