@@ -3,8 +3,8 @@ package material
 type WoodType uint64
 
 func (t WoodType) Name() string             { return woodTypes[t].name }
-func (t WoodType) Color() string            { return woodTypes[t].color0 }
-func (t WoodType) OreColor() string         { return woodTypes[t].color1 }
+func (t WoodType) BarkColor() string            { return woodTypes[t].color0 }
+func (t WoodType) LeafColor() string         { return woodTypes[t].color1 }
 func (t WoodType) Strength() uint64         { return woodTypes[t].strength } //TODO: Remove
 func (t WoodType) Density() uint64          { return woodTypes[t].density }
 func (t WoodType) Durability() uint64       { return woodTypes[t].durability }
