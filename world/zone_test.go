@@ -20,7 +20,7 @@ func TestZoneTile(t *testing.T) {
 				if i != 0 {
 					seenTile := seen[[2]uint8{x8, y8}]
 					if seenTile != tile {
-						t.Errorf("tile at (%d, %d) differs on iteration %i: %p != %p", x, y, i, tile, seenTile)
+						t.Errorf("tile at (%d, %d) differs on iteration %d: %p != %p", x, y, i, tile, seenTile)
 					}
 				}
 				seen[[2]uint8{x8, y8}] = tile
