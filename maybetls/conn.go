@@ -7,6 +7,8 @@ import (
 	"net"
 )
 
+// Conn returns a net.Conn that is wrapped by the crypto/tls.Server function if
+// a heursitic is satisfied. See the package documentation for more details.
 func Conn(c net.Conn, config *tls.Config) (net.Conn, error) {
 	var b [1]byte
 	_, err := io.ReadFull(c, b[:])
