@@ -2,34 +2,74 @@ package material
 
 type WoodType uint64
 
-func (t WoodType) Name() string             { return woodTypes[t].name }
-func (t WoodType) BarkColor() string        { return woodTypes[t].color0 }
-func (t WoodType) LeafColor() string        { return woodTypes[t].color1 }
-func (t WoodType) LeafType() uint8          { return woodTypes[t].leaf }
-func (t WoodType) Strength() uint64         { return woodTypes[t].strength } //TODO: Remove
-func (t WoodType) Density() uint64          { return woodTypes[t].density }
-func (t WoodType) Durability() uint64       { return woodTypes[t].durability }
-func (t WoodType) Power() uint64            { return woodTypes[t].power }
-func (t WoodType) Resistance() uint64       { return woodTypes[t].resist }
-func (t WoodType) Swiftness() uint64        { return woodTypes[t].swift }
-func (t WoodType) Spirituality() uint64     { return woodTypes[t].spirit }
-func (t WoodType) MeleeDamage() uint64      { return woodTypes[t].meleeDmg }
-func (t WoodType) MagicDamage() uint64      { return woodTypes[t].magicDmg }
-func (t WoodType) AttackSpeed() uint64      { return woodTypes[t].attackSpd }
-func (t WoodType) MeleeDefense() uint64     { return woodTypes[t].meleeDef }
-func (t WoodType) MagicDefense() uint64     { return woodTypes[t].magicDef }
-func (t WoodType) MovementSpeed() uint64    { return woodTypes[t].moveSpd }
-func (t WoodType) Health() uint64           { return woodTypes[t].health }
-func (t WoodType) MiningStrength() uint64   { return woodTypes[t].mining }
+// Name of the resource
+func (t WoodType) Name() string { return woodTypes[t].name }
+
+// Color of the resource (processed form)
+func (t WoodType) Color() string { return woodTypes[t].color0 }
+
+// LeafColor of the resource (node)
+func (t WoodType) LeafColor() string { return woodTypes[t].color1 }
+
+// LeafType of the resource (node)
+func (t WoodType) LeafType() uint8 { return woodTypes[t].leaf }
+
+// Density of the resource (centigrams per cubic centimeter)
+func (t WoodType) Density() uint64 { return woodTypes[t].density }
+
+// Durability (resistance to item degradation)
+func (t WoodType) Durability() uint64 { return woodTypes[t].durability }
+
+// Power (general stat)
+func (t WoodType) Power() uint64 { return woodTypes[t].power }
+
+// Resistance (general stat)
+func (t WoodType) Resistance() uint64 { return woodTypes[t].resist }
+
+// Swiftness (general stat)
+func (t WoodType) Swiftness() uint64 { return woodTypes[t].swift }
+
+// Spirituality (general stat)
+func (t WoodType) Spirituality() uint64 { return woodTypes[t].spirit }
+
+// MeleeDamage (offensive stat)
+func (t WoodType) MeleeDamage() uint64 { return woodTypes[t].meleeDmg }
+
+// MagicDamage (offensive stat)
+func (t WoodType) MagicDamage() uint64 { return woodTypes[t].magicDmg }
+
+// AttackSpeed (offensive stat)
+func (t WoodType) AttackSpeed() uint64 { return woodTypes[t].attackSpd }
+
+// MeleeDefense (defensive stat)
+func (t WoodType) MeleeDefense() uint64 { return woodTypes[t].meleeDef }
+
+// MagicDefense (defensive stat)
+func (t WoodType) MagicDefense() uint64 { return woodTypes[t].magicDef }
+
+// MovementSpeed (defensive stat)
+func (t WoodType) MovementSpeed() uint64 { return woodTypes[t].moveSpd }
+
+// Health (defensive stat)
+func (t WoodType) Health() uint64 { return woodTypes[t].health }
+
+// MiningStrength (tool stat)
+func (t WoodType) MiningStrength() uint64 { return woodTypes[t].mining }
+
+// ChoppingStrength (tool stat)
 func (t WoodType) ChoppingStrength() uint64 { return woodTypes[t].chopping }
-func (t WoodType) HealthStructure() uint64  { return woodTypes[t].healthStrc }
+
+// GatheringSpeed (tool stat)
+func (t WoodType) GatheringSpeed() uint64 { return woodTypes[t].gatherSpd }
+
+// StructureHealth (structure stat)
+func (t WoodType) StructureHealth() uint64 { return woodTypes[t].healthStrc }
 
 var woodTypes = []struct {
 	name       string
 	color0     string
 	color1     string
 	leaf       uint8
-	strength   uint64 //TODO: Remove
 	density    uint64
 	durability uint64
 	power      uint64
@@ -43,15 +83,14 @@ var woodTypes = []struct {
 	meleeDef   uint64
 	magicDef   uint64
 	moveSpd    uint64
-	health     uint64 //health bonus to equipment
+	health     uint64
 	mining     uint64
 	chopping   uint64
 	gatherSpd  uint64
-	healthStrc uint64 //health for structure
+	healthStrc uint64
 }{
 	{
 		name:       "wood0",
-		strength:   5 << 0,
 		color0:     "#000",
 		color1:     "#000",
 		density:    300,
@@ -75,7 +114,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood1",
-		strength:   5 << 0,
 		color0:     "#111",
 		color1:     "#111",
 		density:    310,
@@ -99,7 +137,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood2",
-		strength:   5 << 0,
 		color0:     "#222",
 		color1:     "#222",
 		density:    320,
@@ -123,7 +160,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood3",
-		strength:   5 << 0,
 		color0:     "#333",
 		color1:     "#333",
 		density:    330,
@@ -147,7 +183,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood4",
-		strength:   5 << 0,
 		color0:     "#444",
 		color1:     "#444",
 		density:    340,
@@ -171,7 +206,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood5",
-		strength:   5 << 0,
 		color0:     "#555",
 		color1:     "#555",
 		density:    350,
@@ -195,7 +229,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood6",
-		strength:   5 << 0,
 		color0:     "#666",
 		color1:     "#666",
 		density:    360,
@@ -219,7 +252,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood7",
-		strength:   5 << 0,
 		color0:     "#777",
 		color1:     "#777",
 		density:    370,
@@ -243,7 +275,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood8",
-		strength:   5 << 0,
 		color0:     "#888",
 		color1:     "#888",
 		density:    380,
@@ -267,7 +298,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood9",
-		strength:   5 << 0,
 		color0:     "#999",
 		color1:     "#999",
 		density:    390,
@@ -291,7 +321,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood10",
-		strength:   5 << 0,
 		color0:     "#aaa",
 		color1:     "#aaa",
 		density:    400,
@@ -315,7 +344,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood11",
-		strength:   5 << 0,
 		color0:     "#bbb",
 		color1:     "#bbb",
 		density:    410,
@@ -339,7 +367,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood12",
-		strength:   5 << 0,
 		color0:     "#ccc",
 		color1:     "#ccc",
 		density:    420, //smoke weed erryday
@@ -363,7 +390,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood13",
-		strength:   5 << 0,
 		color0:     "#ddd",
 		color1:     "#ddd",
 		density:    430,
@@ -387,7 +413,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood14",
-		strength:   5 << 0,
 		color0:     "#eee",
 		color1:     "#eee",
 		density:    440,
@@ -411,7 +436,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood15",
-		strength:   5 << 0,
 		color0:     "#fff",
 		color1:     "#fff",
 		density:    450,
@@ -435,7 +459,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood16",
-		strength:   5 << 0,
 		color0:     "#d2b48c",
 		color1:     "#4b5a3f",
 		leaf:       1,
@@ -460,7 +483,6 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood17",
-		strength:   5 << 0,
 		color0:     "#b5aa8b",
 		color1:     "#cf5123",
 		leaf:       2,

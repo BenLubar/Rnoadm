@@ -3,7 +3,6 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
-	"github.com/dustin/go-humanize"
 	"math/big"
 )
 
@@ -54,8 +53,8 @@ func (t *Tree) Load(version uint, data interface{}, attached []world.ObjectLike)
 	}
 }
 
-func (t *Tree) Strength() uint64 {
-	return t.material.wood.Strength()
+func (t *Tree) Quality() *big.Int {
+	return t.material.Quality()
 }
 
 func (t *Tree) Name() string {
@@ -83,11 +82,11 @@ func (t *Tree) Colors() []string {
 	default:
 		fallthrough
 	case 0: // no leaves
-		return []string{t.material.wood.BarkColor()}
+		return []string{t.material.wood.Color()}
 	case 1: // deciduous
-		return []string{t.material.wood.BarkColor(), t.material.wood.LeafColor()}
+		return []string{t.material.wood.Color(), t.material.wood.LeafColor()}
 	case 2: // coniferous
-		return []string{t.material.wood.BarkColor(), "", t.material.wood.LeafColor()}
+		return []string{t.material.wood.Color(), "", t.material.wood.LeafColor()}
 	}
 }
 
@@ -143,11 +142,6 @@ func (l *Logs) Examine() (string, [][][2]string) {
 
 	info = append(info, l.material.Info()...)
 
-	info = append(info, [][2]string{
-		{humanize.Comma(int64(l.material.wood.Strength())), "#4fc"},
-		{" strength", "#ccc"},
-	})
-
 	return "some logs.", info
 }
 
@@ -156,7 +150,7 @@ func (l *Logs) Sprite() string {
 }
 
 func (l *Logs) Colors() []string {
-	return []string{l.material.wood.BarkColor()}
+	return []string{l.material.wood.Color()}
 }
 
 func (l *Logs) Volume() uint64 {

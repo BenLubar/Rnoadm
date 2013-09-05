@@ -46,13 +46,13 @@ func (w *Wall) Colors() []string {
 			if wood == nil {
 				return []string{"#888"}
 			} else {
-				return []string{"", wood.BarkColor()}
+				return []string{"", wood.Color()}
 			}
 		} else {
 			if wood == nil {
 				return []string{"", "", stone.Color()}
 			} else {
-				return []string{"", "", stone.Color(), "", wood.BarkColor()}
+				return []string{"", "", stone.Color(), "", wood.Color()}
 			}
 		}
 	} else {
@@ -60,13 +60,13 @@ func (w *Wall) Colors() []string {
 			if wood == nil {
 				return []string{"", "", "", metal.Color()}
 			} else {
-				return []string{"", "", "", metal.Color(), wood.BarkColor()}
+				return []string{"", "", "", metal.Color(), wood.Color()}
 			}
 		} else {
 			if wood == nil {
 				return []string{"", "", stone.Color(), "", "", metal.Color()}
 			} else {
-				return []string{"", "", stone.Color(), "", wood.BarkColor(), metal.Color()}
+				return []string{"", "", stone.Color(), "", wood.Color(), metal.Color()}
 			}
 		}
 	}

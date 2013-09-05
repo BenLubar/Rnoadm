@@ -2,32 +2,70 @@ package material
 
 type MetalType uint64
 
-func (t MetalType) Name() string             { return metalTypes[t].name }
-func (t MetalType) Color() string            { return metalTypes[t].color0 }
-func (t MetalType) OreColor() string         { return metalTypes[t].color1 }
-func (t MetalType) Strength() uint64         { return metalTypes[t].strength } //TODO: Remove
-func (t MetalType) Density() uint64          { return metalTypes[t].density }
-func (t MetalType) Durability() uint64       { return metalTypes[t].durability }
-func (t MetalType) Power() uint64            { return metalTypes[t].power }
-func (t MetalType) Resistance() uint64       { return metalTypes[t].resist }
-func (t MetalType) Swiftness() uint64        { return metalTypes[t].swift }
-func (t MetalType) Spirituality() uint64     { return metalTypes[t].spirit }
-func (t MetalType) MeleeDamage() uint64      { return metalTypes[t].meleeDmg }
-func (t MetalType) MagicDamage() uint64      { return metalTypes[t].magicDmg }
-func (t MetalType) AttackSpeed() uint64      { return metalTypes[t].attackSpd }
-func (t MetalType) MeleeDefense() uint64     { return metalTypes[t].meleeDef }
-func (t MetalType) MagicDefense() uint64     { return metalTypes[t].magicDef }
-func (t MetalType) MovementSpeed() uint64    { return metalTypes[t].moveSpd }
-func (t MetalType) Health() uint64           { return metalTypes[t].health }
-func (t MetalType) MiningStrength() uint64   { return metalTypes[t].mining }
+// Name of the resource
+func (t MetalType) Name() string { return metalTypes[t].name }
+
+// Color of the resource (processed form)
+func (t MetalType) Color() string { return metalTypes[t].color0 }
+
+// OreColor of the resource (unprocessed form)
+func (t MetalType) OreColor() string { return metalTypes[t].color1 }
+
+// Density of the resource (centigrams per cubic centimeter)
+func (t MetalType) Density() uint64 { return metalTypes[t].density }
+
+// Durability (resistance to item degradation)
+func (t MetalType) Durability() uint64 { return metalTypes[t].durability }
+
+// Power (general stat)
+func (t MetalType) Power() uint64 { return metalTypes[t].power }
+
+// Resistance (general stat)
+func (t MetalType) Resistance() uint64 { return metalTypes[t].resist }
+
+// Swiftness (general stat)
+func (t MetalType) Swiftness() uint64 { return metalTypes[t].swift }
+
+// Spirituality (general stat)
+func (t MetalType) Spirituality() uint64 { return metalTypes[t].spirit }
+
+// MeleeDamage (offensive stat)
+func (t MetalType) MeleeDamage() uint64 { return metalTypes[t].meleeDmg }
+
+// MagicDamage (offensive stat)
+func (t MetalType) MagicDamage() uint64 { return metalTypes[t].magicDmg }
+
+// AttackSpeed (offensive stat)
+func (t MetalType) AttackSpeed() uint64 { return metalTypes[t].attackSpd }
+
+// MeleeDefense (defensive stat)
+func (t MetalType) MeleeDefense() uint64 { return metalTypes[t].meleeDef }
+
+// MagicDefense (defensive stat)
+func (t MetalType) MagicDefense() uint64 { return metalTypes[t].magicDef }
+
+// MovementSpeed (defensive stat)
+func (t MetalType) MovementSpeed() uint64 { return metalTypes[t].moveSpd }
+
+// Health (defensive stat)
+func (t MetalType) Health() uint64 { return metalTypes[t].health }
+
+// MiningStrength (tool stat)
+func (t MetalType) MiningStrength() uint64 { return metalTypes[t].mining }
+
+// ChoppingStrength (tool stat)
 func (t MetalType) ChoppingStrength() uint64 { return metalTypes[t].chopping }
-func (t MetalType) HealthStructure() uint64  { return metalTypes[t].healthStrc }
+
+// GatheringSpeed (tool stat)
+func (t MetalType) GatheringSpeed() uint64 { return metalTypes[t].gatherSpd }
+
+// StructureHealth (structure stat)
+func (t MetalType) StructureHealth() uint64 { return metalTypes[t].healthStrc }
 
 var metalTypes = []struct {
 	name       string
 	color0     string
 	color1     string
-	strength   uint64 //TODO: Remove
 	density    uint64
 	durability uint64
 	power      uint64
@@ -49,7 +87,6 @@ var metalTypes = []struct {
 }{
 	{
 		name:       "metal0",
-		strength:   5 << 0,
 		color0:     "#000",
 		color1:     "#000",
 		density:    300,
@@ -73,7 +110,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal1",
-		strength:   5 << 0,
 		color0:     "#111",
 		color1:     "#111",
 		density:    310,
@@ -97,7 +133,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal2",
-		strength:   5 << 0,
 		color0:     "#222",
 		color1:     "#222",
 		density:    320,
@@ -121,7 +156,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal3",
-		strength:   5 << 0,
 		color0:     "#333",
 		color1:     "#333",
 		density:    330,
@@ -145,7 +179,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal4",
-		strength:   5 << 0,
 		color0:     "#444",
 		color1:     "#444",
 		density:    340,
@@ -169,7 +202,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal5",
-		strength:   5 << 0,
 		color0:     "#555",
 		color1:     "#555",
 		density:    350,
@@ -193,7 +225,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal6",
-		strength:   5 << 0,
 		color0:     "#666",
 		color1:     "#666",
 		density:    360,
@@ -217,7 +248,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal7",
-		strength:   5 << 0,
 		color0:     "#777",
 		color1:     "#777",
 		density:    370,
@@ -241,7 +271,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal8",
-		strength:   5 << 0,
 		color0:     "#888",
 		color1:     "#888",
 		density:    380,
@@ -265,7 +294,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal9",
-		strength:   5 << 0,
 		color0:     "#999",
 		color1:     "#999",
 		density:    390,
@@ -289,7 +317,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal10",
-		strength:   5 << 0,
 		color0:     "#aaa",
 		color1:     "#aaa",
 		density:    400,
@@ -313,7 +340,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal11",
-		strength:   5 << 0,
 		color0:     "#bbb",
 		color1:     "#bbb",
 		density:    410,
@@ -337,7 +363,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal12",
-		strength:   5 << 0,
 		color0:     "#ccc",
 		color1:     "#ccc",
 		density:    420, //smoke weed erryday
@@ -361,7 +386,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal13",
-		strength:   5 << 0,
 		color0:     "#ddd",
 		color1:     "#ddd",
 		density:    430,
@@ -385,7 +409,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal14",
-		strength:   5 << 0,
 		color0:     "#eee",
 		color1:     "#eee",
 		density:    440,
@@ -409,7 +432,6 @@ var metalTypes = []struct {
 	},
 	{
 		name:       "metal15",
-		strength:   5 << 0,
 		color0:     "#fff",
 		color1:     "#fff",
 		density:    450,

@@ -2,32 +2,70 @@ package material
 
 type StoneType uint64
 
-func (t StoneType) Name() string             { return stoneTypes[t].name }
-func (t StoneType) Color() string            { return stoneTypes[t].color0 }
-func (t StoneType) OreColor() string         { return stoneTypes[t].color1 }
-func (t StoneType) Strength() uint64         { return stoneTypes[t].strength } //TODO: Remove
-func (t StoneType) Density() uint64          { return stoneTypes[t].density }
-func (t StoneType) Durability() uint64       { return stoneTypes[t].durability }
-func (t StoneType) Power() uint64            { return stoneTypes[t].power }
-func (t StoneType) Resistance() uint64       { return stoneTypes[t].resist }
-func (t StoneType) Swiftness() uint64        { return stoneTypes[t].swift }
-func (t StoneType) Spirituality() uint64     { return stoneTypes[t].spirit }
-func (t StoneType) MeleeDamage() uint64      { return stoneTypes[t].meleeDmg }
-func (t StoneType) MagicDamage() uint64      { return stoneTypes[t].magicDmg }
-func (t StoneType) AttackSpeed() uint64      { return stoneTypes[t].attackSpd }
-func (t StoneType) MeleeDefense() uint64     { return stoneTypes[t].meleeDef }
-func (t StoneType) MagicDefense() uint64     { return stoneTypes[t].magicDef }
-func (t StoneType) MovementSpeed() uint64    { return stoneTypes[t].moveSpd }
-func (t StoneType) Health() uint64           { return stoneTypes[t].health }
-func (t StoneType) MiningStrength() uint64   { return stoneTypes[t].mining }
+// Name of the resource
+func (t StoneType) Name() string { return stoneTypes[t].name }
+
+// Color of the resource (processed form)
+func (t StoneType) Color() string { return stoneTypes[t].color0 }
+
+// // OreColor of the resource (unprocessed form)
+// func (t StoneType) OreColor() string { return stoneTypes[t].color1 }
+
+// Density of the resource (centigrams per cubic centimeter)
+func (t StoneType) Density() uint64 { return stoneTypes[t].density }
+
+// Durability (resistance to item degradation)
+func (t StoneType) Durability() uint64 { return stoneTypes[t].durability }
+
+// Power (general stat)
+func (t StoneType) Power() uint64 { return stoneTypes[t].power }
+
+// Resistance (general stat)
+func (t StoneType) Resistance() uint64 { return stoneTypes[t].resist }
+
+// Swiftness (general stat)
+func (t StoneType) Swiftness() uint64 { return stoneTypes[t].swift }
+
+// Spirituality (general stat)
+func (t StoneType) Spirituality() uint64 { return stoneTypes[t].spirit }
+
+// MeleeDamage (offensive stat)
+func (t StoneType) MeleeDamage() uint64 { return stoneTypes[t].meleeDmg }
+
+// MagicDamage (offensive stat)
+func (t StoneType) MagicDamage() uint64 { return stoneTypes[t].magicDmg }
+
+// AttackSpeed (offensive stat)
+func (t StoneType) AttackSpeed() uint64 { return stoneTypes[t].attackSpd }
+
+// MeleeDefense (defensive stat)
+func (t StoneType) MeleeDefense() uint64 { return stoneTypes[t].meleeDef }
+
+// MagicDefense (defensive stat)
+func (t StoneType) MagicDefense() uint64 { return stoneTypes[t].magicDef }
+
+// MovementSpeed (defensive stat)
+func (t StoneType) MovementSpeed() uint64 { return stoneTypes[t].moveSpd }
+
+// Health (defensive stat)
+func (t StoneType) Health() uint64 { return stoneTypes[t].health }
+
+// MiningStrength (tool stat)
+func (t StoneType) MiningStrength() uint64 { return stoneTypes[t].mining }
+
+// ChoppingStrength (tool stat)
 func (t StoneType) ChoppingStrength() uint64 { return stoneTypes[t].chopping }
-func (t StoneType) HealthStructure() uint64  { return stoneTypes[t].healthStrc }
+
+// GatheringSpeed (tool stat)
+func (t StoneType) GatheringSpeed() uint64 { return stoneTypes[t].gatherSpd }
+
+// StructureHealth (structure stat)
+func (t StoneType) StructureHealth() uint64 { return stoneTypes[t].healthStrc }
 
 var stoneTypes = []struct {
 	name       string
 	color0     string
 	color1     string
-	strength   uint64 //TODO: Remove
 	density    uint64
 	durability uint64
 	power      uint64
@@ -49,7 +87,6 @@ var stoneTypes = []struct {
 }{
 	{
 		name:       "stone0",
-		strength:   5 << 0,
 		color0:     "#000",
 		color1:     "#000",
 		density:    300,
@@ -73,7 +110,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone1",
-		strength:   5 << 0,
 		color0:     "#111",
 		color1:     "#111",
 		density:    310,
@@ -97,7 +133,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone2",
-		strength:   5 << 0,
 		color0:     "#222",
 		color1:     "#222",
 		density:    320,
@@ -121,7 +156,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone3",
-		strength:   5 << 0,
 		color0:     "#333",
 		color1:     "#333",
 		density:    330,
@@ -145,7 +179,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone4",
-		strength:   5 << 0,
 		color0:     "#444",
 		color1:     "#444",
 		density:    340,
@@ -169,7 +202,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone5",
-		strength:   5 << 0,
 		color0:     "#555",
 		color1:     "#555",
 		density:    350,
@@ -193,7 +225,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone6",
-		strength:   5 << 0,
 		color0:     "#666",
 		color1:     "#666",
 		density:    360,
@@ -217,7 +248,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone7",
-		strength:   5 << 0,
 		color0:     "#777",
 		color1:     "#777",
 		density:    370,
@@ -241,7 +271,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone8",
-		strength:   5 << 0,
 		color0:     "#888",
 		color1:     "#888",
 		density:    380,
@@ -265,7 +294,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone9",
-		strength:   5 << 0,
 		color0:     "#999",
 		color1:     "#999",
 		density:    390,
@@ -289,7 +317,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone10",
-		strength:   5 << 0,
 		color0:     "#aaa",
 		color1:     "#aaa",
 		density:    400,
@@ -313,7 +340,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone11",
-		strength:   5 << 0,
 		color0:     "#bbb",
 		color1:     "#bbb",
 		density:    410,
@@ -337,7 +363,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone12",
-		strength:   5 << 0,
 		color0:     "#ccc",
 		color1:     "#ccc",
 		density:    420, //smoke weed erryday
@@ -361,7 +386,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone13",
-		strength:   5 << 0,
 		color0:     "#ddd",
 		color1:     "#ddd",
 		density:    430,
@@ -385,7 +409,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone14",
-		strength:   5 << 0,
 		color0:     "#eee",
 		color1:     "#eee",
 		density:    440,
@@ -409,7 +432,6 @@ var stoneTypes = []struct {
 	},
 	{
 		name:       "stone15",
-		strength:   5 << 0,
 		color0:     "#fff",
 		color1:     "#fff",
 		density:    450,

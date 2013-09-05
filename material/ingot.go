@@ -3,7 +3,6 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
-	"github.com/dustin/go-humanize"
 	"math/big"
 	"sort"
 )
@@ -85,9 +84,6 @@ func (i *Ingot) Examine() (string, [][][2]string) {
 	info = append(info, [][2]string{
 		{Comma(i.Quality()), "#4fc"},
 		{" quality", "#ccc"},
-	}, [][2]string{
-		{humanize.Comma(int64(i.Strength())), "#4fc"},
-		{" strength", "#ccc"},
 	})
 
 	return "a bar of metal.", info
@@ -99,14 +95,6 @@ func (i *Ingot) Sprite() string {
 
 func (i *Ingot) Colors() []string {
 	return []string{i.materials[0].metal.Color()}
-}
-
-func (i *Ingot) Strength() uint64 {
-	var strength uint64
-	for _, m := range i.materials {
-		strength += m.metal.Strength()
-	}
-	return strength
 }
 
 func (i *Ingot) Quality() *big.Int {

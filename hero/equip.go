@@ -222,7 +222,7 @@ func (e *Equip) Colors() []string {
 			if wood == nil {
 				colors[i] = ""
 			} else {
-				colors[i] = wood.BarkColor()
+				colors[i] = wood.Color()
 			}
 		case stoneColor:
 			if stone == nil {

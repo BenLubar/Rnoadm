@@ -3,7 +3,6 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
-	"github.com/dustin/go-humanize"
 	"math/big"
 )
 
@@ -67,13 +66,8 @@ func (r *Rock) Load(version uint, data interface{}, attached []world.ObjectLike)
 	}
 }
 
-func (r *Rock) Strength() uint64 {
-	_, stone, metal := r.material.Get()
-	strength := stone.Strength()
-	if metal != nil {
-		strength += metal.Strength() / 2
-	}
-	return strength
+func (r *Rock) Quality() *big.Int {
+	return r.material.Quality()
 }
 
 func (r *Rock) Name() string {
@@ -165,11 +159,6 @@ func (s *Stone) Examine() (string, [][][2]string) {
 
 	info = append(info, s.material.Info()...)
 
-	info = append(info, [][2]string{
-		{humanize.Comma(int64(s.material.stone.Strength())), "#4fc"},
-		{" strength", "#ccc"},
-	})
-
 	return "some stones.", info
 }
 
@@ -236,11 +225,6 @@ func (o *Ore) Examine() (string, [][][2]string) {
 	_, info := o.VisibleObject.Examine()
 
 	info = append(info, o.material.Info()...)
-
-	info = append(info, [][2]string{
-		{humanize.Comma(int64(o.material.metal.Strength())), "#4fc"},
-		{" strength", "#ccc"},
-	})
 
 	return "some unrefined ore.", info
 }
