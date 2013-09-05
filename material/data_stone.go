@@ -3,8 +3,8 @@ package material
 type StoneType uint64
 
 func (t StoneType) Name() string             { return stoneTypes[t].name }
-func (t StoneType) Color() string            { return stoneTypes[t].color0 }
-func (t StoneType) OreColor() string         { return stoneTypes[t].color1 }
+func (t StoneType) Color0() string           { return stoneTypes[t].color0 }
+func (t StoneType) Color1() string           { return stoneTypes[t].color1 }
 func (t StoneType) Strength() uint64         { return stoneTypes[t].strength } //TODO: Remove
 func (t StoneType) Density() uint64          { return stoneTypes[t].density }
 func (t StoneType) Durability() uint64       { return stoneTypes[t].durability }
