@@ -94,7 +94,7 @@ func (r *Rock) SpriteSize() (uint, uint) {
 }
 
 func (r *Rock) Colors() []string {
-	ore, stone := r.material.StoneColor(), r.material.OreColor()
+	stone, ore := r.material.StoneColor(), r.material.OreColor()
 	if r.rich {
 		return []string{stone, ore, ore}
 	}
