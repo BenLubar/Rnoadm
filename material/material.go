@@ -3,6 +3,7 @@ package material
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"image/color"
 	"math/big"
 	"strconv"
 )
@@ -248,4 +249,13 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 			return lastGood
 		}
 	}
+}
+
+func toCSSColor(c color.Color) string {
+	const m = 1<<16 - 1
+	r, g, b, a := c.RGBA()
+	if a == m {
+		return fmt.Sprintf("#%02x%02x%02x", r>>8, g>>8, b>>8)
+	}
+	return fmt.Sprintf("rgba(%d,%d,%d,%f)", (r*m/a)>>8, (g*m/a)>>8, (b*m/a)>>8, float64(a)/m)
 }

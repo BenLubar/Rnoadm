@@ -1,15 +1,19 @@
 package material
 
+import (
+	"image/color"
+)
+
 type WoodType uint64
 
 // Name of the resource
 func (t WoodType) Name() string { return woodTypes[t].name }
 
 // Color of the resource (processed form)
-func (t WoodType) Color() string { return woodTypes[t].color0 }
+func (t WoodType) Color() string { return toCSSColor(woodTypes[t].color0) }
 
 // LeafColor of the resource (node)
-func (t WoodType) LeafColor() string { return woodTypes[t].color1 }
+func (t WoodType) LeafColor() string { return toCSSColor(woodTypes[t].color1) }
 
 // LeafType of the resource (node)
 func (t WoodType) LeafType() uint8 { return woodTypes[t].leaf }
@@ -67,8 +71,8 @@ func (t WoodType) StructureHealth() uint64 { return woodTypes[t].healthStrc }
 
 var woodTypes = []struct {
 	name       string
-	color0     string
-	color1     string
+	color0     color.Color
+	color1     color.Color
 	leaf       uint8
 	density    uint64
 	durability uint64
@@ -91,8 +95,8 @@ var woodTypes = []struct {
 }{
 	{
 		name:       "wood0",
-		color0:     "#000",
-		color1:     "#000",
+		color0:     color.Gray{0x00},
+		color1:     color.Gray{0x00},
 		density:    300,
 		durability: 0,
 		power:      1,
@@ -114,8 +118,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood1",
-		color0:     "#111",
-		color1:     "#111",
+		color0:     color.Gray{0x11},
+		color1:     color.Gray{0x11},
 		density:    310,
 		durability: 1,
 		power:      2,
@@ -137,8 +141,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood2",
-		color0:     "#222",
-		color1:     "#222",
+		color0:     color.Gray{0x22},
+		color1:     color.Gray{0x22},
 		density:    320,
 		durability: 2,
 		power:      3,
@@ -160,8 +164,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood3",
-		color0:     "#333",
-		color1:     "#333",
+		color0:     color.Gray{0x33},
+		color1:     color.Gray{0x33},
 		density:    330,
 		durability: 3,
 		power:      4,
@@ -183,8 +187,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood4",
-		color0:     "#444",
-		color1:     "#444",
+		color0:     color.Gray{0x44},
+		color1:     color.Gray{0x44},
 		density:    340,
 		durability: 4,
 		power:      5,
@@ -206,8 +210,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood5",
-		color0:     "#555",
-		color1:     "#555",
+		color0:     color.Gray{0x55},
+		color1:     color.Gray{0x55},
 		density:    350,
 		durability: 5,
 		power:      6,
@@ -229,8 +233,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood6",
-		color0:     "#666",
-		color1:     "#666",
+		color0:     color.Gray{0x66},
+		color1:     color.Gray{0x66},
 		density:    360,
 		durability: 6,
 		power:      7,
@@ -252,8 +256,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood7",
-		color0:     "#777",
-		color1:     "#777",
+		color0:     color.Gray{0x77},
+		color1:     color.Gray{0x77},
 		density:    370,
 		durability: 7,
 		power:      8,
@@ -275,8 +279,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood8",
-		color0:     "#888",
-		color1:     "#888",
+		color0:     color.Gray{0x88},
+		color1:     color.Gray{0x88},
 		density:    380,
 		durability: 8,
 		power:      9,
@@ -298,8 +302,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood9",
-		color0:     "#999",
-		color1:     "#999",
+		color0:     color.Gray{0x99},
+		color1:     color.Gray{0x99},
 		density:    390,
 		durability: 9,
 		power:      10,
@@ -321,8 +325,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood10",
-		color0:     "#aaa",
-		color1:     "#aaa",
+		color0:     color.Gray{0xaa},
+		color1:     color.Gray{0xaa},
 		density:    400,
 		durability: 10,
 		power:      11,
@@ -344,8 +348,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood11",
-		color0:     "#bbb",
-		color1:     "#bbb",
+		color0:     color.Gray{0xbb},
+		color1:     color.Gray{0xbb},
 		density:    410,
 		durability: 11,
 		power:      12,
@@ -367,8 +371,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood12",
-		color0:     "#ccc",
-		color1:     "#ccc",
+		color0:     color.Gray{0xcc},
+		color1:     color.Gray{0xcc},
 		density:    420, //smoke weed erryday
 		durability: 12,
 		power:      13,
@@ -390,8 +394,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood13",
-		color0:     "#ddd",
-		color1:     "#ddd",
+		color0:     color.Gray{0xdd},
+		color1:     color.Gray{0xdd},
 		density:    430,
 		durability: 13,
 		power:      14,
@@ -413,8 +417,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood14",
-		color0:     "#eee",
-		color1:     "#eee",
+		color0:     color.Gray{0xee},
+		color1:     color.Gray{0xee},
 		density:    440,
 		durability: 14,
 		power:      15,
@@ -436,8 +440,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood15",
-		color0:     "#fff",
-		color1:     "#fff",
+		color0:     color.Gray{0xff},
+		color1:     color.Gray{0xff},
 		density:    450,
 		durability: 15,
 		power:      0,
@@ -459,8 +463,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood16",
-		color0:     "#d2b48c",
-		color1:     "#4b5a3f",
+		color0:     color.RGBA{0xd2, 0xb4, 0x8c, 0xff},
+		color1:     color.RGBA{0x4b, 0x5a, 0x3f, 0xff},
 		leaf:       1,
 		density:    300,
 		durability: 0,
@@ -483,8 +487,8 @@ var woodTypes = []struct {
 	},
 	{
 		name:       "wood17",
-		color0:     "#b5aa8b",
-		color1:     "#cf5123",
+		color0:     color.RGBA{0xb5, 0xaa, 0x8b, 0xff},
+		color1:     color.RGBA{0xcf, 0x51, 0x23, 0xff},
 		leaf:       2,
 		density:    310,
 		durability: 1,
