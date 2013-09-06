@@ -131,13 +131,13 @@ func init() {
 							haveMetal = true
 						}
 					}
-					if !haveWood && wood != nil {
+					if !haveWood && len(wood) != 0 {
 						continue
 					}
-					if !haveStone && stone != nil {
+					if !haveStone && len(stone) != 0 {
 						continue
 					}
-					if !haveMetal && metal != nil {
+					if !haveMetal && len(metal) != 0 {
 						continue
 					}
 					return &Equip{
@@ -215,27 +215,17 @@ func (e *Equip) Colors() []string {
 	defaultColors := equippables[e.slot][e.kind].colors
 	colors := make([]string, len(defaultColors))
 	copy(colors, defaultColors)
-	wood, stone, metal := e.material.Get()
+	wood := e.material.WoodColor()
+	stone := e.material.StoneColor()
+	metal := e.material.MetalColor()
 	for i, c := range colors {
 		switch c {
 		case woodColor:
-			if wood == nil {
-				colors[i] = ""
-			} else {
-				colors[i] = wood.Color()
-			}
+			colors[i] = wood
 		case stoneColor:
-			if stone == nil {
-				colors[i] = ""
-			} else {
-				colors[i] = stone.Color()
-			}
+			colors[i] = stone
 		case metalColor:
-			if metal == nil {
-				colors[i] = ""
-			} else {
-				colors[i] = metal.Color()
-			}
+			colors[i] = metal
 		}
 	}
 	for i, c := range e.customColors {

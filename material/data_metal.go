@@ -10,10 +10,10 @@ type MetalType uint64
 func (t MetalType) Name() string { return metalTypes[t].name }
 
 // Color of the resource (processed form)
-func (t MetalType) Color() string { return toCSSColor(metalTypes[t].color0) }
+func (t MetalType) Color() color.Color { return metalTypes[t].color0 }
 
 // OreColor of the resource (unprocessed form)
-func (t MetalType) OreColor() string { return toCSSColor(metalTypes[t].color1) }
+func (t MetalType) OreColor() color.Color { return metalTypes[t].color1 }
 
 // Density of the resource (centigrams per cubic centimeter)
 func (t MetalType) Density() uint64 { return metalTypes[t].density }

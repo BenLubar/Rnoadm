@@ -8,7 +8,7 @@ import (
 
 func init() {
 	world.RegisterSpawnFunc(WrapSpawnFunc(func(material *Material, s string) world.Visible {
-		if wood, stone, metal := material.Get(); wood == nil || stone != nil || metal != nil {
+		if wood, stone, metal := material.Get(); len(wood) == 0 || len(stone) != 0 || len(metal) != 0 {
 			return nil
 		}
 		switch s {
@@ -38,10 +38,12 @@ func (t *Tree) Save() (uint, interface{}, []world.ObjectLike) {
 func (t *Tree) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
-		material := &Material{}
+		material := &Material{components: []*material{&material{}}}
 		world.InitObject(material)
+		world.InitObject(material.components[0])
 		kind := WoodType(data.(uint64))
-		material.wood = &kind
+		material.components[0].wood = &kind
+		material.components[0].volume = 100
 		material.quality = *big.NewInt(1 << 62)
 		attached = append(attached, material)
 		fallthrough
@@ -78,15 +80,15 @@ func (t *Tree) SpriteSize() (uint, uint) {
 }
 
 func (t *Tree) Colors() []string {
-	switch t.material.wood.LeafType() {
+	switch t.material.components[0].wood.LeafType() {
 	default:
 		fallthrough
 	case 0: // no leaves
-		return []string{t.material.wood.Color()}
+		return []string{t.material.WoodColor()}
 	case 1: // deciduous
-		return []string{t.material.wood.Color(), t.material.wood.LeafColor()}
+		return []string{t.material.WoodColor(), t.material.LeafColor()}
 	case 2: // coniferous
-		return []string{t.material.wood.Color(), "", t.material.wood.LeafColor()}
+		return []string{t.material.WoodColor(), "", t.material.LeafColor()}
 	}
 }
 
@@ -115,10 +117,12 @@ func (l *Logs) Save() (uint, interface{}, []world.ObjectLike) {
 func (l *Logs) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
-		material := &Material{}
+		material := &Material{components: []*material{&material{}}}
 		world.InitObject(material)
+		world.InitObject(material.components[0])
 		kind := WoodType(data.(uint64))
-		material.wood = &kind
+		material.components[0].wood = &kind
+		material.components[0].volume = 100
 		material.quality = *big.NewInt(1 << 62)
 		attached = append(attached, material)
 		fallthrough
@@ -150,7 +154,7 @@ func (l *Logs) Sprite() string {
 }
 
 func (l *Logs) Colors() []string {
-	return []string{l.material.wood.Color()}
+	return []string{l.material.WoodColor()}
 }
 
 func (l *Logs) Volume() uint64 {

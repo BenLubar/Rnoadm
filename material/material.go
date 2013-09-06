@@ -5,20 +5,72 @@ import (
 	"github.com/BenLubar/Rnoadm/world"
 	"image/color"
 	"math/big"
+	"sort"
 	"strconv"
+	"strings"
 )
+
+type material struct {
+	world.Object
+
+	wood   *WoodType
+	stone  *StoneType
+	metal  *MetalType
+	volume uint64
+}
+
+func init() {
+	world.Register("mc", world.ObjectLike((*material)(nil)))
+}
+func (m *material) Save() (uint, interface{}, []world.ObjectLike) {
+	data := map[string]interface{}{"v": m.volume}
+	switch {
+	case m.wood != nil:
+		data["w"] = uint64(*m.wood)
+	case m.stone != nil:
+		data["s"] = uint64(*m.stone)
+	case m.metal != nil:
+		data["m"] = uint64(*m.metal)
+	}
+	return 0, data, nil
+}
+
+func (m *material) Load(version uint, data interface{}, attached []world.ObjectLike) {
+	switch version {
+	case 0:
+		dataMap := data.(map[string]interface{})
+		m.volume = dataMap["v"].(uint64)
+		if wood, ok := dataMap["w"].(uint64); ok {
+			m.wood = (*WoodType)(&wood)
+		}
+		if stone, ok := dataMap["s"].(uint64); ok {
+			m.stone = (*StoneType)(&stone)
+		}
+		if metal, ok := dataMap["m"].(uint64); ok {
+			m.metal = (*MetalType)(&metal)
+		}
+	default:
+		panic(fmt.Sprintf("version %d unknown", version))
+	}
+}
+
+func (m *material) density() uint64 {
+	switch {
+	case m.wood != nil:
+		return m.wood.Density()
+	case m.stone != nil:
+		return m.stone.Density()
+	case m.metal != nil:
+		return m.metal.Density()
+	}
+	panic("untyped material")
+}
 
 type Material struct {
 	world.Object
 
-	wood    *WoodType
-	stone   *StoneType
-	metal   *MetalType
-	quality big.Int
-
-	woodVolume  uint64
-	stoneVolume uint64
-	metalVolume uint64
+	components []*material
+	quality    big.Int
 }
 
 func init() {
@@ -26,62 +78,71 @@ func init() {
 }
 
 func (m *Material) Save() (uint, interface{}, []world.ObjectLike) {
-	materials := map[string]interface{}{
-		"q":  &m.quality,
-		"vw": m.woodVolume,
-		"vs": m.stoneVolume,
-		"vm": m.metalVolume,
+	attached := make([]world.ObjectLike, len(m.components))
+	for i, c := range m.components {
+		attached[i] = c
 	}
-	if m.wood != nil {
-		materials["w"] = uint64(*m.wood)
-	}
-	if m.stone != nil {
-		materials["s"] = uint64(*m.stone)
-	}
-	if m.metal != nil {
-		materials["m"] = uint64(*m.metal)
-	}
-	return 0, materials, nil
+	return 1, map[string]interface{}{"q": &m.quality}, attached
 }
 
 func (m *Material) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
 		materials, _ := data.(map[string]interface{})
+		if materials == nil {
+			materials = make(map[string]interface{}, 1)
+		}
+
 		if wood, ok := materials["w"].(uint64); ok {
-			m.wood = (*WoodType)(&wood)
+			vol, ok := materials["vw"].(uint64)
+			if !ok {
+				vol = 100
+			}
+			attached = append(attached, world.InitObject(&material{
+				wood:   (*WoodType)(&wood),
+				volume: vol,
+			}))
 		}
 		if stone, ok := materials["s"].(uint64); ok {
-			m.stone = (*StoneType)(&stone)
+			vol, ok := materials["vs"].(uint64)
+			if !ok {
+				vol = 100
+			}
+			attached = append(attached, world.InitObject(&material{
+				stone:  (*StoneType)(&stone),
+				volume: vol,
+			}))
 		}
 		if metal, ok := materials["m"].(uint64); ok {
-			m.metal = (*MetalType)(&metal)
+			vol, ok := materials["vm"].(uint64)
+			if !ok {
+				vol = 100
+			}
+			attached = append(attached, world.InitObject(&material{
+				metal:  (*MetalType)(&metal),
+				volume: vol,
+			}))
 		}
-		if quality, ok := materials["q"].(*big.Int); ok {
-			m.quality = *quality
+
+		if _, ok := materials["q"].(*big.Int); ok {
+			// do nothing
 		} else if quality, ok := materials["q"].(uint64); ok {
-			m.quality = *big.NewInt(int64(quality))
+			materials["q"] = big.NewInt(int64(quality))
 		} else {
-			m.quality = *big.NewInt(1 << 62)
+			materials["q"] = big.NewInt(1 << 62)
 		}
-		if _, ok := materials["vw"]; ok {
-			m.woodVolume = materials["vw"].(uint64)
-			m.stoneVolume = materials["vs"].(uint64)
-			m.metalVolume = materials["vm"].(uint64)
-		} else {
-			if m.wood != nil {
-				m.woodVolume = 100
-			}
-			if m.stone != nil {
-				m.stoneVolume = 100
-			}
-			if m.metal != nil {
-				m.metalVolume = 100
-			}
+		fallthrough
+	case 1:
+		dataMap := data.(map[string]interface{})
+		m.quality = *dataMap["q"].(*big.Int)
+		m.components = make([]*material, len(attached))
+		for i, c := range attached {
+			m.components[i] = c.(*material)
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
+	m.sortComponents()
 }
 
 func (m *Material) Info() [][][2]string {
@@ -95,73 +156,54 @@ func (m *Material) Info() [][][2]string {
 	return info
 }
 
-func (m *Material) Wood() (WoodType, bool) {
-	if m.wood == nil {
-		return 0, false
-	}
-	return *m.wood, true
-}
-
-func (m *Material) Stone() (StoneType, bool) {
-	if m.stone == nil {
-		return 0, false
-	}
-	return *m.stone, true
-}
-
-func (m *Material) Metal() (MetalType, bool) {
-	if m.metal == nil {
-		return 0, false
-	}
-	return *m.metal, true
-}
-
 func (m *Material) Weight() uint64 {
 	var weight uint64
-	if m.wood != nil {
-		weight += m.woodVolume * m.wood.Density() / 100
-	}
-	if m.stone != nil {
-		weight += m.stoneVolume * m.stone.Density() / 100
-	}
-	if m.metal != nil {
-		weight += m.metalVolume * m.metal.Density() / 100
+	for _, c := range m.components {
+		weight += c.volume * c.density() / 100
 	}
 	return weight
 }
 
 func (m *Material) Volume() uint64 {
-	return m.woodVolume + m.stoneVolume + m.metalVolume
+	var volume uint64
+	for _, c := range m.components {
+		volume += c.volume
+	}
+	return volume
 }
 
 func (m *Material) Name() string {
+	var names []string
 	wood, stone, metal := m.Get()
-	if wood == nil {
-		if stone == nil {
-			if metal == nil {
-				return ""
-			}
-			return metal.Name() + " "
-		}
-		if metal == nil {
-			return stone.Name() + " "
-		}
-		return metal.Name() + " and " + stone.Name() + " "
+
+	for _, w := range wood {
+		names = append(names, w.Name())
 	}
-	if stone == nil {
-		if metal == nil {
-			return wood.Name() + " "
-		}
-		return wood.Name() + " and " + metal.Name() + " "
+	for _, s := range stone {
+		names = append(names, s.Name())
 	}
-	if metal == nil {
-		return wood.Name() + " and " + stone.Name() + " "
+	for _, m := range metal {
+		names = append(names, m.Name())
 	}
-	return wood.Name() + ", " + metal.Name() + ", and " + stone.Name() + " "
+	name := strings.Join(names, "-")
+	if name == "" {
+		return ""
+	}
+	return name + " "
 }
 
-func (m *Material) Get() (*WoodType, *StoneType, *MetalType) {
-	return m.wood, m.stone, m.metal
+func (m *Material) Get() (wood []WoodType, stone []StoneType, metal []MetalType) {
+	for _, c := range m.components {
+		switch {
+		case c.wood != nil:
+			wood = append(wood, *c.wood)
+		case c.stone != nil:
+			stone = append(stone, *c.stone)
+		case c.metal != nil:
+			metal = append(metal, *c.metal)
+		}
+	}
+	return wood, stone, metal
 }
 
 func (m *Material) Quality() *big.Int {
@@ -192,14 +234,15 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 			return false, 0
 		}
 
-		var lastGood world.Visible
+		var m Material
+		world.InitObject(&m)
+		m.quality.SetUint64(1000)
 		var setQuality bool
-		var material Material
-		world.InitObject(&material)
 	find:
 		for {
-			if v := f(&material, s); v != nil {
-				lastGood = v
+			m.sortComponents()
+			if v := f(&m, s); v != nil {
+				return v
 			}
 			if !setQuality && len(s) > 3 && s[0] == 'q' {
 				var l int
@@ -209,46 +252,212 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 					var quality big.Int
 					_, ok := quality.SetString(s[1:l], 10)
 					if ok {
-						material.quality = quality
+						m.quality = quality
 						setQuality = true
 						s = s[l+1:]
 						continue
 					}
 				}
 			}
-			if material.wood == nil {
-				for i := range woodTypes {
-					t := WoodType(i)
-					if ok, volume := prefix(t.Name()); ok {
-						material.wood = &t
-						material.woodVolume = volume
-						continue find
-					}
+			for i := range woodTypes {
+				t := WoodType(i)
+				if ok, volume := prefix(t.Name()); ok {
+					m.components = append(m.components, &material{
+						wood:   &t,
+						volume: volume,
+					})
+					continue find
 				}
 			}
-			if material.stone == nil {
-				for i := range stoneTypes {
-					t := StoneType(i)
-					if ok, volume := prefix(t.Name()); ok {
-						material.stone = &t
-						material.stoneVolume = volume
-						continue find
-					}
+			for i := range stoneTypes {
+				t := StoneType(i)
+				if ok, volume := prefix(t.Name()); ok {
+					m.components = append(m.components, &material{
+						stone:  &t,
+						volume: volume,
+					})
+					continue find
 				}
 			}
-			if material.metal == nil {
-				for i := range metalTypes {
-					t := MetalType(i)
-					if ok, volume := prefix(t.Name()); ok {
-						material.metal = &t
-						material.metalVolume = volume
-						continue find
-					}
+			for i := range metalTypes {
+				t := MetalType(i)
+				if ok, volume := prefix(t.Name()); ok {
+					m.components = append(m.components, &material{
+						metal:  &t,
+						volume: volume,
+					})
+					continue find
 				}
 			}
-			return lastGood
+			return nil
 		}
 	}
+}
+
+type sortMaterial []*material
+
+func (s sortMaterial) Len() int {
+	return len(s)
+}
+
+func (s sortMaterial) Less(i, j int) bool {
+	a, b := s[i], s[j]
+	switch {
+	case a.wood != nil && b.wood == nil:
+		return true
+	case a.wood == nil && b.wood != nil:
+		return false
+	case a.wood != nil && b.wood != nil:
+		return *a.wood < *b.wood
+
+	case a.stone != nil && b.stone == nil:
+		return true
+	case a.stone == nil && b.stone != nil:
+		return false
+	case a.stone != nil && b.stone != nil:
+		return *a.stone < *b.stone
+
+	case a.metal != nil && b.metal == nil:
+		return true
+	case a.metal == nil && b.metal != nil:
+		return false
+	case a.metal != nil && b.metal != nil:
+		return *a.metal < *b.metal
+	}
+	return false
+}
+
+func (s sortMaterial) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (m *Material) sortComponents() {
+	sort.Sort(sortMaterial(m.components))
+}
+
+func (m *Material) WoodColor() string {
+	var R, G, B, A uint64
+	var totalVolume uint64
+	for _, c := range m.components {
+		if c.wood == nil {
+			continue
+		}
+		r, g, b, a := c.wood.Color().RGBA()
+		totalVolume += c.volume
+		R += uint64(r) * c.volume
+		G += uint64(g) * c.volume
+		B += uint64(b) * c.volume
+		A += uint64(a) * c.volume
+	}
+	if totalVolume == 0 || A == 0 {
+		return ""
+	}
+	return toCSSColor(color.RGBA64{
+		uint16(R / totalVolume),
+		uint16(G / totalVolume),
+		uint16(B / totalVolume),
+		uint16(A / totalVolume),
+	})
+}
+
+func (m *Material) LeafColor() string {
+	var R, G, B, A uint64
+	var totalVolume uint64
+	for _, c := range m.components {
+		if c.wood == nil {
+			continue
+		}
+		r, g, b, a := c.wood.LeafColor().RGBA()
+		totalVolume += c.volume
+		R += uint64(r) * c.volume
+		G += uint64(g) * c.volume
+		B += uint64(b) * c.volume
+		A += uint64(a) * c.volume
+	}
+	if totalVolume == 0 || A == 0 {
+		return ""
+	}
+	return toCSSColor(color.RGBA64{
+		uint16(R / totalVolume),
+		uint16(G / totalVolume),
+		uint16(B / totalVolume),
+		uint16(A / totalVolume),
+	})
+}
+
+func (m *Material) StoneColor() string {
+	var R, G, B, A uint64
+	var totalVolume uint64
+	for _, c := range m.components {
+		if c.stone == nil {
+			continue
+		}
+		r, g, b, a := c.stone.Color().RGBA()
+		totalVolume += c.volume
+		R += uint64(r) * c.volume
+		G += uint64(g) * c.volume
+		B += uint64(b) * c.volume
+		A += uint64(a) * c.volume
+	}
+	if totalVolume == 0 || A == 0 {
+		return ""
+	}
+	return toCSSColor(color.RGBA64{
+		uint16(R / totalVolume),
+		uint16(G / totalVolume),
+		uint16(B / totalVolume),
+		uint16(A / totalVolume),
+	})
+}
+
+func (m *Material) MetalColor() string {
+	var R, G, B, A uint64
+	var totalVolume uint64
+	for _, c := range m.components {
+		if c.metal == nil {
+			continue
+		}
+		r, g, b, a := c.metal.Color().RGBA()
+		totalVolume += c.volume
+		R += uint64(r) * c.volume
+		G += uint64(g) * c.volume
+		B += uint64(b) * c.volume
+		A += uint64(a) * c.volume
+	}
+	if totalVolume == 0 || A == 0 {
+		return ""
+	}
+	return toCSSColor(color.RGBA64{
+		uint16(R / totalVolume),
+		uint16(G / totalVolume),
+		uint16(B / totalVolume),
+		uint16(A / totalVolume),
+	})
+}
+
+func (m *Material) OreColor() string {
+	var R, G, B, A uint64
+	var totalVolume uint64
+	for _, c := range m.components {
+		if c.metal == nil {
+			continue
+		}
+		r, g, b, a := c.metal.OreColor().RGBA()
+		totalVolume += c.volume
+		R += uint64(r) * c.volume
+		G += uint64(g) * c.volume
+		B += uint64(b) * c.volume
+		A += uint64(a) * c.volume
+	}
+	if totalVolume == 0 || A == 0 {
+		return ""
+	}
+	return toCSSColor(color.RGBA64{
+		uint16(R / totalVolume),
+		uint16(G / totalVolume),
+		uint16(B / totalVolume),
+		uint16(A / totalVolume),
+	})
 }
 
 func toCSSColor(c color.Color) string {

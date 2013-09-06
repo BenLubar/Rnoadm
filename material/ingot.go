@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
 	"math/big"
-	"sort"
 )
 
 type Ingot struct {
 	world.VisibleObject
 
-	materials []*Material
+	material *Material
 }
 
 func init() {
@@ -18,12 +17,12 @@ func init() {
 
 	world.RegisterSpawnFunc(WrapSpawnFunc(func(material *Material, s string) world.Visible {
 		wood, stone, metal := material.Get()
-		if wood != nil || stone != nil || metal == nil {
+		if len(wood) != 0 || len(stone) != 0 || len(metal) == 0 {
 			return nil
 		}
 		if s == "ingot" {
 			return &Ingot{
-				materials: []*Material{material},
+				material: material,
 			}
 		}
 		return nil
@@ -31,15 +30,7 @@ func init() {
 }
 
 func (i *Ingot) Save() (uint, interface{}, []world.ObjectLike) {
-	attached := []world.ObjectLike{}
-
-	for _, m := range i.materials {
-		attached = append(attached, m)
-	}
-
-	return 1, map[string]interface{}{
-		"m": uint(len(i.materials)),
-	}, attached
+	return 2, uint(0), []world.ObjectLike{i.material}
 }
 
 func (i *Ingot) Load(version uint, data interface{}, attached []world.ObjectLike) {
@@ -48,43 +39,30 @@ func (i *Ingot) Load(version uint, data interface{}, attached []world.ObjectLike
 		if attached[1].(*Material).Name() == "" {
 			attached = attached[:1]
 		}
-		data = map[string]interface{}{
-			"m": uint(len(attached)),
-		}
 		fallthrough
 	case 1:
-		dataMap := data.(map[string]interface{})
-		i.materials = make([]*Material, dataMap["m"].(uint))
-		for j := range i.materials {
-			i.materials[j] = attached[j].(*Material)
+		material := attached[0].(*Material)
+		for _, m := range attached[1:] {
+			material.components = append(material.components, m.(*Material).components...)
 		}
+		material.sortComponents()
+		attached = attached[:1]
+		fallthrough
+	case 2:
+		i.material = attached[0].(*Material)
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
-	i.sortAlloy()
 }
 
 func (i *Ingot) Name() string {
-	materials := ""
-	for _, m := range i.materials {
-		if name := m.Name(); name != "" {
-			if materials == "" {
-				materials = name
-			} else {
-				materials = materials[:len(materials)-1] + "-" + name
-			}
-		}
-	}
-	return materials + "ingot"
+	return i.material.Name() + "ingot"
 }
 
 func (i *Ingot) Examine() (string, [][][2]string) {
 	_, info := i.VisibleObject.Examine()
 
-	info = append(info, [][2]string{
-		{Comma(i.Quality()), "#4fc"},
-		{" quality", "#ccc"},
-	})
+	info = append(info, i.material.Info()...)
 
 	return "a bar of metal.", info
 }
@@ -94,51 +72,21 @@ func (i *Ingot) Sprite() string {
 }
 
 func (i *Ingot) Colors() []string {
-	return []string{i.materials[0].metal.Color()}
+	return []string{i.material.MetalColor()}
 }
 
 func (i *Ingot) Quality() *big.Int {
-	var quality big.Int
-	for _, m := range i.materials {
-		quality.Add(&quality, m.Quality())
-	}
-	return &quality
+	return i.material.Quality()
 }
 
 func (i *Ingot) Volume() uint64 {
-	var volume uint64
-	for _, m := range i.materials {
-		volume += m.Volume()
-	}
-	return volume
+	return i.material.Volume()
 }
 
 func (i *Ingot) Weight() uint64 {
-	var weight uint64
-	for _, m := range i.materials {
-		weight += m.Weight()
-	}
-	return weight
+	return i.material.Weight()
 }
 
 func (i *Ingot) AdminOnly() bool {
 	return false
-}
-
-func (i *Ingot) sortAlloy() {
-	sort.Sort(sortMetals(i.materials))
-}
-
-type sortMetals []*Material
-
-func (s sortMetals) Len() int {
-	return len(s)
-}
-
-func (s sortMetals) Less(i, j int) bool {
-	return *s[i].metal > *s[j].metal
-}
-
-func (s sortMetals) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
 }

@@ -10,10 +10,10 @@ type WoodType uint64
 func (t WoodType) Name() string { return woodTypes[t].name }
 
 // Color of the resource (processed form)
-func (t WoodType) Color() string { return toCSSColor(woodTypes[t].color0) }
+func (t WoodType) Color() color.Color { return woodTypes[t].color0 }
 
 // LeafColor of the resource (node)
-func (t WoodType) LeafColor() string { return toCSSColor(woodTypes[t].color1) }
+func (t WoodType) LeafColor() color.Color { return woodTypes[t].color1 }
 
 // LeafType of the resource (node)
 func (t WoodType) LeafType() uint8 { return woodTypes[t].leaf }
@@ -96,7 +96,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood0",
 		color0:     color.Gray{0x00},
-		color1:     color.Gray{0x00},
+		color1:     color.Alpha{0},
 		density:    300,
 		durability: 0,
 		power:      1,
@@ -119,7 +119,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood1",
 		color0:     color.Gray{0x11},
-		color1:     color.Gray{0x11},
+		color1:     color.Alpha{0},
 		density:    310,
 		durability: 1,
 		power:      2,
@@ -142,7 +142,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood2",
 		color0:     color.Gray{0x22},
-		color1:     color.Gray{0x22},
+		color1:     color.Alpha{0},
 		density:    320,
 		durability: 2,
 		power:      3,
@@ -165,7 +165,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood3",
 		color0:     color.Gray{0x33},
-		color1:     color.Gray{0x33},
+		color1:     color.Alpha{0},
 		density:    330,
 		durability: 3,
 		power:      4,
@@ -188,7 +188,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood4",
 		color0:     color.Gray{0x44},
-		color1:     color.Gray{0x44},
+		color1:     color.Alpha{0},
 		density:    340,
 		durability: 4,
 		power:      5,
@@ -211,7 +211,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood5",
 		color0:     color.Gray{0x55},
-		color1:     color.Gray{0x55},
+		color1:     color.Alpha{0},
 		density:    350,
 		durability: 5,
 		power:      6,
@@ -234,7 +234,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood6",
 		color0:     color.Gray{0x66},
-		color1:     color.Gray{0x66},
+		color1:     color.Alpha{0},
 		density:    360,
 		durability: 6,
 		power:      7,
@@ -257,7 +257,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood7",
 		color0:     color.Gray{0x77},
-		color1:     color.Gray{0x77},
+		color1:     color.Alpha{0},
 		density:    370,
 		durability: 7,
 		power:      8,
@@ -280,7 +280,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood8",
 		color0:     color.Gray{0x88},
-		color1:     color.Gray{0x88},
+		color1:     color.Alpha{0},
 		density:    380,
 		durability: 8,
 		power:      9,
@@ -303,7 +303,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood9",
 		color0:     color.Gray{0x99},
-		color1:     color.Gray{0x99},
+		color1:     color.Alpha{0},
 		density:    390,
 		durability: 9,
 		power:      10,
@@ -326,7 +326,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood10",
 		color0:     color.Gray{0xaa},
-		color1:     color.Gray{0xaa},
+		color1:     color.Alpha{0},
 		density:    400,
 		durability: 10,
 		power:      11,
@@ -349,7 +349,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood11",
 		color0:     color.Gray{0xbb},
-		color1:     color.Gray{0xbb},
+		color1:     color.Alpha{0},
 		density:    410,
 		durability: 11,
 		power:      12,
@@ -372,7 +372,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood12",
 		color0:     color.Gray{0xcc},
-		color1:     color.Gray{0xcc},
+		color1:     color.Alpha{0},
 		density:    420, //smoke weed erryday
 		durability: 12,
 		power:      13,
@@ -395,7 +395,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood13",
 		color0:     color.Gray{0xdd},
-		color1:     color.Gray{0xdd},
+		color1:     color.Alpha{0},
 		density:    430,
 		durability: 13,
 		power:      14,
@@ -418,7 +418,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood14",
 		color0:     color.Gray{0xee},
-		color1:     color.Gray{0xee},
+		color1:     color.Alpha{0},
 		density:    440,
 		durability: 14,
 		power:      15,
@@ -441,7 +441,7 @@ var woodTypes = []struct {
 	{
 		name:       "wood15",
 		color0:     color.Gray{0xff},
-		color1:     color.Gray{0xff},
+		color1:     color.Alpha{0},
 		density:    450,
 		durability: 15,
 		power:      0,

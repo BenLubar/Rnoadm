@@ -40,36 +40,20 @@ func (w *Wall) Sprite() string {
 }
 
 func (w *Wall) Colors() []string {
-	wood, stone, metal := w.material.Get()
-	if metal == nil {
-		if stone == nil {
-			if wood == nil {
-				return []string{"#888"}
-			} else {
-				return []string{"", wood.Color()}
-			}
-		} else {
-			if wood == nil {
-				return []string{"", "", stone.Color()}
-			} else {
-				return []string{"", "", stone.Color(), "", wood.Color()}
-			}
-		}
-	} else {
-		if stone == nil {
-			if wood == nil {
-				return []string{"", "", "", metal.Color()}
-			} else {
-				return []string{"", "", "", metal.Color(), wood.Color()}
-			}
-		} else {
-			if wood == nil {
-				return []string{"", "", stone.Color(), "", "", metal.Color()}
-			} else {
-				return []string{"", "", stone.Color(), "", wood.Color(), metal.Color()}
-			}
-		}
+	wood := w.material.WoodColor()
+	stone := w.material.StoneColor()
+	metal := w.material.MetalColor()
+
+	if stone != "" {
+		return []string{"", "", stone, "", wood, metal}
 	}
+	if metal != "" {
+		return []string{"", "", "", metal, wood}
+	}
+	if wood != "" {
+		return []string{"", wood}
+	}
+	return []string{"no"}
 }
 
 func containsWall(objects []world.ObjectLike) bool {

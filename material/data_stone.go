@@ -10,7 +10,7 @@ type StoneType uint64
 func (t StoneType) Name() string { return stoneTypes[t].name }
 
 // Color of the resource (processed form)
-func (t StoneType) Color() string { return toCSSColor(stoneTypes[t].color0) }
+func (t StoneType) Color() color.Color { return stoneTypes[t].color0 }
 
 // Density of the resource (centigrams per cubic centimeter)
 func (t StoneType) Density() uint64 { return stoneTypes[t].density }

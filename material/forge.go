@@ -127,44 +127,49 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 				done = done.Add(time.Minute * 4 * time.Duration(i.(world.Item).Weight()) / 5000)
 			}
 			if done.Before(time.Now()) && len(items) > 0 {
-				materials := make(map[MetalType]*Material)
+				materials := make(map[MetalType]*material)
+				var quality big.Int
 				var totalVolume uint64
 				var tmp big.Int
 				for _, i := range items {
 					if o, ok := i.(*Ore); ok {
-						if o.material.metalVolume == 0 {
-							continue
+						for _, m := range o.material.components {
+							if m.metal == nil || m.volume == 0 {
+								continue
+							}
+							mat := materials[*m.metal]
+							if mat == nil {
+								mat = &material{metal: m.metal}
+								materials[*m.metal] = mat
+							}
+							totalVolume += m.volume
+							mat.volume += m.volume
+							tmp.SetUint64(m.volume)
+							quality.Add(&quality, tmp.Mul(&o.material.quality, &tmp))
 						}
-						mat := materials[*o.material.metal]
-						if mat == nil {
-							mat = &Material{metal: o.material.metal}
-							materials[*o.material.metal] = mat
-						}
-						totalVolume += o.material.metalVolume
-						mat.metalVolume += o.material.metalVolume
-						tmp.SetUint64(o.material.metalVolume)
-						mat.quality.Add(&mat.quality, tmp.Mul(&o.material.quality, &tmp))
 					}
 				}
 				originalVolume := totalVolume
+				quality.Div(&quality, tmp.SetUint64(totalVolume))
 				makeIngot := func(volume uint64) {
 					ingot := &Ingot{}
 					world.InitObject(ingot)
-					ingot.materials = make([]*Material, 0, len((materials)))
+					ingot.material = &Material{
+						components: make([]*material, 0, len((materials))),
+						quality:    quality,
+					}
+					world.InitObject(ingot.material)
 					remaining := originalVolume
 					for _, m := range materials {
-						v := m.metalVolume * volume / remaining
-						remaining -= m.metalVolume
+						v := m.volume * volume / remaining
+						remaining -= m.volume
 						volume -= v
-						var quality big.Int
-						quality.SetUint64(m.metalVolume)
-						ingot.materials = append(ingot.materials, &Material{
-							metal:       m.metal,
-							metalVolume: v,
-							quality:     *quality.Div(&m.quality, &quality),
+						ingot.material.components = append(ingot.material.components, &material{
+							metal:  m.metal,
+							volume: v,
 						})
 					}
-					ingot.sortAlloy()
+					ingot.material.sortComponents()
 					if !player.GiveItem(ingot) {
 						player.Position().Add(ingot)
 					}

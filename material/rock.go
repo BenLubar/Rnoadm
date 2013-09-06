@@ -9,20 +9,20 @@ import (
 func init() {
 	world.RegisterSpawnFunc(WrapSpawnFunc(func(material *Material, s string) world.Visible {
 		wood, stone, metal := material.Get()
-		if wood != nil {
+		if len(wood) != 0 {
 			return nil
 		}
-		if s == "stone" && stone != nil && metal == nil {
+		if s == "stone" && len(stone) != 0 && len(metal) == 0 {
 			return &Stone{
 				material: material,
 			}
 		}
-		if s == "ore" && stone == nil && metal != nil {
+		if s == "ore" && len(stone) == 0 && len(metal) != 0 {
 			return &Ore{
 				material: material,
 			}
 		}
-		if stone == nil {
+		if len(stone) == 0 {
 			return nil
 		}
 		if s == "rock" {
@@ -30,7 +30,7 @@ func init() {
 				material: material,
 			}
 		}
-		if s == "deposit" && metal != nil {
+		if s == "deposit" && len(metal) != 0 {
 			return &Rock{
 				material: material,
 				rich:     true,
@@ -94,21 +94,18 @@ func (r *Rock) SpriteSize() (uint, uint) {
 }
 
 func (r *Rock) Colors() []string {
-	_, stone, metal := r.material.Get()
+	ore, stone := r.material.StoneColor(), r.material.OreColor()
 	if r.rich {
-		return []string{stone.Color(), metal.OreColor(), metal.OreColor()}
+		return []string{stone, ore, ore}
 	}
-	if metal != nil {
-		return []string{stone.Color(), metal.OreColor()}
-	}
-	return []string{stone.Color()}
+	return []string{stone, ore}
 }
 
 func (r *Rock) Actions(player world.PlayerLike) []string {
 	actions := r.Node.Actions(player)
 
 	actions = append([]string{"quarry"}, actions...)
-	if r.material.metal != nil {
+	if r.material.MetalColor() != "" {
 		actions = append([]string{"mine"}, actions...)
 	}
 
@@ -132,10 +129,12 @@ func (s *Stone) Save() (uint, interface{}, []world.ObjectLike) {
 func (s *Stone) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
-		material := &Material{}
+		material := &Material{components: []*material{&material{}}}
 		world.InitObject(material)
+		world.InitObject(material.components[0])
 		kind := StoneType(data.(uint64))
-		material.stone = &kind
+		material.components[0].stone = &kind
+		material.components[0].volume = 100
 		material.quality = *big.NewInt(1 << 62)
 		attached = append(attached, material)
 		fallthrough
@@ -167,7 +166,7 @@ func (s *Stone) Sprite() string {
 }
 
 func (s *Stone) Colors() []string {
-	return []string{s.material.stone.Color()}
+	return []string{s.material.StoneColor()}
 }
 
 func (s *Stone) Volume() uint64 {
@@ -199,10 +198,12 @@ func (o *Ore) Save() (uint, interface{}, []world.ObjectLike) {
 func (o *Ore) Load(version uint, data interface{}, attached []world.ObjectLike) {
 	switch version {
 	case 0:
-		material := &Material{}
+		material := &Material{components: []*material{&material{}}}
 		world.InitObject(material)
+		world.InitObject(material.components[0])
 		kind := MetalType(data.(uint64))
-		material.metal = &kind
+		material.components[0].metal = &kind
+		material.components[0].volume = 100
 		material.quality = *big.NewInt(1 << 62)
 		attached = append(attached, material)
 		fallthrough
@@ -234,7 +235,7 @@ func (o *Ore) Sprite() string {
 }
 
 func (o *Ore) Colors() []string {
-	return []string{o.material.metal.OreColor()}
+	return []string{o.material.OreColor()}
 }
 
 func (o *Ore) Volume() uint64 {
