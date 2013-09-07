@@ -80,7 +80,7 @@ func (t *Tree) SpriteSize() (uint, uint) {
 }
 
 func (t *Tree) Colors() []string {
-	switch t.material.components[0].wood.LeafType() {
+	switch t.material.components[0].wood.Data().Skin() {
 	default:
 		fallthrough
 	case 0: // no leaves

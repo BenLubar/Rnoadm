@@ -54,14 +54,14 @@ func (m *material) Load(version uint, data interface{}, attached []world.ObjectL
 	}
 }
 
-func (m *material) density() uint64 {
+func (m *material) data() *MaterialData {
 	switch {
 	case m.wood != nil:
-		return m.wood.Density()
+		return m.wood.Data()
 	case m.stone != nil:
-		return m.stone.Density()
+		return m.stone.Data()
 	case m.metal != nil:
-		return m.metal.Density()
+		return m.metal.Data()
 	}
 	panic("untyped material")
 }
@@ -148,10 +148,53 @@ func (m *Material) Load(version uint, data interface{}, attached []world.ObjectL
 func (m *Material) Info() [][][2]string {
 	var info [][][2]string
 
-	info = append(info, [][2]string{
-		{Comma(&m.quality), "#4fc"},
-		{" quality", "#ccc"},
-	})
+	maybe := func(name string, f func(*MaterialData) *big.Int) {
+		var total, volume, tmp big.Int
+		for _, c := range m.components {
+			tmp.SetUint64(c.volume)
+			volume.Add(&volume, &tmp)
+			total.Add(&total, tmp.Mul(f(c.data()), &tmp))
+		}
+		if volume.Sign() == 0 {
+			return
+		}
+		total.Div(tmp.Mul(&total, &m.quality), &volume)
+		switch total.Sign() {
+		case 0:
+			return
+		case 1:
+			info = append(info, [][2]string{
+				{"+" + Comma(&total), "#4f4"},
+				{name, "#ccc"},
+			})
+		case -1:
+			info = append(info, [][2]string{
+				{Comma(&total), "#f44"},
+				{name, "#ccc"},
+			})
+		}
+	}
+
+	maybe(" power", (*MaterialData).Power)
+	maybe(" magic", (*MaterialData).Magic)
+	maybe(" agility", (*MaterialData).Agility)
+	maybe(" luck", (*MaterialData).Luck)
+	maybe(" intelligence", (*MaterialData).Intelligence)
+	maybe(" stamina", (*MaterialData).Stamina)
+
+	maybe(" melee damage", (*MaterialData).MeleeDamage)
+	maybe(" magic damage", (*MaterialData).MagicDamage)
+	maybe(" mana", (*MaterialData).Mana)
+	maybe(" mana regen", (*MaterialData).ManaRegen)
+	maybe(" crit chance", (*MaterialData).CritChance)
+	maybe(" attack speed", (*MaterialData).AttackSpeed)
+
+	maybe(" melee armor", (*MaterialData).MeleeArmor)
+	maybe(" magic armor", (*MaterialData).MagicArmor)
+	maybe(" health", (*MaterialData).Health)
+	maybe(" health regen", (*MaterialData).HealthRegen)
+	maybe(" resistance", (*MaterialData).Resistance)
+	maybe(" movement speed", (*MaterialData).MovementSpeed)
 
 	return info
 }
@@ -159,7 +202,7 @@ func (m *Material) Info() [][][2]string {
 func (m *Material) Weight() uint64 {
 	var weight uint64
 	for _, c := range m.components {
-		weight += c.volume * c.density() / 100
+		weight += c.volume * c.data().Density() / 100
 	}
 	return weight
 }
@@ -177,13 +220,13 @@ func (m *Material) Name() string {
 	wood, stone, metal := m.Get()
 
 	for _, w := range wood {
-		names = append(names, w.Name())
+		names = append(names, w.Data().Name())
 	}
 	for _, s := range stone {
-		names = append(names, s.Name())
+		names = append(names, s.Data().Name())
 	}
 	for _, m := range metal {
-		names = append(names, m.Name())
+		names = append(names, m.Data().Name())
 	}
 	name := strings.Join(names, "-")
 	if name == "" {
@@ -261,7 +304,7 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 			}
 			for i := range woodTypes {
 				t := WoodType(i)
-				if ok, volume := prefix(t.Name()); ok {
+				if ok, volume := prefix(t.Data().Name()); ok {
 					m.components = append(m.components, &material{
 						wood:   &t,
 						volume: volume,
@@ -271,7 +314,7 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 			}
 			for i := range stoneTypes {
 				t := StoneType(i)
-				if ok, volume := prefix(t.Name()); ok {
+				if ok, volume := prefix(t.Data().Name()); ok {
 					m.components = append(m.components, &material{
 						stone:  &t,
 						volume: volume,
@@ -281,7 +324,7 @@ func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.V
 			}
 			for i := range metalTypes {
 				t := MetalType(i)
-				if ok, volume := prefix(t.Name()); ok {
+				if ok, volume := prefix(t.Data().Name()); ok {
 					m.components = append(m.components, &material{
 						metal:  &t,
 						volume: volume,
@@ -342,7 +385,7 @@ func (m *Material) WoodColor() string {
 		if c.wood == nil {
 			continue
 		}
-		r, g, b, a := c.wood.Color().RGBA()
+		r, g, b, a := c.wood.Data().Color().RGBA()
 		totalVolume += c.volume
 		R += uint64(r) * c.volume
 		G += uint64(g) * c.volume
@@ -367,7 +410,7 @@ func (m *Material) LeafColor() string {
 		if c.wood == nil {
 			continue
 		}
-		r, g, b, a := c.wood.LeafColor().RGBA()
+		r, g, b, a := c.wood.Data().ExtraColor().RGBA()
 		totalVolume += c.volume
 		R += uint64(r) * c.volume
 		G += uint64(g) * c.volume
@@ -392,7 +435,7 @@ func (m *Material) StoneColor() string {
 		if c.stone == nil {
 			continue
 		}
-		r, g, b, a := c.stone.Color().RGBA()
+		r, g, b, a := c.stone.Data().Color().RGBA()
 		totalVolume += c.volume
 		R += uint64(r) * c.volume
 		G += uint64(g) * c.volume
@@ -417,7 +460,7 @@ func (m *Material) MetalColor() string {
 		if c.metal == nil {
 			continue
 		}
-		r, g, b, a := c.metal.Color().RGBA()
+		r, g, b, a := c.metal.Data().Color().RGBA()
 		totalVolume += c.volume
 		R += uint64(r) * c.volume
 		G += uint64(g) * c.volume
@@ -442,7 +485,7 @@ func (m *Material) OreColor() string {
 		if c.metal == nil {
 			continue
 		}
-		r, g, b, a := c.metal.OreColor().RGBA()
+		r, g, b, a := c.metal.Data().ExtraColor().RGBA()
 		totalVolume += c.volume
 		R += uint64(r) * c.volume
 		G += uint64(g) * c.volume
