@@ -688,6 +688,23 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		if pos.Remove(p) {
 			pos.Zone().Tile(uint8(x), uint8(y)).Add(p)
 		}
+	case "slow tp":
+		if len(command) != 3 {
+			return
+		}
+		x, err := strconv.ParseUint(command[1], 0, 8)
+		if err != nil {
+			return
+		}
+		y, err := strconv.ParseUint(command[2], 0, 8)
+		if err != nil {
+			return
+		}
+		pos := p.Position()
+		if pos == nil {
+			return
+		}
+		pos.Move(p, pos.Zone().Tile(uint8(x), uint8(y)))
 	case "tpt", "tpp":
 		if len(command) != 2 {
 			return
