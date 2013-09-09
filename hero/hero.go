@@ -3,6 +3,7 @@ package hero
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"math/big"
 	"math/rand"
 	"sync"
 	"time"
@@ -15,6 +16,9 @@ type HeroLike interface {
 	Gender() Gender
 	Occupation() Occupation
 
+	Equip(*Equip)
+	Unequip(EquipSlot)
+	GetEquip(EquipSlot) *Equip
 	world.InventoryLike
 	canHoldItem(item world.Visible) bool
 	notifyInventoryChanged()
@@ -98,22 +102,21 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 
 		if dataMap["equipped"] == nil {
 			r := rand.New(rand.NewSource(rand.Int63()))
-			h.equipped = map[EquipSlot]*Equip{
-				SlotShirt: {
-					slot:         SlotShirt,
-					kind:         0,
-					customColors: []string{randomColor(r)},
-				},
-				SlotPants: {
-					slot:         SlotPants,
-					kind:         0,
-					customColors: []string{randomColor(r)},
-				},
-				SlotFeet: {
-					slot: SlotFeet,
-					kind: 0,
-				},
-			}
+			h.equip(&Equip{
+				slot:         SlotShirt,
+				kind:         0,
+				customColors: []string{randomColor(r)},
+			})
+			h.equip(&Equip{
+				slot:         SlotPants,
+				kind:         0,
+				customColors: []string{randomColor(r)},
+			})
+			h.equip(&Equip{
+				slot: SlotFeet,
+				kind: 0,
+			})
+
 		}
 
 		var err error
@@ -137,10 +140,8 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 		h.skinTone = dataMap["skin"].(uint)
 		if h.equipped == nil {
 			equipCount := dataMap["equipped"].(uint)
-			h.equipped = make(map[EquipSlot]*Equip, equipCount)
 			for _, o := range attached[1 : equipCount+1] {
-				e := o.(*Equip)
-				h.equipped[e.slot] = e
+				h.equip(o.(*Equip))
 			}
 			itemCount := dataMap["items"].(uint)
 			h.items = make([]world.Visible, itemCount)
@@ -150,10 +151,6 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 		}
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
-	}
-
-	for _, e := range h.equipped {
-		e.wearer = h
 	}
 }
 
@@ -260,8 +257,75 @@ func (h *Hero) SpriteSize() (uint, uint) {
 	return h.Race().SpriteSize()
 }
 
-func (h *Hero) MaxHealth() uint64 {
-	return h.Race().BaseHealth()
+func (h *Hero) MaxHealth() *big.Int {
+	var max big.Int
+
+	h.mtx.Lock()
+	for _, e := range h.equipped {
+		max.Add(&max, e.Material().Health())
+	}
+	h.mtx.Unlock()
+
+	max.Mul(&max, world.TuningHealthMultiplier)
+
+	max.Add(&max, h.Race().BaseHealth())
+
+	return &max
+}
+
+func (h *Hero) MaxQuality() *big.Int {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	max := &big.Int{}
+
+	for _, e := range h.equipped {
+		q := e.Material().Quality()
+		if q.Cmp(max) > 0 {
+			max = q
+		}
+	}
+
+	return max
+}
+
+func (h *Hero) Damage() *big.Int {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	var damage big.Int
+
+	for _, e := range h.equipped {
+		damage.Add(&damage, e.Material().MeleeDamage())
+	}
+
+	return &damage
+}
+
+func (h *Hero) Armor() *big.Int {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	var armor big.Int
+
+	for _, e := range h.equipped {
+		armor.Add(&armor, e.Material().MeleeArmor())
+	}
+
+	return &armor
+}
+
+func (h *Hero) Crit() *big.Int {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	var crit big.Int
+
+	for _, e := range h.equipped {
+		crit.Add(&crit, e.Material().CritChance())
+	}
+
+	return &crit
 }
 
 func (h *Hero) NotifyPosition(old, new *world.Tile) {
@@ -307,6 +371,55 @@ func (h *Hero) Inventory() []world.Visible {
 	inventory := make([]world.Visible, len(h.items))
 	copy(inventory, h.items)
 	return inventory
+}
+
+func (h *Hero) Equip(e *Equip) {
+	if pos := h.Position(); pos != nil {
+		defer pos.Zone().Update(pos, h.Outer())
+	}
+
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	h.equip(e)
+}
+
+func (h *Hero) equip(e *Equip) {
+	if h.equipped == nil {
+		h.equipped = make(map[EquipSlot]*Equip)
+	}
+	if old, ok := h.equipped[e.slot]; ok {
+		old.wearer = nil
+		h.giveItem(old)
+	}
+	e.wearer = h.Outer().(HeroLike)
+	h.equipped[e.slot] = e
+}
+
+func (h *Hero) GetEquip(slot EquipSlot) *Equip {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	return h.equipped[slot]
+}
+
+func (h *Hero) Unequip(slot EquipSlot) {
+	if pos := h.Position(); pos != nil {
+		defer pos.Zone().Update(pos, h.Outer())
+	}
+
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	h.unequip(slot)
+}
+
+func (h *Hero) unequip(slot EquipSlot) {
+	if e, ok := h.equipped[slot]; ok {
+		e.wearer = nil
+		h.giveItem(e)
+		delete(h.equipped, slot)
+	}
 }
 
 func (h *Hero) notifyInventoryChanged() {

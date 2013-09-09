@@ -3,6 +3,7 @@ package critter
 import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/world"
+	"math/big"
 	"sync"
 )
 
@@ -131,7 +132,7 @@ func (c *Critter) SpritePos() (uint, uint) {
 	return c.facing, 0
 }
 
-func (c *Critter) MaxHealth() uint64 {
+func (c *Critter) MaxHealth() *big.Int {
 	return c.Type().MaxHealth()
 }
 

@@ -122,11 +122,9 @@ func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLik
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
-	for _, e := range p.Hero.equipped {
+	for _, e := range p.equipped {
 		if e.AdminOnly() && !p.admin {
-			delete(p.Hero.equipped, e.slot)
-		} else {
-			e.wearer = p
+			delete(p.equipped, e.slot)
 		}
 	}
 	if !p.admin {
@@ -445,7 +443,7 @@ func (p *Player) CanSpawn() bool {
 	admin := p.admin
 	p.mtx.Unlock()
 
-	return !characterCreation && (admin || p.Health() > 0)
+	return !characterCreation && (admin || p.Health().Sign() > 0)
 }
 
 func (p *Player) LoginPosition() (int64, uint8, int64, uint8) {
@@ -617,7 +615,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		p.mtx.Lock()
 		for _, e := range p.equipped {
 			p.mtx.Unlock()
-			e.Interact(p, "unequip")
+			p.Unequip(e.slot)
 			p.mtx.Lock()
 		}
 		p.mtx.Unlock()
@@ -645,15 +643,7 @@ func (p *Player) AdminCommand(addr string, command ...string) {
 		}
 		obj := world.Spawn(command[1])
 		if e, ok := obj.(*Equip); ok {
-			p.mtx.Lock()
-			if old, ok := p.equipped[e.slot]; ok {
-				old.wearer = nil
-				p.giveItem(old)
-			}
-			e.wearer = p
-			p.equipped[e.slot] = e
-			p.mtx.Unlock()
-			p.Position().Zone().Update(p.Position(), p)
+			p.Equip(e)
 		}
 	case "clear inventory":
 		if len(command) != 1 {

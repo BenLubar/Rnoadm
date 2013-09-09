@@ -511,3 +511,77 @@ func toCSSColor(c color.Color) string {
 	}
 	return fmt.Sprintf("rgba(%d,%d,%d,%f)", (r*m/a)>>8, (g*m/a)>>8, (b*m/a)>>8, float64(a)/m)
 }
+
+func (m *Material) stat(stat func(*MaterialData) *big.Int, meta func(*MaterialData) *big.Int) *big.Int {
+	var total, volume, tmp big.Int
+	for _, c := range m.components {
+		tmp.SetUint64(c.volume)
+		volume.Add(&volume, &tmp)
+		total.Add(&total, tmp.Mul(stat(c.data()), &tmp))
+		if meta != nil {
+			total.Add(&total, tmp.Div(tmp.Mul(meta(c.data()), tmp.SetUint64(c.volume)), world.TuningMetaStatDivisor))
+		}
+	}
+	if volume.Sign() == 0 {
+		return &volume
+	}
+	total.Div(tmp.Mul(&total, &m.quality), &volume)
+	return &total
+}
+
+func (m *Material) Power() *big.Int {
+	return m.stat((*MaterialData).Power, nil)
+}
+func (m *Material) Magic() *big.Int {
+	return m.stat((*MaterialData).Magic, nil)
+}
+func (m *Material) Agility() *big.Int {
+	return m.stat((*MaterialData).Agility, nil)
+}
+func (m *Material) Luck() *big.Int {
+	return m.stat((*MaterialData).Luck, nil)
+}
+func (m *Material) Intelligence() *big.Int {
+	return m.stat((*MaterialData).Intelligence, nil)
+}
+func (m *Material) Stamina() *big.Int {
+	return m.stat((*MaterialData).Stamina, nil)
+}
+
+func (m *Material) MeleeDamage() *big.Int {
+	return m.stat((*MaterialData).MeleeDamage, (*MaterialData).Power)
+}
+func (m *Material) MagicDamage() *big.Int {
+	return m.stat((*MaterialData).MagicDamage, (*MaterialData).Magic)
+}
+func (m *Material) Mana() *big.Int {
+	return m.stat((*MaterialData).Mana, (*MaterialData).Intelligence)
+}
+func (m *Material) ManaRegen() *big.Int {
+	return m.stat((*MaterialData).ManaRegen, (*MaterialData).Intelligence)
+}
+func (m *Material) CritChance() *big.Int {
+	return m.stat((*MaterialData).CritChance, (*MaterialData).Luck)
+}
+func (m *Material) AttackSpeed() *big.Int {
+	return m.stat((*MaterialData).AttackSpeed, (*MaterialData).Agility)
+}
+
+func (m *Material) MeleeArmor() *big.Int {
+	return m.stat((*MaterialData).MeleeArmor, (*MaterialData).Power)
+}
+func (m *Material) MagicArmor() *big.Int {
+	return m.stat((*MaterialData).MagicArmor, (*MaterialData).Magic)
+}
+func (m *Material) Health() *big.Int {
+	return m.stat((*MaterialData).Health, (*MaterialData).Stamina)
+}
+func (m *Material) HealthRegen() *big.Int {
+	return m.stat((*MaterialData).HealthRegen, (*MaterialData).Stamina)
+}
+func (m *Material) Resistance() *big.Int {
+	return m.stat((*MaterialData).Resistance, (*MaterialData).Luck)
+}
+func (m *Material) MovementSpeed() *big.Int {
+	return m.stat((*MaterialData).MovementSpeed, (*MaterialData).Agility)
+}

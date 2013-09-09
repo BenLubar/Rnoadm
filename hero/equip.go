@@ -268,6 +268,13 @@ func (e *Equip) SpriteSize() (uint, uint) {
 	return equippables[e.slot][e.kind].width, equippables[e.slot][e.kind].height
 }
 
+func (e *Equip) Material() *material.Material {
+	if e.material == nil {
+		return &material.Material{}
+	}
+	return e.material
+}
+
 func (e *Equip) Volume() uint64 {
 	return e.material.Volume()
 }
@@ -299,47 +306,12 @@ func (e *Equip) Interact(player world.PlayerLike, action string) {
 		if e.Position() != nil || e.wearer != nil {
 			return
 		}
-		p.mtx.Lock()
-		if old, ok := p.equipped[e.slot]; ok {
-			p.mtx.Unlock()
-			old.Interact(player, "unequip")
-			p.mtx.Lock()
-		}
-		if _, ok := p.equipped[e.slot]; ok {
-			p.mtx.Unlock()
-			return
-		}
-		for i, item := range p.items {
-			if e == item {
-				p.items = append(p.items[:i], p.items[i+1:]...)
-				p.equipped[e.slot] = e
-				e.wearer = &p.Hero
-				p.notifyInventoryChanged()
-				p.mtx.Unlock()
-				p.Position().Zone().Update(p.Position(), p)
-				return
-			}
-		}
-		p.mtx.Unlock()
+		p.Equip(e)
 	case "unequip":
 		if e.Position() != nil || e.wearer == nil {
 			return
 		}
-		p.mtx.Lock()
-		if p.equipped[e.slot] != e {
-			p.mtx.Unlock()
-			return
-		}
-		if !p.canHoldItem(e) {
-			p.mtx.Unlock()
-			return
-		}
-		e.wearer = nil
-		p.giveItem(e)
-		delete(p.equipped, e.slot)
-		p.notifyInventoryChanged()
-		p.mtx.Unlock()
-		p.Position().Zone().Update(p.Position(), p)
+		p.Unequip(e.slot)
 	default:
 		e.VisibleObject.Interact(player, action)
 	}

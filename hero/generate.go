@@ -26,27 +26,23 @@ func GenerateHeroOccupation(r *rand.Rand, race Race, occupation Occupation) *Her
 	case RaceHuman:
 		hero.name = GenerateHumanName(r, hero.gender)
 	}
-	hero.equipped = make(map[EquipSlot]*Equip)
-	hero.equipped[SlotShirt] = &Equip{
+	hero.equip(&Equip{
 		slot:         SlotShirt,
 		kind:         0,
-		wearer:       hero,
 		customColors: []string{randomColor(r)},
 		material:     &material.Material{},
-	}
-	hero.equipped[SlotPants] = &Equip{
+	})
+	hero.equip(&Equip{
 		slot:         SlotPants,
 		kind:         0,
-		wearer:       hero,
 		customColors: []string{randomColor(r)},
 		material:     &material.Material{},
-	}
-	hero.equipped[SlotFeet] = &Equip{
+	})
+	hero.equip(&Equip{
 		slot:     SlotFeet,
 		kind:     0,
-		wearer:   hero,
 		material: &material.Material{},
-	}
+	})
 	world.InitObject(hero)
 	return hero
 }
