@@ -7,6 +7,7 @@ goog.require('rnoadm.gfx.Sprite');
 goog.require('rnoadm.net');
 goog.require('rnoadm.state.NetworkObject');
 goog.require('rnoadm.state.Object');
+goog.require('rnoadm.state.text');
 
 
 /**
@@ -241,6 +242,7 @@ rnoadm.gfx.paintObjects = function(w, h) {
       }
     }
   }
+  rnoadm.state.text.paint(xOffset, yOffset);
 };
 
 rnoadm.gfx.clickObject = function(x, y, w, h) {

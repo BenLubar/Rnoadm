@@ -7,6 +7,7 @@ import (
 	"github.com/BenLubar/Rnoadm/world"
 	"io"
 	"log"
+	"math/big"
 	"net"
 	"strings"
 	"time"
@@ -79,6 +80,16 @@ type packetInventory struct {
 
 type packetMessage struct {
 	Message []hero.Message `json:"Msg"`
+}
+
+type packetFloatingTextText struct {
+	X, Y  uint8
+	Text  string `json:"T"`
+	Color string `json:"C"`
+}
+
+type packetFloatingText struct {
+	FloatingText packetFloatingTextText `json:"Ftxt"`
 }
 
 func addSprites(u *packetUpdateObject, obj world.Visible) *packetUpdateObject {
@@ -161,6 +172,7 @@ func socketHandler(ws *websocket.Conn) {
 	updateTick := time.NewTicker(time.Second / 10)
 	defer updateTick.Stop()
 	updates := make(chan []packetUpdateUpdate, 1)
+	floatingText := make(chan packetFloatingText, 32)
 
 	sendUpdates := func(newUpdates ...packetUpdateUpdate) {
 		for {
@@ -210,6 +222,12 @@ func socketHandler(ws *websocket.Conn) {
 			}
 		}
 	}
+	toObject := func(o world.Visible) *packetUpdateObject {
+		return addSprites(&packetUpdateObject{
+			Name:    o.Name(),
+			Actions: o.Actions(player),
+		}, o)
+	}
 	listener = &world.ZoneListener{
 		Add: func(t *world.Tile, obj world.ObjectLike) {
 			o, ok := obj.(world.Visible)
@@ -218,13 +236,10 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			x, y := t.Position()
 			sendUpdates(packetUpdateUpdate{
-				ID: o.NetworkID(),
-				X:  x,
-				Y:  y,
-				Object: addSprites(&packetUpdateObject{
-					Name:    o.Name(),
-					Actions: o.Actions(player),
-				}, o),
+				ID:     o.NetworkID(),
+				X:      x,
+				Y:      y,
+				Object: toObject(o),
 			})
 			updateWalls(t, obj)
 		},
@@ -266,14 +281,42 @@ func socketHandler(ws *websocket.Conn) {
 			}
 			x, y := t.Position()
 			sendUpdates(packetUpdateUpdate{
-				ID: o.NetworkID(),
-				X:  x,
-				Y:  y,
-				Object: addSprites(&packetUpdateObject{
-					Name:    o.Name(),
-					Actions: o.Actions(player),
-				}, o),
+				ID:     o.NetworkID(),
+				X:      x,
+				Y:      y,
+				Object: toObject(o),
 			})
+		},
+		Damage: func(attacker, victim world.Combat, amount *big.Int) {
+			t := victim.Position()
+			if t == nil {
+				return
+			}
+			x, y := t.Position()
+			sendUpdates(packetUpdateUpdate{
+				ID:     victim.NetworkID(),
+				X:      x,
+				Y:      y,
+				Object: toObject(victim),
+			})
+			text := packetFloatingTextText{
+				X:     x,
+				Y:     y,
+				Color: "#fff",
+			}
+			if amount == world.DamageMissed {
+				text.Text = "MISS"
+			} else if amount == world.DamageBlocked {
+				text.Text = "BLOCK"
+			} else if amount == world.DamageResisted {
+				text.Text = "RESIST"
+			} else {
+				text.Text = material.Comma(amount)
+			}
+			select {
+			case floatingText <- packetFloatingText{text}:
+			default:
+			}
 		},
 	}
 
@@ -497,6 +540,15 @@ next:
 
 		case update := <-updates:
 			updateQueue.Update = append(updateQueue.Update, update...)
+
+		case text := <-floatingText:
+			err = websocket.JSON.Send(ws, text)
+			if err != nil {
+				if err != io.EOF {
+					log.Printf("[err_sock] %s:%#v %v", addr, text, err)
+				}
+				return
+			}
 
 		case <-updateTick.C:
 			if len(updateQueue.Update) == 0 {

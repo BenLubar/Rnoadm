@@ -1,5 +1,6 @@
 goog.provide('rnoadm.state.NetworkObject');
 goog.provide('rnoadm.state.Object');
+goog.provide('rnoadm.state.lerp');
 
 goog.require('rnoadm.gfx');
 goog.require('rnoadm.gfx.NetworkSprite');

@@ -1117,3 +1117,8 @@ type Message struct {
 	Text  string `json:"T"`
 	Color string `json:"C"`
 }
+
+func (p *Player) Die() {
+	p.SetHealth(p.MaxHealth())
+	p.Hurt(world.DamageResisted, p)
+}

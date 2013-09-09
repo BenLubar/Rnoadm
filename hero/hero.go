@@ -392,6 +392,7 @@ func (h *Hero) Equip(e *Equip) {
 		defer pos.Zone().Update(pos, h.Outer())
 	}
 
+	defer h.RemoveItem(e)
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
@@ -469,17 +470,16 @@ func (h *Hero) giveItem(item world.Visible) {
 }
 
 func (h *Hero) RemoveItem(item world.Visible) bool {
-	found := false
 	h.mtx.Lock()
 	for i, o := range h.items {
 		if o == item {
 			h.items = append(h.items[:i], h.items[i+1:]...)
-			found = true
+			h.mtx.Unlock()
 			h.Outer().(HeroLike).notifyInventoryChanged()
-			break
+			return true
 		}
 	}
 	h.mtx.Unlock()
 
-	return found
+	return false
 }

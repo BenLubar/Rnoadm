@@ -1,6 +1,7 @@
 package world
 
 import (
+	"math/big"
 	"strings"
 	"sync"
 )
@@ -21,6 +22,7 @@ type ZoneListener struct {
 	Remove func(*Tile, ObjectLike)
 	Move   func(*Tile, *Tile, ObjectLike)
 	Update func(*Tile, ObjectLike)
+	Damage func(Combat, Combat, *big.Int)
 }
 
 func (z *Zone) lock()   { z.mtx.Lock() }
@@ -146,6 +148,18 @@ func (z *Zone) Update(t *Tile, obj ObjectLike) {
 		}
 		z.lock()
 	}
+}
+
+func (z *Zone) Damage(attacker, victim Combat, amount *big.Int) {
+	z.lock()
+	for l := range z.listeners {
+		z.unlock()
+		if l.Damage != nil {
+			l.Damage(attacker, victim, amount)
+		}
+		z.lock()
+	}
+	z.unlock()
 }
 
 func (z *Zone) Impersonate(player PlayerLike, o Visible) {

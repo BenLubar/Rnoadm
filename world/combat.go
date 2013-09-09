@@ -156,6 +156,10 @@ func (o *CombatObject) Hurt(amount *big.Int, attacker Combat) {
 	o.combatTicks = 50
 	o.damaged.Add(&o.damaged, amount)
 	o.mtx.Unlock()
+
+	if pos := o.Position(); pos != nil {
+		pos.Zone().Damage(attacker, o.Outer().(Combat), amount)
+	}
 }
 
 func (o *CombatObject) Die() {
