@@ -289,7 +289,7 @@ func (h *Hero) MaxQuality() *big.Int {
 	return max
 }
 
-func (h *Hero) Damage() *big.Int {
+func (h *Hero) MeleeDamage() *big.Int {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
@@ -302,7 +302,7 @@ func (h *Hero) Damage() *big.Int {
 	return &damage
 }
 
-func (h *Hero) Armor() *big.Int {
+func (h *Hero) MeleeArmor() *big.Int {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
@@ -315,7 +315,7 @@ func (h *Hero) Armor() *big.Int {
 	return &armor
 }
 
-func (h *Hero) Crit() *big.Int {
+func (h *Hero) CritChance() *big.Int {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
@@ -326,6 +326,19 @@ func (h *Hero) Crit() *big.Int {
 	}
 
 	return &crit
+}
+
+func (h *Hero) Resistance() *big.Int {
+	h.mtx.Lock()
+	defer h.mtx.Unlock()
+
+	var resist big.Int
+
+	for _, e := range h.equipped {
+		resist.Add(&resist, e.Material().Resistance())
+	}
+
+	return &resist
 }
 
 func (h *Hero) NotifyPosition(old, new *world.Tile) {

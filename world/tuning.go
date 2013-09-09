@@ -13,9 +13,9 @@ var (
 	TuningCritDivisor   = big.NewInt(2)
 	TuningResistDivisor = big.NewInt(4)
 
-	TuningDamageMiss1    = big.NewInt(10)
-	TuningDamageHit      = big.NewInt(85)
-	TuningDamageMiss2    = big.NewInt(95)
+	TuningDamageMiss1    = int64(10)
+	TuningDamageHit      = int64(85)
+	TuningDamageMiss2    = int64(95)
 	TuningDamageMax      = big.NewInt(100)
 	TuningCritMultiplier = big.NewInt(3)
 

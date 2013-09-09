@@ -3,6 +3,7 @@ package world
 import (
 	"fmt"
 	"math/big"
+	"math/rand"
 	"sync"
 )
 
@@ -15,9 +16,10 @@ type Combat interface {
 	HealthRegen() *big.Int
 
 	MaxQuality() *big.Int
-	Damage() *big.Int
-	Armor() *big.Int
-	Crit() *big.Int
+	MeleeDamage() *big.Int
+	MeleeArmor() *big.Int
+	CritChance() *big.Int
+	Resistance() *big.Int
 
 	Hurt(*big.Int, Combat)
 	Die()
@@ -115,15 +117,19 @@ func (o *CombatObject) SetHealth(health *big.Int) {
 	o.mtx.Unlock()
 }
 
-func (o *CombatObject) Armor() *big.Int {
+func (o *CombatObject) MeleeArmor() *big.Int {
 	return big.NewInt(500)
 }
 
-func (o *CombatObject) Damage() *big.Int {
+func (o *CombatObject) MeleeDamage() *big.Int {
 	return big.NewInt(500)
 }
 
-func (o *CombatObject) Crit() *big.Int {
+func (o *CombatObject) CritChance() *big.Int {
+	return big.NewInt(0)
+}
+
+func (o *CombatObject) Resistance() *big.Int {
 	return big.NewInt(0)
 }
 
@@ -139,6 +145,12 @@ func (o *CombatObject) MaxQuality() *big.Int {
 	return big.NewInt(1)
 }
 
+var (
+	DamageMissed   = big.NewInt(0)
+	DamageBlocked  = big.NewInt(0)
+	DamageResisted = big.NewInt(0)
+)
+
 func (o *CombatObject) Hurt(amount *big.Int, attacker Combat) {
 	o.mtx.Lock()
 	o.combatTicks = 50
@@ -150,9 +162,105 @@ func (o *CombatObject) Die() {
 	o.Position().Remove(o.Outer())
 }
 
-/*func (o *CombatObject) Actions(player PlayerLike) []string {
+func (o *CombatObject) Actions(player PlayerLike) []string {
 	if player == o.Outer() {
 		return o.LivingObject.Actions(player)
 	}
-	return append([]string{"assault"}, o.LivingObject.Actions(player)...)
-}*/
+	return append([]string{"fight"}, o.LivingObject.Actions(player)...)
+}
+
+func (o *CombatObject) Interact(player PlayerLike, action string) {
+	switch action {
+	default:
+		o.LivingObject.Interact(player, action)
+	case "fight":
+		if player == o.Outer() {
+			return
+		}
+		player.SetSchedule(&CombatSchedule{Target: o.Outer().(Combat)})
+	}
+}
+
+type CombatSchedule struct {
+	Object
+
+	Target Combat
+}
+
+func (s *CombatSchedule) Act(o Living) (uint, bool) {
+	c, ok := o.(Combat)
+	if !ok {
+		return 0, false
+	}
+
+	p1, p2 := c.Position(), s.Target.Position()
+	if p1 == nil || p2 == nil || p1.Zone() != p2.Zone() {
+		return 0, false
+	}
+	x1, y1 := p1.Position()
+	x2, y2 := p2.Position()
+	if (x1 == x2 && y1 == y2) || (x1 != x2 && y1 != y2) || (x1 == x2 && y1 != y2-1 && y1 != y2+1) || (y1 == y2 && x1 != x2-1 && x1 != x2+1) {
+		c.SetSchedule(&ScheduleSchedule{Schedules: []Schedule{NewWalkSchedule(x2, y2, true, 0), s}})
+		return 0, true
+	}
+
+	r := rand.New(rand.NewSource(rand.Int63()))
+	maxDamage := c.MeleeDamage()
+	if maxDamage.Sign() <= 0 {
+		// can't attack
+		return 0, false
+	}
+	damage := (&big.Int{}).Rand(r, maxDamage)
+	armor := (&big.Int{}).Set(s.Target.MeleeArmor())
+	if armor.Sign() <= 0 {
+		armor.SetUint64(0)
+	} else {
+		armor.Rand(r, armor)
+	}
+	crit := big.NewInt(0) // TODO: crit chance from equipment
+	if crit.Cmp(TuningMinCrit) < 0 {
+		crit.Set(TuningMinCrit)
+	} else if crit.Cmp(TuningMaxCrit) > 0 {
+		crit.Set(TuningMaxCrit)
+	}
+	crit_ := crit.Int64()
+	damage_ := (&big.Int{}).Div((&big.Int{}).Mul(TuningDamageMax, damage), maxDamage).Int64()
+	switch {
+	case damage_ < TuningDamageMiss1:
+		// miss
+		damage.SetInt64(0)
+	case damage_ < TuningDamageHit+crit_:
+		// normal hit
+	case damage_ < TuningDamageMiss2+crit_:
+		// miss
+		damage.SetInt64(0)
+	default:
+		damage.Mul(damage, TuningCritMultiplier)
+	}
+
+	if damage.Sign() <= 0 {
+		// miss
+		s.Target.Hurt(DamageMissed, c)
+		// TODO: floaty thingy
+	} else if damage.Cmp(armor) <= 0 {
+		// block
+		s.Target.Hurt(DamageBlocked, c)
+		// TODO: floaty thingy
+	} else {
+		if false {
+			// TODO: resist
+			s.Target.Hurt(DamageResisted, c)
+			// TODO: floaty thingy
+		} else {
+			s.Target.Hurt(damage.Sub(damage, armor), c)
+			// TODO: floaty thingy
+		}
+	}
+
+	// TODO: attack speed
+	return 2, true
+}
+
+func (s *CombatSchedule) ShouldSave() bool {
+	return false
+}
