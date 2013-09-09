@@ -17,6 +17,7 @@ func GenerateHeroRace(r *rand.Rand, race Race) *Hero {
 
 func GenerateHeroOccupation(r *rand.Rand, race Race, occupation Occupation) *Hero {
 	hero := &Hero{}
+	world.InitObject(hero)
 	hero.birth = time.Now().UTC()
 	hero.race = race
 	hero.occupation = occupation
@@ -43,7 +44,6 @@ func GenerateHeroOccupation(r *rand.Rand, race Race, occupation Occupation) *Her
 		kind:     0,
 		material: &material.Material{},
 	})
-	world.InitObject(hero)
 	return hero
 }
 
