@@ -105,6 +105,7 @@ func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLik
 	case 1:
 		dataMap := data.(map[string]interface{})
 		p.Hero = *attached[0].(*Hero)
+		world.InitObject(p)
 		p.mtx.Lock()
 		defer p.mtx.Unlock()
 		p.ancestry = *attached[1].(*PlayerAncestry)
@@ -125,6 +126,8 @@ func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLik
 	for _, e := range p.equipped {
 		if e.AdminOnly() && !p.admin {
 			delete(p.equipped, e.slot)
+		} else {
+			e.wearer = p
 		}
 	}
 	if !p.admin {

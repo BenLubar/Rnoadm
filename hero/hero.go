@@ -133,6 +133,7 @@ func (h *Hero) Load(version uint, data interface{}, attached []world.ObjectLike)
 	case 1:
 		dataMap := data.(map[string]interface{})
 		h.CombatObject = *attached[0].(*world.CombatObject)
+		world.InitObject(h)
 		h.name.unserialize(dataMap["name"].(map[string]interface{}))
 		h.race = Race(dataMap["race"].(uint64))
 		h.gender = Gender(dataMap["gender"].(uint64))
