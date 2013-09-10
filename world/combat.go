@@ -185,6 +185,19 @@ func (o *CombatObject) Interact(player PlayerLike, action string) {
 	}
 }
 
+func (o *CombatObject) Examine() (string, [][][2]string) {
+	message, info := o.LivingObject.Examine()
+
+	info = append(info, [][2]string{
+		{o.Outer().(Combat).Health().String(), "#4fc"},
+		{"/", "#ccc"},
+		{o.Outer().(Combat).MaxHealth().String(), "#4fc"},
+		{" health", "#ccc"},
+	})
+
+	return message, info
+}
+
 type CombatSchedule struct {
 	Object
 
@@ -221,7 +234,7 @@ func (s *CombatSchedule) Act(o Living) (uint, bool) {
 	} else {
 		armor.Rand(r, armor)
 	}
-	crit := big.NewInt(0) // TODO: crit chance from equipment
+	crit := (&big.Int{}).Div((&big.Int{}).Div(c.CritChance(), c.MaxQuality()), TuningCritDivisor)
 	if crit.Cmp(TuningMinCrit) < 0 {
 		crit.Set(TuningMinCrit)
 	} else if crit.Cmp(TuningMaxCrit) > 0 {
@@ -245,19 +258,15 @@ func (s *CombatSchedule) Act(o Living) (uint, bool) {
 	if damage.Sign() <= 0 {
 		// miss
 		s.Target.Hurt(DamageMissed, c)
-		// TODO: floaty thingy
 	} else if damage.Cmp(armor) <= 0 {
 		// block
 		s.Target.Hurt(DamageBlocked, c)
-		// TODO: floaty thingy
 	} else {
-		if false {
-			// TODO: resist
+		resistance := s.Target.Resistance()
+		if resistance.Sign() > 0 && (&big.Int{}).Rand(r, resistance).Cmp((&big.Int{}).Mul(s.Target.MaxQuality(), TuningResistDivisor)) > 0 {
 			s.Target.Hurt(DamageResisted, c)
-			// TODO: floaty thingy
 		} else {
 			s.Target.Hurt(damage.Sub(damage, armor), c)
-			// TODO: floaty thingy
 		}
 	}
 

@@ -4,14 +4,16 @@ import (
 	"math/big"
 )
 
+const TuningEquipSlotCount = 14
+
 var (
 	TuningMaxStat         = big.NewInt(1000)
 	TuningMetaStatDivisor = big.NewInt(2)
 
 	TuningMinCrit       = big.NewInt(-5)
 	TuningMaxCrit       = big.NewInt(35)
-	TuningCritDivisor   = big.NewInt(2)
-	TuningResistDivisor = big.NewInt(4)
+	TuningCritDivisor   = big.NewInt(20 * TuningEquipSlotCount)
+	TuningResistDivisor = big.NewInt(4000 * TuningEquipSlotCount)
 
 	TuningDamageMiss1    = int64(10)
 	TuningDamageHit      = int64(85)

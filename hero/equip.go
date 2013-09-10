@@ -27,6 +27,8 @@ const (
 	equipSlotCount
 )
 
+var _ [equipSlotCount]struct{} = [world.TuningEquipSlotCount]struct{}{}
+
 var equipFacing = [4][]EquipSlot{
 	{ // stage front
 		SlotShirt,
