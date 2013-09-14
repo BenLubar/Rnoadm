@@ -164,8 +164,8 @@ func (o *VisibleObject) Interact(player PlayerLike, action string) {
 				Schedules: []Schedule{
 					NewWalkSchedule(ex, ey, false, uint(player.Weight()/player.WeightMax())),
 					&ActionSchedule{
-						Action: "take",
-						Target: o.Outer().(Visible),
+						Action:  "take",
+						Target_: o.Outer().(Visible),
 					},
 				},
 			})

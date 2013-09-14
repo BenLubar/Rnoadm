@@ -75,8 +75,8 @@ func (f *Forge) Interact(player world.PlayerLike, action string) {
 				Schedules: []world.Schedule{
 					world.NewWalkSchedule(x, y, false, uint(player.Weight()/player.WeightMax())),
 					&world.ActionSchedule{
-						Target: f,
-						Action: action,
+						Target_: f,
+						Action:  action,
 					},
 				},
 			})

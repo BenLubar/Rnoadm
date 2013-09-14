@@ -186,7 +186,7 @@ func (o *CombatObject) Interact(player PlayerLike, action string) {
 		if player == o.Outer() {
 			return
 		}
-		player.SetSchedule(&CombatSchedule{Target: o.Outer().(Combat)})
+		player.SetSchedule(&CombatSchedule{Target_: o.Outer().(Combat)})
 	}
 }
 
@@ -206,7 +206,7 @@ func (o *CombatObject) Examine() (string, [][][2]string) {
 type CombatSchedule struct {
 	Object
 
-	Target Combat
+	Target_ Combat
 }
 
 func (s *CombatSchedule) Act(o Living) (uint, bool) {
@@ -215,7 +215,7 @@ func (s *CombatSchedule) Act(o Living) (uint, bool) {
 		return 0, false
 	}
 
-	p1, p2 := c.Position(), s.Target.Position()
+	p1, p2 := c.Position(), s.Target_.Position()
 	if p1 == nil || p2 == nil || p1.Zone() != p2.Zone() {
 		return 0, false
 	}
@@ -233,7 +233,7 @@ func (s *CombatSchedule) Act(o Living) (uint, bool) {
 		return 0, false
 	}
 	damage := (&big.Int{}).Rand(r, maxDamage)
-	armor := (&big.Int{}).Set(s.Target.MeleeArmor())
+	armor := (&big.Int{}).Set(s.Target_.MeleeArmor())
 	if armor.Sign() <= 0 {
 		armor.SetUint64(0)
 	} else {
@@ -262,16 +262,16 @@ func (s *CombatSchedule) Act(o Living) (uint, bool) {
 
 	if damage.Sign() <= 0 {
 		// miss
-		s.Target.Hurt(DamageMissed, c)
+		s.Target_.Hurt(DamageMissed, c)
 	} else if damage.Cmp(armor) <= 0 {
 		// block
-		s.Target.Hurt(DamageBlocked, c)
+		s.Target_.Hurt(DamageBlocked, c)
 	} else {
-		resistance := s.Target.Resistance()
-		if resistance.Sign() > 0 && (&big.Int{}).Rand(r, resistance).Cmp((&big.Int{}).Mul(s.Target.MaxQuality(), TuningResistDivisor)) > 0 {
-			s.Target.Hurt(DamageResisted, c)
+		resistance := s.Target_.Resistance()
+		if resistance.Sign() > 0 && (&big.Int{}).Rand(r, resistance).Cmp((&big.Int{}).Mul(s.Target_.MaxQuality(), TuningResistDivisor)) > 0 {
+			s.Target_.Hurt(DamageResisted, c)
 		} else {
-			s.Target.Hurt(damage.Sub(damage, armor), c)
+			s.Target_.Hurt(damage.Sub(damage, armor), c)
 		}
 	}
 
@@ -279,6 +279,5 @@ func (s *CombatSchedule) Act(o Living) (uint, bool) {
 	return 2, true
 }
 
-func (s *CombatSchedule) ShouldSave() bool {
-	return false
-}
+func (s *CombatSchedule) ShouldSave() bool   { return false }
+func (s *CombatSchedule) Target() ObjectLike { return s.Target_ }

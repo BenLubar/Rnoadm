@@ -9,6 +9,7 @@ type Living interface {
 	Visible
 
 	HasSchedule() bool
+	ScheduleTarget() ObjectLike
 	SetSchedule(Schedule)
 	ClearSchedule()
 }
@@ -69,6 +70,16 @@ func (o *LivingObject) HasSchedule() bool {
 	defer o.mtx.Unlock()
 
 	return o.schedule != nil
+}
+
+func (o *LivingObject) ScheduleTarget() ObjectLike {
+	o.mtx.Lock()
+	defer o.mtx.Unlock()
+
+	if o.schedule != nil {
+		return o.schedule.Target()
+	}
+	return nil
 }
 
 func (o *LivingObject) SetSchedule(s Schedule) {
@@ -141,7 +152,7 @@ func (o *LivingObject) Interact(player PlayerLike, action string) {
 			Schedules: []Schedule{
 				NewWalkSchedule(x, y, true, uint(player.Weight()/player.WeightMax())),
 				&DelaySchedule{Delay: 1},
-				&ActionSchedule{Target: o.Outer().(Living), Action: action},
+				&ActionSchedule{Target_: o.Outer().(Living), Action: action},
 			},
 		})
 	}

@@ -86,8 +86,8 @@ func (d *Door) Interact(player world.PlayerLike, action string) {
 				Schedules: []world.Schedule{
 					world.NewWalkSchedule(x, y, true, uint(player.Weight()/player.WeightMax())),
 					&world.ActionSchedule{
-						Action: "open",
-						Target: d.Outer().(world.Visible),
+						Action:  "open",
+						Target_: d.Outer().(world.Visible),
 					},
 				},
 			})
@@ -109,8 +109,8 @@ func (d *Door) Interact(player world.PlayerLike, action string) {
 				Schedules: []world.Schedule{
 					world.NewWalkSchedule(x, y, true, uint(player.Weight()/player.WeightMax())),
 					&world.ActionSchedule{
-						Action: "close",
-						Target: d.Outer().(world.Visible),
+						Action:  "close",
+						Target_: d.Outer().(world.Visible),
 					},
 				},
 			})

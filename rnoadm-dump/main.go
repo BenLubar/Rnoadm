@@ -6,12 +6,16 @@ import (
 	"flag"
 	"fmt"
 	"github.com/kr/pretty"
+	"math/big"
 	"os"
+	"time"
 )
 
 func init() {
 	gob.Register([]interface{}(nil))
 	gob.Register(map[string]interface{}(nil))
+	gob.Register(time.Time{})
+	gob.Register(&big.Int{})
 }
 
 func main() {

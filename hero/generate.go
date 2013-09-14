@@ -18,6 +18,8 @@ func GenerateHeroRace(r *rand.Rand, race Race) *Hero {
 func GenerateHeroOccupation(r *rand.Rand, race Race, occupation Occupation) *Hero {
 	hero := &Hero{}
 	world.InitObject(hero)
+	hero.mtx.Lock()
+	defer hero.mtx.Unlock()
 	hero.birth = time.Now().UTC()
 	hero.race = race
 	hero.occupation = occupation

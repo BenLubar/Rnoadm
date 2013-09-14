@@ -223,6 +223,22 @@ func (h *Hero) Attached() []world.Visible {
 }
 
 func (h *Hero) Think() {
+	if t := h.ScheduleTarget(); t != nil {
+		if pos := t.Position(); pos != nil {
+			x1, y1 := pos.Position()
+			x2, y2 := h.Position().Position()
+			if y1 < y2 {
+				h.facing = 3
+			} else if y1 > y2 {
+				h.facing = 0
+			} else if x1 < x2 {
+				h.facing = 6
+			} else if x1 > x2 {
+				h.facing = 9
+			}
+		}
+	}
+
 	h.CombatObject.Think()
 
 	h.mtx.Lock()

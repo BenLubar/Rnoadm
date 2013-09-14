@@ -15,6 +15,10 @@ type Schedule interface {
 	// ShouldSave returns false if this schedule is impossible to save (for
 	// example if it requires a pointer to another object).
 	ShouldSave() bool
+
+	// Target returns the target of this schedule, or nil if this schedule
+	// does not target an object.
+	Target() ObjectLike
 }
 
 type cancelSchedule struct {
@@ -25,13 +29,9 @@ func init() {
 	Register("nosched", Schedule((*cancelSchedule)(nil)))
 }
 
-func (s *cancelSchedule) Act(o Living) (uint, bool) {
-	return 0, false
-}
-
-func (s *cancelSchedule) ShouldSave() bool {
-	return true
-}
+func (s *cancelSchedule) Act(o Living) (uint, bool) { return 0, false }
+func (s *cancelSchedule) ShouldSave() bool          { return true }
+func (s *cancelSchedule) Target() ObjectLike        { return nil }
 
 type walkSchedule struct {
 	Object
@@ -78,9 +78,8 @@ func (s *walkSchedule) Act(o Living) (uint, bool) {
 	return 2 + s.delay, true
 }
 
-func (s *walkSchedule) ShouldSave() bool {
-	return true
-}
+func (s *walkSchedule) ShouldSave() bool   { return true }
+func (s *walkSchedule) Target() ObjectLike { return nil }
 
 func (s *walkSchedule) Save() (uint, interface{}, []ObjectLike) {
 	return 0, map[string]interface{}{
@@ -121,8 +120,12 @@ func (s *ScheduleSchedule) Act(o Living) (uint, bool) {
 	return 0, false
 }
 
-func (s *ScheduleSchedule) ShouldSave() bool {
-	return false
+func (s *ScheduleSchedule) ShouldSave() bool { return false }
+func (s *ScheduleSchedule) Target() ObjectLike {
+	if len(s.Schedules) > 0 {
+		return s.Schedules[0].Target()
+	}
+	return nil
 }
 
 type DelaySchedule struct {
@@ -140,22 +143,20 @@ func (s *DelaySchedule) Act(o Living) (uint, bool) {
 	return delay, true
 }
 
-func (s *DelaySchedule) ShouldSave() bool {
-	return false
-}
+func (s *DelaySchedule) ShouldSave() bool   { return false }
+func (s *DelaySchedule) Target() ObjectLike { return nil }
 
 type ActionSchedule struct {
 	Object
 
-	Action string
-	Target Visible
+	Action  string
+	Target_ Visible
 }
 
 func (s *ActionSchedule) Act(o Living) (uint, bool) {
-	s.Target.Interact(o.(PlayerLike), s.Action)
+	s.Target_.Interact(o.(PlayerLike), s.Action)
 	return 0, false
 }
 
-func (s *ActionSchedule) ShouldSave() bool {
-	return false
-}
+func (s *ActionSchedule) ShouldSave() bool   { return false }
+func (s *ActionSchedule) Target() ObjectLike { return s.Target_ }

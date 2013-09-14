@@ -91,6 +91,7 @@ func (m *Material) Load(version uint, data interface{}, attached []world.ObjectL
 		materials, _ := data.(map[string]interface{})
 		if materials == nil {
 			materials = make(map[string]interface{}, 1)
+			data = materials
 		}
 
 		if wood, ok := materials["w"].(uint64); ok {
