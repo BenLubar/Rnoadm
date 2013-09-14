@@ -259,26 +259,26 @@ func (h *Hero) SpriteSize() (uint, uint) {
 }
 
 func (h *Hero) MaxHealth() *big.Int {
-	var max big.Int
+	max := (&big.Int{}).Set(world.TuningDefaultStatHealth)
 
 	h.mtx.Lock()
 	for _, e := range h.equipped {
-		max.Add(&max, e.Material().Health())
+		max.Add(max, e.Material().Health())
 	}
 	h.mtx.Unlock()
 
-	max.Mul(&max, world.TuningHealthMultiplier)
+	max.Mul(max, world.TuningHealthMultiplier)
 
-	max.Add(&max, h.Race().BaseHealth())
+	max.Add(max, h.Race().BaseHealth())
 
-	return &max
+	return max
 }
 
 func (h *Hero) MaxQuality() *big.Int {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
-	max := &big.Int{}
+	max := world.TuningDefaultStatQuality
 
 	for _, e := range h.equipped {
 		q := e.Material().Quality()
@@ -294,52 +294,52 @@ func (h *Hero) MeleeDamage() *big.Int {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
-	var damage big.Int
+	damage := (&big.Int{}).Set(world.TuningDefaultStatMeleeDamage)
 
 	for _, e := range h.equipped {
-		damage.Add(&damage, e.Material().MeleeDamage())
+		damage.Add(damage, e.Material().MeleeDamage())
 	}
 
-	return &damage
+	return damage
 }
 
 func (h *Hero) MeleeArmor() *big.Int {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
-	var armor big.Int
+	armor := (&big.Int{}).Set(world.TuningDefaultStatMeleeArmor)
 
 	for _, e := range h.equipped {
-		armor.Add(&armor, e.Material().MeleeArmor())
+		armor.Add(armor, e.Material().MeleeArmor())
 	}
 
-	return &armor
+	return armor
 }
 
 func (h *Hero) CritChance() *big.Int {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
-	var crit big.Int
+	crit := (&big.Int{}).Set(world.TuningDefaultStatCritChance)
 
 	for _, e := range h.equipped {
-		crit.Add(&crit, e.Material().CritChance())
+		crit.Add(crit, e.Material().CritChance())
 	}
 
-	return &crit
+	return crit
 }
 
 func (h *Hero) Resistance() *big.Int {
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
-	var resist big.Int
+	resist := (&big.Int{}).Set(world.TuningDefaultStatResistance)
 
 	for _, e := range h.equipped {
-		resist.Add(&resist, e.Material().Resistance())
+		resist.Add(resist, e.Material().Resistance())
 	}
 
-	return &resist
+	return resist
 }
 
 func (h *Hero) NotifyPosition(old, new *world.Tile) {
@@ -416,11 +416,13 @@ func (h *Hero) equip(e *Equip) {
 	h.equipped[e.slot] = e
 
 	h.mtx.Unlock()
-	health.Div(health.Mul(health, h.MaxHealth()), oldMax)
-	if health.BitLen() < 2 {
-		health.SetUint64(1)
+	if h.Position() != nil {
+		health.Div(health.Mul(health, h.MaxHealth()), oldMax)
+		if health.BitLen() < 2 {
+			health.SetUint64(1)
+		}
+		h.SetHealth(health)
 	}
-	h.SetHealth(health)
 	h.mtx.Lock()
 }
 

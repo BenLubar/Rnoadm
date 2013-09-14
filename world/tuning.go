@@ -28,4 +28,11 @@ var (
 	TuningManaMultiplier            = big.NewInt(4)
 	TuningManaRegenDivisorCombat    = big.NewInt(500)
 	TuningManaRegenDivisorNonCombat = big.NewInt(100)
+
+	TuningDefaultStatHealth      = (&big.Int{}).Mul(big.NewInt(1000), TuningHealthMultiplier)
+	TuningDefaultStatQuality     = big.NewInt(1)
+	TuningDefaultStatMeleeDamage = big.NewInt(500)
+	TuningDefaultStatMeleeArmor  = big.NewInt(500)
+	TuningDefaultStatCritChance  = big.NewInt(100)
+	TuningDefaultStatResistance  = big.NewInt(100)
 )
