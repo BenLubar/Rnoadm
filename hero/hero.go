@@ -227,6 +227,7 @@ func (h *Hero) Think() {
 		if pos := t.Position(); pos != nil {
 			x1, y1 := pos.Position()
 			x2, y2 := h.Position().Position()
+			h.mtx.Lock()
 			if y1 < y2 {
 				h.facing = 3
 			} else if y1 > y2 {
@@ -236,6 +237,8 @@ func (h *Hero) Think() {
 			} else if x1 > x2 {
 				h.facing = 9
 			}
+			h.mtx.Unlock()
+			h.Position().Zone().Update(h.Position(), h.Outer())
 		}
 	}
 
