@@ -131,7 +131,7 @@ rnoadm.net.addHandler('PlayerX', function(x) {
     return;
   rnoadm.state.playerPrevX_ = rnoadm.state.getPlayerX();
   rnoadm.state.playerX_ = x;
-  rnoadm.state.playerLastMoveX_ = Date.now();
+  rnoadm.state.playerLastMoveX_ = goog.now();
   rnoadm.gfx.repaint();
 });
 
@@ -171,7 +171,7 @@ rnoadm.net.addHandler('PlayerY', function(y) {
     return;
   rnoadm.state.playerPrevY_ = rnoadm.state.getPlayerY();
   rnoadm.state.playerY_ = y;
-  rnoadm.state.playerLastMoveY_ = Date.now();
+  rnoadm.state.playerLastMoveY_ = goog.now();
   rnoadm.gfx.repaint();
 });
 

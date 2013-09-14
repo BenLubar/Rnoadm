@@ -61,6 +61,7 @@ type packetUpdateObject struct {
 	Name    string               `json:"N"`
 	Sprites []packetUpdateSprite `json:"S"`
 	Actions []string             `json:"A"`
+	Health  *[2]uint64           `json:"H"`
 }
 
 type packetUpdateSprite struct {
@@ -223,9 +224,19 @@ func socketHandler(ws *websocket.Conn) {
 		}
 	}
 	toObject := func(o world.Visible) *packetUpdateObject {
+		var health *[2]uint64
+		if c, ok := o.(world.Combat); ok {
+			h, m := c.Health(), c.MaxHealth()
+			if l := m.BitLen(); l > 64 {
+				h = (&big.Int{}).Rsh(h, uint(l-64))
+				m = (&big.Int{}).Rsh(m, uint(l-64))
+			}
+			health = &[2]uint64{h.Uint64(), m.Uint64()}
+		}
 		return addSprites(&packetUpdateObject{
 			Name:    o.Name(),
 			Actions: o.Actions(player),
+			Health:  health,
 		}, o)
 	}
 	listener = &world.ZoneListener{

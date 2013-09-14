@@ -13,7 +13,7 @@ goog.require('rnoadm.state.lerp');
 rnoadm.state.text.Text = function(x, y, text, color) {
   this.x_ = x;
   this.y_ = y;
-  this.start_ = Date.now();
+  this.start_ = goog.now();
   this.text_ = new rnoadm.gfx.Text(text, color, false);
 };
 

@@ -403,12 +403,25 @@ func (h *Hero) equip(e *Equip) {
 	if h.equipped == nil {
 		h.equipped = make(map[EquipSlot]*Equip)
 	}
+	h.mtx.Unlock()
+	oldMax := h.MaxHealth()
+	health := (&big.Int{}).Set(h.Health())
+	h.mtx.Lock()
+
 	if old, ok := h.equipped[e.slot]; ok {
 		old.wearer = nil
 		h.giveItem(old)
 	}
 	e.wearer = h.Outer().(HeroLike)
 	h.equipped[e.slot] = e
+
+	h.mtx.Unlock()
+	health.Div(health.Mul(health, h.MaxHealth()), oldMax)
+	if health.BitLen() < 2 {
+		health.SetUint64(1)
+	}
+	h.SetHealth(health)
+	h.mtx.Lock()
 }
 
 func (h *Hero) GetEquip(slot EquipSlot) *Equip {
@@ -431,9 +444,22 @@ func (h *Hero) Unequip(slot EquipSlot) {
 
 func (h *Hero) unequip(slot EquipSlot) {
 	if e, ok := h.equipped[slot]; ok {
+		h.mtx.Unlock()
+		oldMax := h.MaxHealth()
+		health := (&big.Int{}).Set(h.Health())
+		h.mtx.Lock()
+
 		e.wearer = nil
 		h.giveItem(e)
 		delete(h.equipped, slot)
+
+		h.mtx.Unlock()
+		health.Div(health.Mul(health, h.MaxHealth()), oldMax)
+		if health.BitLen() < 2 {
+			health.SetUint64(1)
+		}
+		h.SetHealth(health)
+		h.mtx.Lock()
 	}
 }
 

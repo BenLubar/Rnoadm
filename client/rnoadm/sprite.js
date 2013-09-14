@@ -248,25 +248,25 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
     case '':
       break;
     case 'ccr': // character creation rotation
-      sx += [0, 6, 3, 9][Math.floor(Date.now() / 1500) % 4];
-      rnoadm.gfx.repaint(1500 - Date.now() % 1500);
+      sx += [0, 6, 3, 9][Math.floor(goog.now() / 1500) % 4];
+      rnoadm.gfx.repaint(1500 - goog.now() % 1500);
       break;
     case 'wa': // walk (alternating)
-      sx += [0, 1, 0, 2][Math.floor(Date.now() / 150) % 4];
-      rnoadm.gfx.repaint(150 - Date.now() % 150);
+      sx += [0, 1, 0, 2][Math.floor(goog.now() / 150) % 4];
+      rnoadm.gfx.repaint(150 - goog.now() % 150);
       break;
     case 'l2': // loop (three frames)
-      sx += Math.floor(Date.now() / 150) % 2;
-      rnoadm.gfx.repaint(150 - Date.now() % 150);
+      sx += Math.floor(goog.now() / 150) % 2;
+      rnoadm.gfx.repaint(150 - goog.now() % 150);
       break;
     case 'l3': // loop (three frames)
-      sx += Math.floor(Date.now() / 150) % 3;
-      rnoadm.gfx.repaint(150 - Date.now() % 150);
+      sx += Math.floor(goog.now() / 150) % 3;
+      rnoadm.gfx.repaint(150 - goog.now() % 150);
       break;
     case '_ac': // special (admin crown)
       if (sy < 2)
         break;
-      var time = Date.now() / 10000;
+      var time = goog.now() / 10000;
       switch (sy) {
         case 2:
         case 3:
@@ -278,11 +278,11 @@ rnoadm.gfx.Sprite.prototype.paint = function(x, y) {
       rnoadm.gfx.repaint(100);
       break;
     case 'wa_ac': // walk (alternating) special (admin crown)
-      sx += [0, 1, 0, 2][Math.floor(Date.now() / 150) % 4];
+      sx += [0, 1, 0, 2][Math.floor(goog.now() / 150) % 4];
       rnoadm.gfx.repaint(50);
       if (sy < 2)
         break;
-      var time = Date.now() / 10000;
+      var time = goog.now() / 10000;
       switch (sy) {
         case 2:
         case 3:
@@ -311,6 +311,22 @@ rnoadm.gfx.Sprite.floorPass = false;
  */
 rnoadm.gfx.Sprite.prototype.isFloor = function() {
   return this.animation_ == '_fl';
+};
+
+
+/**
+ * @return {number}
+ */
+rnoadm.gfx.Sprite.prototype.width = function() {
+  return this.width_ * this.scale_;
+};
+
+
+/**
+ * @return {number}
+ */
+rnoadm.gfx.Sprite.prototype.height = function() {
+  return this.height_ * this.scale_;
 };
 
 

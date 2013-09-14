@@ -79,14 +79,19 @@ func (o *CombatObject) Think() {
 		if o.damaged.Sign() < 0 {
 			o.damaged.SetUint64(0)
 		}
+		if pos := o.Position(); pos != nil {
+			o.mtx.Unlock()
+			pos.Zone().Update(pos, o.Outer())
+			return
+		}
 	}
 
 	if o.damaged.Cmp(max) >= 0 {
 		o.mtx.Unlock()
 		o.Outer().(Combat).Die()
-	} else {
-		o.mtx.Unlock()
+		return
 	}
+	o.mtx.Unlock()
 }
 
 func (o *CombatObject) Health() *big.Int {

@@ -93,7 +93,7 @@ rnoadm.gfx.repaintTimeout_ = 0;
  */
 rnoadm.gfx.repaint = function(opt_delay) {
   var delay = !isNaN(opt_delay) && opt_delay > 0 ? opt_delay : 0;
-  var time = delay + Date.now();
+  var time = delay + goog.now();
   if (rnoadm.gfx.nextRepaint_ > time) {
     if (rnoadm.gfx.repaintTimeout_) {
       clearTimeout(rnoadm.gfx.repaintTimeout_);

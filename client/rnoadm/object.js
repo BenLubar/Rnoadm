@@ -51,6 +51,9 @@ rnoadm.state.Object = function(x, y, id, net) {
 
   /** @type {Array.<string>} */
   this.actions = net['A'] || [];
+
+  /** @type {(Array.<number>|undefined)} */
+  this.health = net['H'];
 };
 
 
@@ -61,7 +64,8 @@ rnoadm.state.Object.prototype.clone = function() {
   var copy = new rnoadm.state.Object(this.x, this.y, this.id, {
     'N': this.name,
     'A': this.actions,
-    'S': null
+    'S': null,
+    'H': this.health
   });
   copy.sprites = this.sprites;
   return copy;
@@ -86,6 +90,9 @@ rnoadm.state.Object.prototype.update = function(net) {
   (net['S'] || []).forEach(function(sprite) {
     sprites.push(rnoadm.gfx.Sprite.fromNetwork(sprite));
   });
+
+  /** @type {(Array.<number>|undefined)} */
+  this.health = net['H'];
 };
 
 
@@ -98,7 +105,7 @@ rnoadm.state.Object.prototype.move = function(x, y) {
   this.prevY = rnoadm.state.lerp(this.y, this.prevY, this.lastChange);
   this.x = x;
   this.y = y;
-  this.lastChange = Date.now();
+  this.lastChange = goog.now();
 };
 
 
@@ -112,14 +119,29 @@ rnoadm.state.Object.prototype.paint = function(xOffset, yOffset) {
   /** @type {number} */
   var y = rnoadm.state.lerp(this.y, this.prevY, this.lastChange);
 
+  var maxWidth = 0, maxHeight = 0;
   this.sprites.forEach(function(sprite) {
+    maxWidth = Math.max(maxWidth, sprite.width());
+    maxHeight = Math.max(maxHeight, sprite.height());
     sprite.paint(x + xOffset, y + yOffset);
   });
+
+  if (this.health && this.sprites.length) {
+    var healthX = (x + xOffset) * rnoadm.gfx.TILE_SIZE;
+    var healthY = (y + yOffset) * rnoadm.gfx.TILE_SIZE - maxHeight - 5;
+    var h0 = this.health[0], h1 = this.health[1];
+    rnoadm.gfx.ctx.fillStyle = '#000';
+    rnoadm.gfx.ctx.fillRect(healthX, healthY, maxWidth, 3);
+    rnoadm.gfx.ctx.fillStyle = 'rgb(' +
+        Math.floor(Math.min(Math.max(510 - h0 / h1 * 510, 0), 255)) + ',' +
+        Math.floor(Math.min(Math.max(h0 / h1 * 510, 0), 255)) + ',0)';
+    rnoadm.gfx.ctx.fillRect(healthX, healthY, maxWidth * h0 / h1, 3);
+  }
 };
 
 
 /** @typedef {{N:string, S:Array.<rnoadm.gfx.NetworkSprite>,
- *             A:Array.<string>}} */
+ *             A:Array.<string>, H:(Array.<number>|undefined)}} */
 rnoadm.state.NetworkObject;
 
 
@@ -130,7 +152,7 @@ rnoadm.state.NetworkObject;
  * @return {number}
  */
 rnoadm.state.lerp = function(current, prev, t) {
-  var time = Date.now() - t;
+  var time = goog.now() - t;
   if (time < 400) {
     rnoadm.gfx.repaint();
     return (time * current + (400 - time) * prev) / 400;
