@@ -254,6 +254,58 @@ func (m *Material) Quality() *big.Int {
 	return &m.quality
 }
 
+func (m *Material) Copy(volume uint64) *Material {
+	return m.copy(volume, func(c *material) bool {
+		return true
+	})
+}
+
+func (m *Material) CopyWood(volume uint64) *Material {
+	return m.copy(volume, func(c *material) bool {
+		return c.wood != nil
+	})
+}
+
+func (m *Material) CopyStone(volume uint64) *Material {
+	return m.copy(volume, func(c *material) bool {
+		return c.stone != nil
+	})
+}
+
+func (m *Material) CopyMetal(volume uint64) *Material {
+	return m.copy(volume, func(c *material) bool {
+		return c.metal != nil
+	})
+}
+
+func (m *Material) copy(volume uint64, filter func(*material) bool) *Material {
+	copy := &Material{
+		quality: *(&big.Int{}).Set(&m.quality),
+	}
+	world.InitObject(copy)
+	var total uint64
+	for _, c := range m.components {
+		if filter(c) {
+			total += c.volume
+			copyc := *c
+			copy.components = append(copy.components, &copyc)
+		}
+	}
+
+	if total == volume {
+		return copy
+	}
+
+	for _, c := range copy.components {
+		v := c.volume * volume / total
+		total -= c.volume
+		volume -= v
+		c.volume = v
+	}
+
+	return copy
+}
+
 func WrapSpawnFunc(f func(*Material, string) world.Visible) func(string) world.Visible {
 	return func(s string) world.Visible {
 		prefix := func(p string) (bool, uint64) {

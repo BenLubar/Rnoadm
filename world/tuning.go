@@ -35,4 +35,7 @@ var (
 	TuningDefaultStatMeleeArmor  = big.NewInt(500)
 	TuningDefaultStatCritChance  = big.NewInt(100)
 	TuningDefaultStatResistance  = big.NewInt(100)
+
+	TuningNodeScoreMultiplier = big.NewInt(500)
+	TuningMaxGatherVolume     = big.NewInt(10000)
 )

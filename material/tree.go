@@ -100,6 +100,32 @@ func (t *Tree) Actions(player world.PlayerLike) []string {
 	return actions
 }
 
+func (t *Tree) Interact(player world.PlayerLike, action string) {
+	switch action {
+	default:
+		t.Node.Interact(player, action)
+	case "chop":
+		pos := t.Position()
+		if pos == nil {
+			return
+		}
+		x, y := pos.Position()
+		player.SetSchedule(&world.ScheduleSchedule{
+			Schedules: []world.Schedule{
+				world.NewWalkSchedule(x, y, true, 0),
+				&GatherSchedule{
+					Target_: t,
+					Item: func(volume uint64) world.Visible {
+						return world.InitObject(&Logs{
+							material: t.material.CopyWood(volume),
+						}).(world.Visible)
+					},
+				},
+			},
+		})
+	}
+}
+
 type Logs struct {
 	world.VisibleObject
 

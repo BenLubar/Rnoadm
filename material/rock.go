@@ -112,6 +112,54 @@ func (r *Rock) Actions(player world.PlayerLike) []string {
 	return actions
 }
 
+func (r *Rock) Interact(player world.PlayerLike, action string) {
+	switch action {
+	default:
+		r.Node.Interact(player, action)
+	case "quarry":
+		pos := r.Position()
+		if pos == nil {
+			return
+		}
+		x, y := pos.Position()
+		player.SetSchedule(&world.ScheduleSchedule{
+			Schedules: []world.Schedule{
+				world.NewWalkSchedule(x, y, true, 0),
+				&GatherSchedule{
+					Target_: r,
+					Item: func(volume uint64) world.Visible {
+						return world.InitObject(&Stone{
+							material: r.material.CopyStone(volume),
+						}).(world.Visible)
+					},
+				},
+			},
+		})
+	case "mine":
+		if r.material.MetalColor() == "" {
+			return
+		}
+		pos := r.Position()
+		if pos == nil {
+			return
+		}
+		x, y := pos.Position()
+		player.SetSchedule(&world.ScheduleSchedule{
+			Schedules: []world.Schedule{
+				world.NewWalkSchedule(x, y, true, 0),
+				&GatherSchedule{
+					Target_: r,
+					Item: func(volume uint64) world.Visible {
+						return world.InitObject(&Ore{
+							material: r.material.CopyMetal(volume),
+						}).(world.Visible)
+					},
+				},
+			},
+		})
+	}
+}
+
 type Stone struct {
 	world.VisibleObject
 
