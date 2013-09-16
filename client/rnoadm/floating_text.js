@@ -33,7 +33,6 @@ rnoadm.state.text.Text.prototype.paint = function(xOffset, yOffset) {
 /**
  * @type {Array.<rnoadm.state.text.Text>}
  * @private
- * @const
  */
 rnoadm.state.text.text_ = [];
 
@@ -48,7 +47,7 @@ rnoadm.net.addHandler('Ftxt', function(text) {
 rnoadm.state.text.paint = function(xOffset, yOffset) {
   if (rnoadm.state.text.text_.length)
     rnoadm.gfx.repaint(20);
-  rnoadm.state.text.text_.filter(function(text) {
+  rnoadm.state.text.text_ = rnoadm.state.text.text_.filter(function(text) {
     return text.paint(xOffset, yOffset);
   });
 };
