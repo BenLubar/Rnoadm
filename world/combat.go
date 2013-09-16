@@ -13,13 +13,9 @@ type Combat interface {
 	Health() *big.Int
 	SetHealth(*big.Int)
 	MaxHealth() *big.Int
-	HealthRegen() *big.Int
 
 	MaxQuality() *big.Int
-	MeleeDamage() *big.Int
-	MeleeArmor() *big.Int
-	CritChance() *big.Int
-	Resistance() *big.Int
+	StatLike
 
 	Hurt(*big.Int, Combat)
 	Die()
@@ -71,9 +67,9 @@ func (o *CombatObject) Think() {
 	if o.damaged.Sign() > 0 && o.damaged.Cmp(max) < 0 {
 		var regen big.Int
 		if o.combatTicks > 0 {
-			regen.Div(o.Outer().(Combat).HealthRegen(), TuningHealthRegenDivisorCombat)
+			regen.Div(o.Outer().(StatLike).Stat(StatHealthRegen), TuningHealthRegenDivisorCombat)
 		} else {
-			regen.Div(o.Outer().(Combat).HealthRegen(), TuningHealthRegenDivisorNonCombat)
+			regen.Div(o.Outer().(StatLike).Stat(StatHealthRegen), TuningHealthRegenDivisorNonCombat)
 		}
 		o.damaged.Sub(&o.damaged, &regen)
 		if o.damaged.Sign() < 0 {
@@ -122,32 +118,19 @@ func (o *CombatObject) SetHealth(health *big.Int) {
 	o.mtx.Unlock()
 }
 
-func (o *CombatObject) MeleeArmor() *big.Int {
-	return big.NewInt(500)
-}
-
-func (o *CombatObject) MeleeDamage() *big.Int {
-	return big.NewInt(500)
-}
-
-func (o *CombatObject) CritChance() *big.Int {
-	return big.NewInt(0)
-}
-
-func (o *CombatObject) Resistance() *big.Int {
-	return big.NewInt(0)
-}
-
 func (o *CombatObject) MaxHealth() *big.Int {
-	return big.NewInt(500)
-}
-
-func (o *CombatObject) HealthRegen() *big.Int {
-	return big.NewInt(500)
+	return o.Outer().(StatLike).Stat(StatHealth)
 }
 
 func (o *CombatObject) MaxQuality() *big.Int {
-	return big.NewInt(1)
+	return TuningDefaultStatQuality
+}
+
+func (o *CombatObject) Stat(stat Stat) *big.Int {
+	if s, ok := TuningDefaultStat[stat]; ok {
+		return s
+	}
+	return &big.Int{}
 }
 
 var (
@@ -227,19 +210,19 @@ func (s *CombatSchedule) Act(o Living) (uint, bool) {
 	}
 
 	r := rand.New(rand.NewSource(rand.Int63()))
-	maxDamage := c.MeleeDamage()
+	maxDamage := c.Stat(StatMeleeDamage)
 	if maxDamage.Sign() <= 0 {
 		// can't attack
 		return 0, false
 	}
 	damage := (&big.Int{}).Rand(r, maxDamage)
-	armor := (&big.Int{}).Set(s.Target_.MeleeArmor())
+	armor := (&big.Int{}).Set(s.Target_.Stat(StatMeleeArmor))
 	if armor.Sign() <= 0 {
 		armor.SetUint64(0)
 	} else {
 		armor.Rand(r, armor)
 	}
-	crit := (&big.Int{}).Div((&big.Int{}).Div(c.CritChance(), c.MaxQuality()), TuningCritDivisor)
+	crit := (&big.Int{}).Div((&big.Int{}).Div(c.Stat(StatCritChance), c.MaxQuality()), TuningCritDivisor)
 	if crit.Cmp(TuningMinCrit) < 0 {
 		crit.Set(TuningMinCrit)
 	} else if crit.Cmp(TuningMaxCrit) > 0 {
@@ -267,7 +250,7 @@ func (s *CombatSchedule) Act(o Living) (uint, bool) {
 		// block
 		s.Target_.Hurt(DamageBlocked, c)
 	} else {
-		resistance := s.Target_.Resistance()
+		resistance := s.Target_.Stat(StatResistance)
 		if resistance.Sign() > 0 && (&big.Int{}).Rand(r, resistance).Cmp((&big.Int{}).Mul(s.Target_.MaxQuality(), TuningResistDivisor)) > 0 {
 			s.Target_.Hurt(DamageResisted, c)
 		} else {

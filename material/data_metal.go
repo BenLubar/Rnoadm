@@ -1,6 +1,7 @@
 package material
 
 import (
+	"github.com/BenLubar/Rnoadm/world"
 	"image/color"
 	"math/big"
 )
@@ -18,7 +19,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x00},
 		density: 800,
 
-		power: big.NewInt(1000),
+		stats: map[world.Stat]*big.Int{
+			world.StatPower: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal1",
@@ -26,7 +29,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x11},
 		density: 800,
 
-		magic: big.NewInt(1000),
+		stats: map[world.Stat]*big.Int{
+			world.StatMagic: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal2",
@@ -34,7 +39,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x22},
 		density: 800,
 
-		agility: big.NewInt(1000),
+		stats: map[world.Stat]*big.Int{
+			world.StatAgility: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal3",
@@ -42,7 +49,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x33},
 		density: 800,
 
-		luck: big.NewInt(1000),
+		stats: map[world.Stat]*big.Int{
+			world.StatLuck: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal4",
@@ -50,7 +59,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x44},
 		density: 800,
 
-		intelligence: big.NewInt(1000),
+		stats: map[world.Stat]*big.Int{
+			world.StatIntelligence: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal5",
@@ -58,7 +69,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x55},
 		density: 800,
 
-		stamina: big.NewInt(1000),
+		stats: map[world.Stat]*big.Int{
+			world.StatStamina: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal6",
@@ -66,8 +79,10 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x66},
 		density: 800,
 
-		melee_damage: big.NewInt(700),
-		magic_damage: big.NewInt(700),
+		stats: map[world.Stat]*big.Int{
+			world.StatMeleeDamage: big.NewInt(700),
+			world.StatMagicDamage: big.NewInt(700),
+		},
 	},
 	{
 		name:    "metal7",
@@ -75,8 +90,10 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x77},
 		density: 800,
 
-		melee_armor: big.NewInt(700),
-		magic_armor: big.NewInt(700),
+		stats: map[world.Stat]*big.Int{
+			world.StatMeleeArmor: big.NewInt(700),
+			world.StatMagicArmor: big.NewInt(700),
+		},
 	},
 	{
 		name:    "metal8",
@@ -84,8 +101,10 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x88},
 		density: 800,
 
-		mana:   big.NewInt(700),
-		health: big.NewInt(700),
+		stats: map[world.Stat]*big.Int{
+			world.StatMana:   big.NewInt(700),
+			world.StatHealth: big.NewInt(700),
+		},
 	},
 	{
 		name:    "metal9",
@@ -93,8 +112,10 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0x99},
 		density: 800,
 
-		mana_regen:   big.NewInt(700),
-		health_regen: big.NewInt(700),
+		stats: map[world.Stat]*big.Int{
+			world.StatManaRegen:   big.NewInt(700),
+			world.StatHealthRegen: big.NewInt(700),
+		},
 	},
 	{
 		name:    "metal10",
@@ -102,7 +123,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0xaa},
 		density: 800,
 
-		crit_chance: big.NewInt(1000),
+		stats: map[world.Stat]*big.Int{
+			world.StatCritChance: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal11",
@@ -110,7 +133,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0xbb},
 		density: 800,
 
-		resistance: big.NewInt(1000),
+		stats: map[world.Stat]*big.Int{
+			world.StatResistance: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal12",
@@ -118,8 +143,10 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0xcc},
 		density: 800,
 
-		crit_chance:  big.NewInt(700),
-		attack_speed: big.NewInt(700),
+		stats: map[world.Stat]*big.Int{
+			world.StatCritChance:  big.NewInt(700),
+			world.StatAttackSpeed: big.NewInt(700),
+		},
 	},
 	{
 		name:    "metal13",
@@ -127,8 +154,10 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0xdd},
 		density: 800,
 
-		resistance: big.NewInt(700),
-		move_speed: big.NewInt(700),
+		stats: map[world.Stat]*big.Int{
+			world.StatResistance:    big.NewInt(700),
+			world.StatMovementSpeed: big.NewInt(700),
+		},
 	},
 	{
 		name:    "metal14",
@@ -136,7 +165,9 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0xee},
 		density: 800,
 
-		// TODO: gathering stats, probably
+		stats: map[world.Stat]*big.Int{
+			world.StatGathering: big.NewInt(1000),
+		},
 	},
 	{
 		name:    "metal15",
@@ -144,6 +175,18 @@ var metalTypes = []MaterialData{
 		color1:  color.Gray{0xff},
 		density: 800,
 
-		// TODO: structure stats, probably
+		stats: map[world.Stat]*big.Int{
+			world.StatStructureHealth: big.NewInt(1000),
+		},
+	},
+	{
+		name:    "metal16",
+		color0:  color.Gray{0xff},
+		color1:  color.Gray{0xff},
+		density: 800,
+
+		stats: map[world.Stat]*big.Int{
+			world.StatIntegrity: big.NewInt(1000),
+		},
 	},
 }

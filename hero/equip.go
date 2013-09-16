@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
+	"math/big"
 )
 
 type EquipSlot uint16
@@ -317,4 +318,8 @@ func (e *Equip) Interact(player world.PlayerLike, action string) {
 	default:
 		e.VisibleObject.Interact(player, action)
 	}
+}
+
+func (e *Equip) Stat(stat world.Stat) *big.Int {
+	return e.material.Stat(stat)
 }

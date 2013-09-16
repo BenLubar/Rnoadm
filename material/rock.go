@@ -126,6 +126,7 @@ func (r *Rock) Interact(player world.PlayerLike, action string) {
 			Schedules: []world.Schedule{
 				world.NewWalkSchedule(x, y, true, 0),
 				&GatherSchedule{
+					Tool:    player,
 					Target_: r,
 					Item: func(volume uint64) world.Visible {
 						return world.InitObject(&Stone{
@@ -148,6 +149,7 @@ func (r *Rock) Interact(player world.PlayerLike, action string) {
 			Schedules: []world.Schedule{
 				world.NewWalkSchedule(x, y, true, 0),
 				&GatherSchedule{
+					Tool:    player,
 					Target_: r,
 					Item: func(volume uint64) world.Visible {
 						return world.InitObject(&Ore{

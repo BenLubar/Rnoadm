@@ -29,12 +29,18 @@ var (
 	TuningManaRegenDivisorCombat    = big.NewInt(500)
 	TuningManaRegenDivisorNonCombat = big.NewInt(100)
 
-	TuningDefaultStatHealth      = (&big.Int{}).Mul(big.NewInt(1000), TuningHealthMultiplier)
-	TuningDefaultStatQuality     = big.NewInt(1)
-	TuningDefaultStatMeleeDamage = big.NewInt(500)
-	TuningDefaultStatMeleeArmor  = big.NewInt(500)
-	TuningDefaultStatCritChance  = big.NewInt(100)
-	TuningDefaultStatResistance  = big.NewInt(100)
+	TuningDefaultStatQuality = big.NewInt(1)
+
+	TuningDefaultStat = map[Stat]*big.Int{
+		StatMana:        big.NewInt(500),
+		StatManaRegen:   big.NewInt(500),
+		StatHealth:      big.NewInt(1000),
+		StatHealthRegen: big.NewInt(500),
+		StatMeleeDamage: big.NewInt(500),
+		StatMeleeArmor:  big.NewInt(500),
+		StatCritChance:  big.NewInt(100),
+		StatResistance:  big.NewInt(100),
+	}
 
 	TuningNodeScoreMultiplier = big.NewInt(500)
 	TuningMaxGatherVolume     = big.NewInt(10000)

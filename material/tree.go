@@ -114,6 +114,7 @@ func (t *Tree) Interact(player world.PlayerLike, action string) {
 			Schedules: []world.Schedule{
 				world.NewWalkSchedule(x, y, true, 0),
 				&GatherSchedule{
+					Tool:    player,
 					Target_: t,
 					Item: func(volume uint64) world.Visible {
 						return world.InitObject(&Logs{

@@ -278,18 +278,9 @@ func (h *Hero) SpriteSize() (uint, uint) {
 }
 
 func (h *Hero) MaxHealth() *big.Int {
-	max := (&big.Int{}).Set(world.TuningDefaultStatHealth)
-
-	h.mtx.Lock()
-	for _, e := range h.equipped {
-		max.Add(max, e.Material().Health())
-	}
-	h.mtx.Unlock()
-
+	max := h.Stat(world.StatHealth)
 	max.Mul(max, world.TuningHealthMultiplier)
-
 	max.Add(max, h.Race().BaseHealth())
-
 	return max
 }
 
@@ -309,56 +300,20 @@ func (h *Hero) MaxQuality() *big.Int {
 	return max
 }
 
-func (h *Hero) MeleeDamage() *big.Int {
+func (h *Hero) Stat(stat world.Stat) *big.Int {
+	s := &big.Int{}
+	if d, ok := world.TuningDefaultStat[stat]; ok {
+		s.Set(d)
+	}
+
 	h.mtx.Lock()
 	defer h.mtx.Unlock()
 
-	damage := (&big.Int{}).Set(world.TuningDefaultStatMeleeDamage)
-
 	for _, e := range h.equipped {
-		damage.Add(damage, e.Material().MeleeDamage())
+		s.Add(s, e.Stat(stat))
 	}
 
-	return damage
-}
-
-func (h *Hero) MeleeArmor() *big.Int {
-	h.mtx.Lock()
-	defer h.mtx.Unlock()
-
-	armor := (&big.Int{}).Set(world.TuningDefaultStatMeleeArmor)
-
-	for _, e := range h.equipped {
-		armor.Add(armor, e.Material().MeleeArmor())
-	}
-
-	return armor
-}
-
-func (h *Hero) CritChance() *big.Int {
-	h.mtx.Lock()
-	defer h.mtx.Unlock()
-
-	crit := (&big.Int{}).Set(world.TuningDefaultStatCritChance)
-
-	for _, e := range h.equipped {
-		crit.Add(crit, e.Material().CritChance())
-	}
-
-	return crit
-}
-
-func (h *Hero) Resistance() *big.Int {
-	h.mtx.Lock()
-	defer h.mtx.Unlock()
-
-	resist := (&big.Int{}).Set(world.TuningDefaultStatResistance)
-
-	for _, e := range h.equipped {
-		resist.Add(resist, e.Material().Resistance())
-	}
-
-	return resist
+	return s
 }
 
 func (h *Hero) NotifyPosition(old, new *world.Tile) {

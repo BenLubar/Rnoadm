@@ -111,6 +111,7 @@ func (n *Node) Blocking() bool {
 type GatherSchedule struct {
 	world.Object
 
+	Tool    world.StatLike
 	Target_ NodeLike
 	Item    func(uint64) world.Visible
 	started bool
@@ -125,8 +126,7 @@ func (s *GatherSchedule) Act(obj world.Living) (uint, bool) {
 		return 10, true
 	}
 
-	// TODO: max tool score
-	gave, collected := s.Target_.Gather(obj.(world.InventoryLike), maxToolScore, s.Item)
+	gave, collected := s.Target_.Gather(obj.(world.InventoryLike), s.Tool.Stat(world.StatGathering), s.Item)
 	if o, ok := obj.(world.SendMessageLike); ok {
 		if gave {
 			o.SendMessage("you collect some of the " + s.Target_.Name() + ".")
