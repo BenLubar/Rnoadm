@@ -1,8 +1,49 @@
 package hero
 
-const metalColor = "__metal__"
-const stoneColor = "__stone__"
-const woodColor = "__wood__"
+const (
+	metalColor = "__metal__" + string('0'+iota)
+	metalColor1
+	metalColor2
+	metalColor3
+	metalColor4
+	metalColor5
+	metalColor6
+	metalColor7
+	metalColor8
+	metalColor9
+)
+
+var metalColors = [...]string{metalColor, metalColor1, metalColor2, metalColor3, metalColor4, metalColor5, metalColor6, metalColor7, metalColor8, metalColor9}
+
+const (
+	stoneColor = "__stone__" + string('0'+iota)
+	stoneColor1
+	stoneColor2
+	stoneColor3
+	stoneColor4
+	stoneColor5
+	stoneColor6
+	stoneColor7
+	stoneColor8
+	stoneColor9
+)
+
+var stoneColors = [...]string{stoneColor, stoneColor1, stoneColor2, stoneColor3, stoneColor4, stoneColor5, stoneColor6, stoneColor7, stoneColor8, stoneColor9}
+
+const (
+	woodColor = "__wood__" + string('0'+iota)
+	woodColor1
+	woodColor2
+	woodColor3
+	woodColor4
+	woodColor5
+	woodColor6
+	woodColor7
+	woodColor8
+	woodColor9
+)
+
+var woodColors = [...]string{woodColor, woodColor1, woodColor2, woodColor3, woodColor4, woodColor5, woodColor6, woodColor7, woodColor8, woodColor9}
 
 var equippables = [equipSlotCount][]struct {
 	name    string

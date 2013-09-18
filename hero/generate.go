@@ -1,7 +1,6 @@
 package hero
 
 import (
-	"github.com/BenLubar/Rnoadm/material"
 	"github.com/BenLubar/Rnoadm/world"
 	"math/rand"
 	"time"
@@ -33,18 +32,15 @@ func GenerateHeroOccupation(r *rand.Rand, race Race, occupation Occupation) *Her
 		slot:         SlotShirt,
 		kind:         0,
 		customColors: []string{randomColor(r)},
-		material:     &material.Material{},
 	})
 	hero.equip(&Equip{
 		slot:         SlotPants,
 		kind:         0,
 		customColors: []string{randomColor(r)},
-		material:     &material.Material{},
 	})
 	hero.equip(&Equip{
-		slot:     SlotFeet,
-		kind:     0,
-		material: &material.Material{},
+		slot: SlotFeet,
+		kind: 0,
 	})
 	return hero
 }

@@ -105,7 +105,7 @@ type Equip struct {
 
 	customColors []string
 
-	material *material.Material
+	materials []*material.Material
 
 	wearer HeroLike // not saved
 }
@@ -115,8 +115,8 @@ var _ world.Item = (*Equip)(nil)
 func init() {
 	world.Register("equip", world.Visible((*Equip)(nil)))
 
-	world.RegisterSpawnFunc(material.WrapSpawnFunc(func(material *material.Material, s string) world.Visible {
-		wood, stone, metal := material.Get()
+	world.RegisterSpawnFunc(material.WrapSpawnFunc(func(mat *material.Material, s string) world.Visible {
+		wood, stone, metal := mat.Get()
 		for t := range equippables {
 			for i, e := range equippables[t] {
 				if e.name == s {
@@ -144,9 +144,9 @@ func init() {
 						continue
 					}
 					return &Equip{
-						slot:     EquipSlot(t),
-						kind:     uint64(i),
-						material: material,
+						slot:      EquipSlot(t),
+						kind:      uint64(i),
+						materials: []*material.Material{mat},
 					}
 				}
 			}
@@ -160,14 +160,16 @@ func (e *Equip) Save() (uint, interface{}, []world.ObjectLike) {
 	for i, c := range e.customColors {
 		colors[i] = c
 	}
-	if e.material == nil {
-		e.material = &material.Material{}
+	attached := make([]world.ObjectLike, 0, len(e.materials))
+	for _, m := range e.materials {
+		attached = append(attached, m)
 	}
-	return 1, map[string]interface{}{
+	return 2, map[string]interface{}{
 		"s": uint16(e.slot),
 		"k": e.kind,
 		"c": colors,
-	}, []world.ObjectLike{e.material}
+		"m": uint(len(e.materials)),
+	}, attached
 }
 
 func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike) {
@@ -180,6 +182,9 @@ func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike
 		attached = []world.ObjectLike{material}
 		fallthrough
 	case 1:
+		data.(map[string]interface{})["m"] = uint(1)
+		fallthrough
+	case 2:
 		dataMap := data.(map[string]interface{})
 
 		e.slot = EquipSlot(dataMap["s"].(uint16))
@@ -192,20 +197,28 @@ func (e *Equip) Load(version uint, data interface{}, attached []world.ObjectLike
 			}
 		}
 
-		e.material = attached[0].(*material.Material)
+		e.materials = make([]*material.Material, dataMap["m"].(uint))
+		for i := range e.materials {
+			e.materials[i] = attached[i].(*material.Material)
+		}
+		attached = attached[len(e.materials):]
 	default:
 		panic(fmt.Sprintf("version %d unknown", version))
 	}
 }
 
 func (e *Equip) Name() string {
-	return e.material.Name() + equippables[e.slot][e.kind].name
+	var name string
+	for _, m := range e.materials {
+		name += m.Name()
+	}
+	return name + equippables[e.slot][e.kind].name
 }
 
 func (e *Equip) Examine() (string, [][][2]string) {
 	_, info := e.VisibleObject.Examine()
 
-	info = append(info, e.material.Info()...)
+	// TODO: material info
 
 	return equippables[e.slot][e.kind].examine, info
 }
@@ -218,17 +231,16 @@ func (e *Equip) Colors() []string {
 	defaultColors := equippables[e.slot][e.kind].colors
 	colors := make([]string, len(defaultColors))
 	copy(colors, defaultColors)
-	wood := e.material.WoodColor()
-	stone := e.material.StoneColor()
-	metal := e.material.MetalColor()
-	for i, c := range colors {
-		switch c {
-		case woodColor:
-			colors[i] = wood
-		case stoneColor:
-			colors[i] = stone
-		case metalColor:
-			colors[i] = metal
+	for i, m := range e.materials {
+		for j, c := range colors {
+			switch c {
+			case woodColors[i]:
+				colors[j] = m.WoodColor()
+			case stoneColors[i]:
+				colors[j] = m.StoneColor()
+			case metalColors[i]:
+				colors[j] = m.MetalColor()
+			}
 		}
 	}
 	for i, c := range e.customColors {
@@ -271,19 +283,20 @@ func (e *Equip) SpriteSize() (uint, uint) {
 	return equippables[e.slot][e.kind].width, equippables[e.slot][e.kind].height
 }
 
-func (e *Equip) Material() *material.Material {
-	if e.material == nil {
-		return &material.Material{}
-	}
-	return e.material
-}
-
 func (e *Equip) Volume() uint64 {
-	return e.material.Volume()
+	var volume uint64
+	for _, m := range e.materials {
+		volume += m.Volume()
+	}
+	return volume
 }
 
 func (e *Equip) Weight() uint64 {
-	return e.material.Weight()
+	var weight uint64
+	for _, m := range e.materials {
+		weight += m.Weight()
+	}
+	return weight
 }
 
 func (e *Equip) AdminOnly() bool {
@@ -321,5 +334,20 @@ func (e *Equip) Interact(player world.PlayerLike, action string) {
 }
 
 func (e *Equip) Stat(stat world.Stat) *big.Int {
-	return e.material.Stat(stat)
+	s := &big.Int{}
+	for _, m := range e.materials {
+		s.Add(s, m.Stat(stat))
+	}
+	return s
+}
+
+func (e *Equip) Quality() *big.Int {
+	max := big.NewInt(1)
+	for _, m := range e.materials {
+		q := m.Quality()
+		if max.Cmp(q) < 0 {
+			max = q
+		}
+	}
+	return max
 }

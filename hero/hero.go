@@ -291,7 +291,7 @@ func (h *Hero) MaxQuality() *big.Int {
 	max := world.TuningDefaultStatQuality
 
 	for _, e := range h.equipped {
-		q := e.Material().Quality()
+		q := e.Quality()
 		if q.Cmp(max) > 0 {
 			max = q
 		}
