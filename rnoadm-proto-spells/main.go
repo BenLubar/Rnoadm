@@ -6,5 +6,10 @@ import (
 )
 
 func main() {
-	fmt.Println(NewSpell(rand.New(rand.NewSource(0))))
+	r := rand.New(rand.NewSource(0))
+
+	for i := 0; i < 10; i++ {
+		fmt.Println("\n\n\nSpell", i)
+		fmt.Println(NewSpell(r))
+	}
 }
