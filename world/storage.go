@@ -139,12 +139,6 @@ func zoneFilename(x, y int64, z int8) string {
 	buf[i] = uint8(z)
 	i++
 	encoded := base32.StdEncoding.EncodeToString(buf[:i])
-	for i := range encoded {
-		if encoded[i] == '=' {
-			encoded = encoded[:i]
-			break
-		}
-	}
 	return filepath.Join("rnoadm-AA", "zone"+encoded+".gz")
 }
 
