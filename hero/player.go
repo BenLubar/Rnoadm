@@ -15,6 +15,7 @@ type Player struct {
 	characterCreation bool
 	ancestry          PlayerAncestry
 	zoneX, zoneY      int64
+	zoneZ             int8
 	tileX, tileY      uint8
 	instances         PlayerInstances
 
@@ -53,7 +54,7 @@ func (p *Player) UpdatePosition() {
 	if t != nil {
 		p.tileX, p.tileY = t.Position()
 		z := t.Zone()
-		p.zoneX, p.zoneY = z.X, z.Y
+		p.zoneX, p.zoneY, p.zoneZ = z.X, z.Y, z.Z
 	}
 }
 
@@ -64,11 +65,12 @@ func (p *Player) Save() (uint, interface{}, []world.ObjectLike) {
 	t := p.Position()
 	zx, zy := p.zoneX, p.zoneY
 	tx, ty := p.tileX, p.tileY
+	zz := p.zoneZ
 
 	if t != nil {
 		tx, ty = t.Position()
 		z := t.Zone()
-		zx, zy = z.X, z.Y
+		zx, zy, zz = z.X, z.Y, z.Z
 	}
 
 	return 1, map[string]interface{}{
@@ -77,6 +79,7 @@ func (p *Player) Save() (uint, interface{}, []world.ObjectLike) {
 		"ty":       ty,
 		"zx":       zx,
 		"zy":       zy,
+		"zz":       zz,
 		"u":        p.login,
 		"p":        p.password,
 		"admin":    p.admin,
@@ -113,6 +116,7 @@ func (p *Player) Load(version uint, data interface{}, attached []world.ObjectLik
 		p.characterCreation = dataMap["creation"].(bool)
 		p.zoneX, p.zoneY = dataMap["zx"].(int64), dataMap["zy"].(int64)
 		p.tileX, p.tileY = dataMap["tx"].(uint8), dataMap["ty"].(uint8)
+		p.zoneZ, _ = dataMap["zz"].(int8)
 		p.login = dataMap["u"].(string)
 		p.password = dataMap["p"].([]byte)
 		p.admin, _ = dataMap["admin"].(bool)
@@ -449,11 +453,11 @@ func (p *Player) CanSpawn() bool {
 	return !characterCreation && (admin || p.Health().Sign() > 0)
 }
 
-func (p *Player) LoginPosition() (int64, uint8, int64, uint8) {
+func (p *Player) LoginPosition() (int64, uint8, int64, uint8, int8) {
 	p.mtx.Lock()
 	defer p.mtx.Unlock()
 
-	return p.zoneX, p.tileX, p.zoneY, p.tileY
+	return p.zoneX, p.tileX, p.zoneY, p.tileY, p.zoneZ
 }
 
 func (p *Player) CharacterCreation(command string) {
@@ -494,7 +498,7 @@ func (p *Player) CharacterCreation(command string) {
 		p.mtx.Unlock()
 	case "accept":
 		p.mtx.Lock()
-		z := world.GetZone(p.zoneX, p.zoneY)
+		z := world.GetZone(p.zoneX, p.zoneY, p.zoneZ)
 		p.characterCreation = false
 		tile := z.Tile(p.tileX, p.tileY)
 		p.mtx.Unlock()

@@ -8,6 +8,7 @@ import (
 
 type Zone struct {
 	X, Y      int64 // unprotected by mutex; never changes
+	Z         int8  // unprotected by mutex; never changes
 	tiles     [256 * 256]Tile
 	listeners map[*ZoneListener]bool
 

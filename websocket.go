@@ -354,10 +354,10 @@ next:
 				}
 				world.InitObject(player)
 				kick, hud, inventory, messages = player.InitPlayer()
-				zx, tx, zy, ty := player.LoginPosition()
+				zx, tx, zy, ty, zz := player.LoginPosition()
 				defer hero.PlayerDisconnected(player)
 
-				zone = world.GetZone(zx, zy)
+				zone = world.GetZone(zx, zy, zz)
 				zone.AddListener(listener)
 				if player.CanSpawn() {
 					zone.Tile(tx, ty).Add(player)

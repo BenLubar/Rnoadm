@@ -15,6 +15,7 @@ import (
 
 type savedZone struct {
 	X, Y     int64
+	Z        int8
 	Version  uint
 	TileData []savedTile
 }
@@ -43,7 +44,7 @@ func readZone(r io.Reader) *Zone {
 	var z Zone
 	z.lock()
 	defer z.unlock()
-	z.X, z.Y = data.X, data.Y
+	z.X, z.Y, z.Z = data.X, data.Y, data.Z
 
 	switch data.Version {
 	case 0:
@@ -75,7 +76,7 @@ func writeZone(z *Zone, w io.Writer) {
 	defer z.unlock()
 
 	var data savedZone
-	data.X, data.Y = z.X, z.Y
+	data.X, data.Y, data.Z = z.X, z.Y, z.Z
 	data.Version = 0
 	data.TileData = make([]savedTile, 256*256)
 	i := 0
@@ -101,12 +102,17 @@ func writeZone(z *Zone, w io.Writer) {
 	}
 }
 
+type zoneCoord struct {
+	X, Y int64
+	Z    int8
+}
+
 type loadedZone struct {
 	zone *Zone
 	ref  uint
 }
 
-var loadedZones = make(map[[2]int64]*loadedZone)
+var loadedZones = make(map[zoneCoord]*loadedZone)
 var loadedZoneLock sync.Mutex
 
 // run zone loading and saving in a separate goroutine - corrupt zones cause
@@ -126,7 +132,23 @@ func zoneCritical(f func()) {
 	<-ch
 }
 
-func zoneFilename(x, y int64) string {
+func zoneFilename(x, y int64, z int8) string {
+	var buf [binary.MaxVarintLen64*2 + 1]byte
+	i := binary.PutVarint(buf[:], x)
+	i += binary.PutVarint(buf[i:], y)
+	buf[i] = uint8(z)
+	i++
+	encoded := base32.StdEncoding.EncodeToString(buf[:i])
+	for i := range encoded {
+		if encoded[i] == '=' {
+			encoded = encoded[:i]
+			break
+		}
+	}
+	return filepath.Join("rnoadm-AA", "zone"+encoded+".gz")
+}
+
+func zoneFilenameV1(x, y int64) string {
 	var buf [binary.MaxVarintLen64 * 2]byte
 	i := binary.PutVarint(buf[:], x)
 	i += binary.PutVarint(buf[i:], y)
@@ -140,49 +162,57 @@ func zoneFilename(x, y int64) string {
 	return filepath.Join("rnoadm-AA", "zone"+encoded+".gz")
 }
 
-func GetZone(x, y int64) *Zone {
-	var z *Zone
+func GetZone(x, y int64, z int8) *Zone {
+	var zone *Zone
 	zoneCritical(func() {
-		lz, ok := loadedZones[[2]int64{x, y}]
+		lz, ok := loadedZones[zoneCoord{x, y, z}]
 		if ok {
 			lz.ref++
-			z = lz.zone
+			zone = lz.zone
 			return
 		}
 
-		f, err := os.Open(zoneFilename(x, y))
+		f, err := os.Open(zoneFilename(x, y, z))
+		if os.IsNotExist(err) && z == 0 {
+			if os.Rename(zoneFilenameV1(x, y), zoneFilename(x, y, z)) == nil {
+				f, err = os.Open(zoneFilename(x, y, z))
+			}
+		}
 		if err == nil {
 			defer f.Close()
-			z = readZone(f)
+			zone = readZone(f)
 		} else {
-			z = generateZone(x, y)
+			if !os.IsNotExist(err) {
+				panic(err)
+			}
+			zone = generateZone(x, y, z)
 		}
 
 		lz = &loadedZone{
-			zone: z,
+			zone: zone,
 			ref:  1,
 		}
-		loadedZones[[2]int64{x, y}] = lz
+		loadedZones[zoneCoord{x, y, z}] = lz
 	})
-	return z
+	return zone
 }
 
 func ReleaseZone(z *Zone) {
 	zoneCritical(func() {
-		lz := loadedZones[[2]int64{z.X, z.Y}]
+		lz := loadedZones[zoneCoord{z.X, z.Y, z.Z}]
 		lz.ref--
 		if lz.ref != 0 {
 			return
 		}
 
-		delete(loadedZones, [2]int64{z.X, z.Y})
+		delete(loadedZones, zoneCoord{z.X, z.Y, z.Z})
 
 		// write to a memory buffer first to avoid corruption on failed
 		// saves
 		var buf bytes.Buffer
 		writeZone(lz.zone, &buf)
 
-		f, err := os.Create(zoneFilename(z.X, z.Y))
+		f, err := os.Create(zoneFilename(z.X, z.Y, z.Z))
 		if err != nil {
 			panic(err)
 		}
@@ -212,7 +242,7 @@ func SaveAllZones() {
 			var buf bytes.Buffer
 			writeZone(lz.zone, &buf)
 
-			f, err := os.Create(zoneFilename(lz.zone.X, lz.zone.Y))
+			f, err := os.Create(zoneFilename(lz.zone.X, lz.zone.Y, lz.zone.Z))
 			if err != nil {
 				panic(err)
 			}
